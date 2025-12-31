@@ -6,6 +6,24 @@ from django.conf import settings
 from datetime import datetime
 
 from .models import DomiciliazioniSubmission, DomiciliazioniDocument, DomiciliazioniPage
+from .ical import generate_domiciliazione_ical, generate_domiciliazione_ical_filename
+
+# Traduzioni italiane per giorni e mesi
+GIORNI_IT = {
+    'Monday': 'Lunedì', 'Tuesday': 'Martedì', 'Wednesday': 'Mercoledì',
+    'Thursday': 'Giovedì', 'Friday': 'Venerdì', 'Saturday': 'Sabato', 'Sunday': 'Domenica',
+}
+MESI_IT = {
+    'January': 'Gennaio', 'February': 'Febbraio', 'March': 'Marzo', 'April': 'Aprile',
+    'May': 'Maggio', 'June': 'Giugno', 'July': 'Luglio', 'August': 'Agosto',
+    'September': 'Settembre', 'October': 'Ottobre', 'November': 'Novembre', 'December': 'Dicembre',
+}
+
+def format_date_italian(date):
+    """Formatta una data in italiano (es: Venerdì 23 Gennaio 2026)."""
+    day_it = GIORNI_IT.get(date.strftime('%A'), date.strftime('%A'))
+    month_it = MESI_IT.get(date.strftime('%B'), date.strftime('%B'))
+    return f"{day_it} {date.day} {month_it} {date.year}"
 
 
 def process_domiciliazione_form(request, page):
@@ -64,7 +82,7 @@ def process_domiciliazione_form(request, page):
 
 
 def send_domiciliazione_notification(submission):
-    """Invia email di notifica per nuova richiesta domiciliazione."""
+    """Invia email di notifica per nuova richiesta domiciliazione con allegato iCal."""
     
     tribunale_display = dict(submission.TRIBUNALE_CHOICES if hasattr(submission, 'TRIBUNALE_CHOICES') else []).get(
         submission.tribunale, submission.tribunale
@@ -74,6 +92,11 @@ def send_domiciliazione_notification(submission):
     )
     
     ora_str = submission.ora_udienza.strftime('%H:%M') if submission.ora_udienza else 'Da definire'
+    data_italiana = format_date_italian(submission.data_udienza)
+    
+    # Genera file iCal
+    ical_content = generate_domiciliazione_ical(submission)
+    ical_filename = generate_domiciliazione_ical_filename(submission)
     
     # Email allo studio
     subject = f"Nuova richiesta domiciliazione - R.G. {submission.numero_rg} - {tribunale_display}"
@@ -95,7 +118,7 @@ TRIBUNALE:
 CAUSA:
 - Numero R.G.: {submission.numero_rg}
 - Parti: {submission.parti_causa or 'Non indicate'}
-- Data udienza: {submission.data_udienza.strftime('%d/%m/%Y')}
+- Data udienza: {data_italiana}
 - Ora udienza: {ora_str}
 
 ATTIVITÀ RICHIESTE:
@@ -106,6 +129,7 @@ NOTE:
 
 ---
 Documenti allegati: {submission.documents.count()}
+File calendario (.ics) allegato.
 """
     
     try:
@@ -116,6 +140,8 @@ Documenti allegati: {submission.documents.count()}
             to=[getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')],
             reply_to=[submission.email],
         )
+        # Allega il file iCal
+        email.attach(ical_filename, ical_content, 'text/calendar')
         email.send()
     except Exception as e:
         print(f"Errore invio email domiciliazione: {e}")
@@ -129,10 +155,13 @@ La Sua richiesta di domiciliazione è stata ricevuta correttamente.
 RIEPILOGO:
 - Tribunale: {tribunale_display}
 - R.G.: {submission.numero_rg}
-- Data udienza: {submission.data_udienza.strftime('%d/%m/%Y')}
+- Data udienza: {data_italiana}
 - Ora: {ora_str}
 
 Le confermeremo la presa in carico al più presto.
+
+Trovi in allegato il file calendario (.ics) da aggiungere al Suo calendario.
+Riceverà un promemoria automatico il giorno prima e 2 ore prima dell'udienza.
 
 Cordiali saluti,
 RD
@@ -152,6 +181,8 @@ Web: {getattr(settings, 'STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')}
             from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@studiolegaledonofrio.it'),
             to=[submission.email],
         )
+        # Allega il file iCal
+        confirm_email.attach(ical_filename, ical_content, 'text/calendar')
         confirm_email.send()
     except Exception as e:
         print(f"Errore invio email conferma: {e}")
