@@ -115,12 +115,12 @@ PAYPAL_CLIENT_SECRET=...
 PAYPAL_MODE=sandbox
 
 # Studio (opzionale, hanno default)
-STUDIO_NAME=Avv. Rossella D'Onofrio
-STUDIO_ADDRESS=Piazza G. Mazzini, 72 - 73100 Lecce
-STUDIO_PHONE=+39 320 7044664
-STUDIO_EMAIL=info@studiolegaledonofrio.it
-STUDIO_PEC=rossella.donofrio@pec.it
-STUDIO_WEBSITE=www.studiolegaledonofrio.it
+STUDIO_NAME=Avv. 
+STUDIO_ADDRESS=
+STUDIO_PHONE=
+STUDIO_EMAIL=
+STUDIO_PEC=
+STUDIO_WEBSITE=
 STUDIO_MAPS_URL=https://maps.google.com/...
 
 # Email
