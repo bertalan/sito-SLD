@@ -23,7 +23,7 @@ class BookingView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['stripe_public_key'] = settings.STRIPE_PUBLIC_KEY
         context['paypal_client_id'] = settings.PAYPAL_CLIENT_ID
-        context['booking_price'] = settings.BOOKING_PRICE_CENTS / 100
+        context['booking_price'] = f"{settings.BOOKING_PRICE_CENTS / 100:.2f}".replace('.', ',')
         
         # Modalità pagamento per il frontend
         context['payment_mode'] = settings.PAYMENT_MODE
