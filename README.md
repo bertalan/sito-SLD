@@ -4,36 +4,131 @@ Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Djang
 
 ## Funzionalità principali
 
-- **Prenotazione appuntamenti**: sistema con slot da 30 minuti, regole di disponibilità, blocco date, pagamento Stripe/PayPal.
-- **Domiciliazioni**: form con upload documenti, gestione pratiche, notifica email.
-- **Contatti**: form con mappa OpenStreetMap, invio email, doppio indirizzo studio.
-- **Aree di pratica**: 12 aree, ciascuna con pagina dedicata, icona Lucide, contenuti brochure.
-- **Admin Wagtail**: gestione pagine, aree, contenuti, media, utenti.
-- **Design brutalista**: palette nero/grigio/magenta, logo custom, layout responsive.
-- **Docker**: ambiente di sviluppo e produzione, Gunicorn/Nginx.
+### 🗓️ Sistema di Prenotazione
+- Slot da 30 minuti con calendario interattivo
+- Navigazione mensile avanti/indietro
+- Regole di disponibilità configurabili per giorno della settimana
+- Blocco date specifiche (festività, ferie)
+- Scelta modalità: **in presenza** o **videochiamata**
+- Pagamento anticipato obbligatorio (€60)
+- Integrazione **Stripe** (carte di credito) e **PayPal**
+- Upload allegati (PDF, DOC, immagini - max 20MB)
+
+### 📹 Videochiamate Jitsi
+- Generazione automatica link Jitsi per consulenze video
+- Codice anonimizzato (nessun dato personale nel link)
+- Link incluso in email di conferma
+
+### 📧 Email e Notifiche
+- Email conferma cliente con allegato **iCal** (.ics)
+- Email notifica studio con dettagli appuntamento
+- Supporto HTML + plain text
+- Link Google Maps alla sede
+
+### 📋 Domiciliazioni Legali
+- Form completo con dati studio, parte, controparte, causa
+- Campi: numero RG, Tribunale, data udienza, giudice
+- Upload documenti multipli
+- Notifica email automatica allo studio
+
+### 📍 Contatti
+- Doppio indirizzo studio (Lecce + Martina Franca)
+- Mappa interattiva **OpenStreetMap** con Leaflet.js
+- Form contatto con invio email
+
+### ⚖️ Aree di Pratica
+- 12 aree tematiche con pagine dedicate
+- Icone **Lucide** per ogni area
+- Contenuti da brochure professionale
+- Ordinamento personalizzabile
+
+### 📄 Pagine Legali
+- Condizioni Generali di Contratto (`/termini/`)
+- Privacy Policy GDPR (`/privacy/`)
+
+### 🎨 Design
+- Stile **brutalista** moderno
+- Palette: nero, bianco, grigio, magenta (#e91e63)
+- Logo SVG custom
+- Layout responsive mobile-first
+- Font: tracking-tight, uppercase headings
+
+### 🔧 Amministrazione
+- Backend **Wagtail CMS** completo
+- Menu admin raggruppati per sezione
+- Gestione disponibilità e date bloccate
+- Esportazione appuntamenti
+
+## Stack Tecnologico
+
+| Componente | Tecnologia |
+|------------|------------|
+| CMS | Wagtail 6.4 |
+| Backend | Django 5.2 |
+| Database | PostgreSQL 15 |
+| Frontend | Tailwind CSS (CDN) |
+| Icone | Lucide |
+| Mappe | Leaflet.js + OpenStreetMap |
+| Pagamenti | Stripe, PayPal |
+| Videochiamate | Jitsi Meet |
+| Container | Docker + Docker Compose |
+| Server WSGI | Gunicorn |
+| Static files | WhiteNoise |
 
 ## Test e TDD
 
 Il progetto segue il metodo TDD (Test Driven Development):
 
-- **Pytest + pytest-django**: tutti i moduli hanno test automatici.
-- **Copertura**: test su modelli, viste, pagine, pagamenti, link, navigazione, regole di prenotazione.
+- **Pytest + pytest-django**: tutti i moduli hanno test automatici
+- **40 test** su modelli, viste, pagine, pagamenti, email, iCal
 - **Esecuzione**:
   ```sh
-  docker compose run --rm web python -m pytest -v
+  docker compose exec web python manage.py test
   ```
-- **Test booking**: verifica slot, regole, pagamenti Stripe/PayPal, creazione/cancellazione appuntamenti.
-- **Test navigation**: verifica accessibilità di tutte le pagine e link.
-- **Test servizi**: verifica creazione e visualizzazione aree di pratica.
 
-## Processi specifici
+### Copertura test:
+- ✅ Modelli Appointment, AvailabilityRule, BlockedDate
+- ✅ API slot disponibili
+- ✅ Pagamenti Stripe/PayPal
+- ✅ Generazione iCal (presenza + video)
+- ✅ Invio email conferma
+- ✅ Videochiamate Jitsi
+- ✅ Gestione slot duplicati
+- ✅ Servizi e aree di pratica
 
-- **Prenotazione con pagamento**: scelta Stripe/PayPal, redirect automatico, conferma/cancellazione.
-- **Gestione aree di pratica**: creazione automatica da brochure, icone Lucide, ordinamento personalizzato.
-- **Domiciliazioni**: upload file, notifica email, gestione pratiche.
-- **Contatti**: doppio indirizzo, mappa interattiva, invio email.
-- **Responsive**: layout ottimizzato per mobile e desktop, titoli e box adattivi.
-- **Admin**: tutte le pagine e contenuti gestibili da backend Wagtail.
+## Configurazione
+
+### Variabili d'ambiente (.env)
+
+```env
+# Database
+DATABASE_URL=postgres://user:pass@host:5432/dbname
+
+# Stripe
+STRIPE_PUBLIC_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# PayPal
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+PAYPAL_MODE=sandbox
+
+# Studio (opzionale, hanno default)
+STUDIO_NAME=Avv. Rossella D'Onofrio
+STUDIO_ADDRESS=Piazza G. Mazzini, 72 - 73100 Lecce
+STUDIO_PHONE=+39 320 7044664
+STUDIO_EMAIL=info@studiolegaledonofrio.it
+STUDIO_PEC=rossella.donofrio@pec.it
+STUDIO_WEBSITE=www.studiolegaledonofrio.it
+STUDIO_MAPS_URL=https://maps.google.com/...
+
+# Email
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=...
+EMAIL_HOST_PASSWORD=...
+```
 
 ## Avvio rapido
 
@@ -42,35 +137,99 @@ Il progetto segue il metodo TDD (Test Driven Development):
    git clone https://github.com/bertalan/sito-SLD.git
    cd sito-SLD
    ```
-2. Crea file `.env` con chiavi Stripe/PayPal:
+
+2. Copia e configura `.env`:
+   ```sh
+   cp .env.example .env
+   # Modifica con le tue chiavi
    ```
-   STRIPE_PUBLIC_KEY=pk_test_...
-   STRIPE_SECRET_KEY=sk_test_...
-   PAYPAL_CLIENT_ID=...
-   PAYPAL_CLIENT_SECRET=...
-   PAYPAL_MODE=sandbox
-   ```
+
 3. Avvia Docker:
    ```sh
    docker compose up --build
    ```
-4. Accedi:
+
+4. Applica migrazioni e crea superuser:
+   ```sh
+   docker compose exec web python manage.py migrate
+   docker compose exec web python manage.py createsuperuser
+   ```
+
+5. Accedi:
    - Sito: [http://localhost:8000](http://localhost:8000)
-   - Admin: [http://localhost:8000/admin/](http://localhost:8000/admin/) (user: admin/admin123)
+   - Admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
-## Struttura
+## Struttura progetto
 
-- `booking/` – prenotazioni, pagamenti
-- `domiciliazioni/` – form e gestione pratiche
-- `contact/` – contatti, mappa
-- `services/` – aree di pratica, pagine dedicate
-- `home/` – homepage, hero, box aree
-- `sld_project/` – settings, templates base
-- `example-UI/` – prototipo frontend React/Vite
+```
+sito-SLD/
+├── booking/           # Prenotazioni, pagamenti, email, iCal
+├── contact/           # Pagina contatti, mappa
+├── domiciliazioni/    # Form domiciliazioni legali
+├── home/              # Homepage, modelli Wagtail
+├── services/          # Aree di pratica
+├── sld_project/       # Settings Django, templates base, URL
+│   ├── settings/
+│   ├── templates/
+│   └── static/
+├── docker-compose.yml
+├── Dockerfile
+├── gunicorn.conf.py
+├── requirements.txt
+└── manage.py
+```
 
-## Note
-- Tutte le modifiche sono versionate su GitHub branch `main`.
-- Per richieste, bug o nuove aree di pratica, apri una issue.
+## Deploy Produzione
+
+Il progetto include:
+- `gunicorn.conf.py` configurato per produzione
+- `whitenoise` per static files
+- Supporto proxy Nginx (X-Forwarded headers)
+
+```sh
+# Collect static
+docker compose exec web python manage.py collectstatic --noinput
+
+# Run with gunicorn
+gunicorn sld_project.wsgi:application -c gunicorn.conf.py
+```
+
+## Licenze
+
+### Codice sorgente
+Il codice di questo progetto è **proprietario** e riservato a Studio Legale D'Onofrio.
+
+### Dipendenze open source
+
+| Pacchetto | Licenza |
+|-----------|---------|
+| Django | BSD-3-Clause |
+| Wagtail | BSD-3-Clause |
+| PostgreSQL | PostgreSQL License |
+| Tailwind CSS | MIT |
+| Lucide Icons | ISC |
+| Leaflet.js | BSD-2-Clause |
+| OpenStreetMap | ODbL |
+| Jitsi Meet | Apache-2.0 |
+| Stripe SDK | MIT |
+| PayPal SDK | Apache-2.0 |
+| Gunicorn | MIT |
+| WhiteNoise | MIT |
+| Pillow | HPND |
+| pytest | MIT |
+
+### Font e risorse
+- Logo: design proprietario Studio Legale D'Onofrio
+
+## Contatti
+
+**Studio Legale D'Onofrio**  
+Avv. Rossella D'Onofrio  
+Piazza G. Mazzini, 72 - 73100 Lecce  
+📧 info@studiolegaledonofrio.it  
+📱 +39 320 7044664  
+🌐 www.studiolegaledonofrio.it
 
 ---
-Copilot: progetto ottimizzato per test, automazione e gestione legale digitale.
+
+Sviluppato con ❤️ e Copilot per la trasformazione digitale dello studio legale.

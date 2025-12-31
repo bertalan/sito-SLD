@@ -13,6 +13,7 @@ ENV/
 local_settings.py
 db.sqlite3
 media/
+brief/
 
 # Static files
 staticfiles/
@@ -32,3 +33,7 @@ Thumbs.db
 
 # Docker
 *.log
+
+# Database backups
+backup_*.sql
+*.sql.gz

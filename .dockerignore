@@ -2,6 +2,7 @@
 /media/
 /static/
 *.sqlite3
+/brief/
 
 # Python and others
 __pycache__
