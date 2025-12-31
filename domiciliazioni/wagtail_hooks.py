@@ -32,11 +32,9 @@ def register_domiciliazioni_menu():
 @hooks.register('register_domiciliazioni_menu_item')
 def register_domiciliazioni_submenu_items():
     """Registra le voci del sottomenu domiciliazioni."""
-    return [
-        MenuItem(
-            'Richieste',
-            '/admin/snippets/domiciliazioni/domiciliazionisubmission/',
-            icon_name='list-ul',
-            order=100
-        ),
-    ]
+    return MenuItem(
+        'Richieste',
+        '/admin/snippets/domiciliazioni/domiciliazionisubmission/',
+        icon_name='list-ul',
+        order=100
+    )
