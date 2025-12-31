@@ -137,7 +137,7 @@ Le confermeremo la presa in carico al più presto.
 Cordiali saluti,
 RD
 -- 
-{getattr(settings, 'STUDIO_NAME', 'Avv. Rossella D\\'Onofrio')}
+{getattr(settings, 'STUDIO_NAME', "Avv. Rossella D'Onofrio")}
 {getattr(settings, 'STUDIO_ADDRESS', 'Piazza G. Mazzini, 72 - 73100 Lecce')}
 Email: {getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')}
 PEC: {getattr(settings, 'STUDIO_PEC', 'rossella.donofrio@pec.it')}

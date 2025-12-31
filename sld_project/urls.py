@@ -7,6 +7,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -14,6 +15,8 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("prenota/", include("booking.urls")),
+    path("termini/", TemplateView.as_view(template_name="pages/terms.html"), name="terms"),
+    path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),
 ]
 
 
