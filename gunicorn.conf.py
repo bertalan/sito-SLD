@@ -9,7 +9,7 @@ import os
 if os.environ.get('USE_TCP_SOCKET'):
     bind = "0.0.0.0:8000"
 else:
-    bind = "unix:/var/www/sld/sld.sock"
+    bind = "unix:/www/wwwroot/new.studiolegaledonofrio.it/sld.sock"
 backlog = 2048
 
 # Worker processes
