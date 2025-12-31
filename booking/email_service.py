@@ -9,6 +9,41 @@ from .ical import generate_ical, generate_ical_filename
 
 logger = logging.getLogger(__name__)
 
+# Traduzioni italiane per giorni e mesi
+GIORNI_IT = {
+    'Monday': 'Lunedì',
+    'Tuesday': 'Martedì', 
+    'Wednesday': 'Mercoledì',
+    'Thursday': 'Giovedì',
+    'Friday': 'Venerdì',
+    'Saturday': 'Sabato',
+    'Sunday': 'Domenica',
+}
+
+MESI_IT = {
+    'January': 'Gennaio',
+    'February': 'Febbraio',
+    'March': 'Marzo',
+    'April': 'Aprile',
+    'May': 'Maggio',
+    'June': 'Giugno',
+    'July': 'Luglio',
+    'August': 'Agosto',
+    'September': 'Settembre',
+    'October': 'Ottobre',
+    'November': 'Novembre',
+    'December': 'Dicembre',
+}
+
+
+def format_date_italian(date):
+    """Formatta una data in italiano (es: Venerdì 23 Gennaio 2026)."""
+    day_name = date.strftime('%A')
+    month_name = date.strftime('%B')
+    day_it = GIORNI_IT.get(day_name, day_name)
+    month_it = MESI_IT.get(month_name, month_name)
+    return f"{day_it} {date.day} {month_it} {date.year}"
+
 
 def send_booking_confirmation(appointment):
     """
@@ -61,6 +96,9 @@ def _send_client_email(appointment, context, ical_content, ical_filename):
     """Invia email di conferma al cliente."""
     subject = f"Conferma prenotazione - Studio Legale D'Onofrio"
     
+    # Formatta la data in italiano
+    data_italiana = format_date_italian(appointment.date)
+    
     # Corpo email testuale
     if appointment.consultation_type == 'video':
         text_content = f"""Gentile {appointment.first_name} {appointment.last_name},
@@ -68,7 +106,7 @@ def _send_client_email(appointment, context, ical_content, ical_filename):
 La tua prenotazione è stata confermata!
 
 DETTAGLI APPUNTAMENTO:
-- Data: {appointment.date.strftime('%A %d %B %Y')}
+- Data: {data_italiana}
 - Ora: {appointment.time.strftime('%H:%M')}
 - Modalità: Videochiamata
 
@@ -99,7 +137,7 @@ Web: {context['studio_website']}
 La tua prenotazione è stata confermata!
 
 DETTAGLI APPUNTAMENTO:
-- Data: {appointment.date.strftime('%A %d %B %Y')}
+- Data: {data_italiana}
 - Ora: {appointment.time.strftime('%H:%M')}
 - Modalità: In presenza
 
@@ -150,6 +188,7 @@ def _send_studio_email(appointment, context, ical_content, ical_filename):
     subject = f"Nuova prenotazione: {appointment.first_name} {appointment.last_name} - {appointment.date.strftime('%d/%m/%Y')} ore {appointment.time.strftime('%H:%M')}"
     
     consultation_type = "Videochiamata" if appointment.consultation_type == 'video' else "In presenza"
+    data_italiana = format_date_italian(appointment.date)
     
     text_content = f"""NUOVA PRENOTAZIONE RICEVUTA
 
@@ -159,7 +198,7 @@ CLIENTE:
 - Telefono: {appointment.phone}
 
 APPUNTAMENTO:
-- Data: {appointment.date.strftime('%A %d %B %Y')}
+- Data: {data_italiana}
 - Ora: {appointment.time.strftime('%H:%M')}
 - Modalità: {consultation_type}
 """
