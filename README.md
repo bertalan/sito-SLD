@@ -221,15 +221,6 @@ Il codice di questo progetto è **proprietario** e riservato a Studio Legale D'O
 ### Font e risorse
 - Logo: design proprietario Studio Legale D'Onofrio
 
-## Contatti
-
-**Studio Legale D'Onofrio**  
-Avv. Rossella D'Onofrio  
-Piazza G. Mazzini, 72 - 73100 Lecce  
-📧 info@studiolegaledonofrio.it  
-📱 +39 320 7044664  
-🌐 www.studiolegaledonofrio.it
-
 ---
 
 Sviluppato con ❤️ e Copilot per la trasformazione digitale dello studio legale.
