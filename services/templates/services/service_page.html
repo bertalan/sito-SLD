@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-4xl mx-auto px-6">
+        <a href="{{ page.get_parent.url }}" class="text-brand-accent uppercase tracking-widest text-sm mb-8 inline-flex items-center hover:text-brand-black transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Tutte le aree
+        </a>
+        <h1 class="text-5xl md:text-6xl font-bold tracking-tighter text-brand-black mb-4">
+              {{ page.title }}<sup class="text-brand-accent">'</sup>
+        </h1>
+        {% if page.subtitle %}
+        <p class="text-xl text-brand-gray">{{ page.subtitle }}</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="py-16 bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="prose prose-lg prose-gray max-w-none">
+            {{ page.body|richtext }}
+        </div>
+    </div>
+</section>
+
+<section class="py-16 bg-brand-silver">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <h3 class="text-2xl font-bold text-brand-black mb-4">Hai bisogno di assistenza?</h3>
+        <p class="text-brand-gray mb-8">Prenota una consulenza per discutere del tuo caso specifico.</p>
+        <a href="/prenota/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+            Prenota appuntamento
+        </a>
+    </div>
+</section>
+{% endblock %}

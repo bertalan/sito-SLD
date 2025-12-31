@@ -1,0 +1,52 @@
+{% load wagtailcore_tags %}
+<footer id="contact" class="bg-brand-dark pt-24 pb-12 border-t border-brand-gray/20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
+            <div>
+                <h2 class="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-8">
+                    PARLIAMO<span class="text-brand-accent">.</span>
+                </h2>
+                <a href="mailto:info@studiolegaledonofrio.it" class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
+                    info@studiolegaledonofrio.it
+                </a>
+                <div class="mt-8 space-y-2 text-brand-gray">
+                    <p><i data-lucide="phone" class="inline w-4 h-4 mr-2"></i> +39 0832 1832129</p>
+                    <p><i data-lucide="smartphone" class="inline w-4 h-4 mr-2"></i> +39 320 7044664</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col justify-end">
+                <div class="space-y-6 max-w-md ml-auto w-full">
+                    <h3 class="text-white font-bold uppercase tracking-widest text-sm">Sedi</h3>
+                    <div class="space-y-4">
+                        <div class="border-l-2 border-brand-accent pl-4">
+                            <p class="text-white font-medium">Lecce</p>
+                            <p class="text-brand-gray text-sm">Piazza Mazzini, 72 - 73100</p>
+                        </div>
+                        <div class="border-l-2 border-brand-accent pl-4">
+                            <p class="text-white font-medium">Martina Franca</p>
+                            <p class="text-brand-gray text-sm">Via S. Quasimodo, 12 - 74015</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center text-xs text-brand-gray uppercase tracking-widest pt-12 border-t border-brand-gray/10">
+            <div class="mb-4 md:mb-0">
+                &copy; {{ "now"|date:"Y" }} Studio Legale D'Onofrio. Tutti i diritti riservati.
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://www.facebook.com/studiolegaledonofrio/" target="_blank" class="hover:text-brand-accent transition-colors">
+                    <i data-lucide="facebook" class="w-4 h-4"></i>
+                </a>
+                <a href="https://twitter.com/avv_dr" target="_blank" class="hover:text-brand-accent transition-colors">
+                    <i data-lucide="twitter" class="w-4 h-4"></i>
+                </a>
+                <a href="#" class="hover:text-brand-accent transition-colors">
+                    <i data-lucide="linkedin" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>

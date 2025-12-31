@@ -1,0 +1,5 @@
+{
+  "name": "ELOQ - Digital Agency",
+  "description": "A high-fidelity, brutalist-inspired digital agency portfolio recreating the aesthetic of eloqwnt.com using React, Tailwind, and Google Gemini for AI-driven creative strategy generation. Designed to function as a frontend for a Headless Wagtail CMS.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-7xl mx-auto px-6">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-black mb-8">
+            DOMICILIAZIONI<span class="text-brand-accent">.</span>
+        </h1>
+        {% if page.intro %}
+        <div class="text-brand-gray text-lg max-w-3xl">
+            {{ page.intro|richtext }}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="py-16 bg-brand-silver">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Tribunali coperti -->
+            <div class="bg-brand-white p-8 border border-brand-gray/20">
+                <h3 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">
+                    <i data-lucide="scale" class="inline w-5 h-5 text-brand-accent mr-2"></i>
+                    Tribunali coperti
+                </h3>
+                <ul class="space-y-3">
+                    {% for tribunale in page.get_tribunali_list %}
+                    <li class="flex items-center text-brand-gray">
+                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>
+                        {{ tribunale }}
+                    </li>
+                    {% empty %}
+                    <li class="flex items-center text-brand-gray">
+                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Lecce
+                    </li>
+                    <li class="flex items-center text-brand-gray">
+                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Brindisi
+                    </li>
+                    <li class="flex items-center text-brand-gray">
+                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Taranto
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Descrizione servizio -->
+            <div class="lg:col-span-2 bg-brand-white p-8 border border-brand-gray/20">
+                <h3 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">Il servizio</h3>
+                {% if page.service_description %}
+                <div class="text-brand-gray prose">
+                    {{ page.service_description|richtext }}
+                </div>
+                {% else %}
+                <p class="text-brand-gray">
+                    Il servizio di domiciliazione legale consente ai colleghi avvocati di essere rappresentati 
+                    nelle udienze presso i Tribunali di Lecce, Brindisi e Taranto, con la garanzia di 
+                    un'assistenza professionale e puntuale.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-16 bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-brand-black mb-8 uppercase tracking-wider">
+            Richiedi domiciliazione
+        </h2>
+        
+        <form action="{{ page.url }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-brand-accent">*</span>{% endif %}
+                </label>
+                {% if field.field.widget.input_type == 'textarea' %}
+                <textarea name="{{ field.html_name }}" rows="4" 
+                    class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
+                    {% if field.field.required %}required{% endif %}></textarea>
+                {% elif field.field.widget.input_type == 'file' %}
+                <input type="file" name="{{ field.html_name }}" multiple
+                    class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-brand-accent file:text-white file:font-bold file:uppercase file:text-xs file:tracking-wider"
+                    accept=".pdf,.doc,.docx,.odt,.txt">
+                {% else %}
+                <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.html_name }}"
+                    class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
+                    {% if field.field.required %}required{% endif %}>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <!-- Upload documenti multipli -->
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
+                    Documenti allegati
+                </label>
+                <input type="file" name="documents" multiple
+                    class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-brand-accent file:text-white file:font-bold file:uppercase file:text-xs file:tracking-wider"
+                    accept=".pdf,.doc,.docx,.odt,.txt,.jpg,.jpeg,.png">
+                <p class="text-xs text-brand-gray mt-2">Formati accettati: PDF, DOC, DOCX, ODT, TXT, JPG, PNG. Max 10MB per file.</p>
+            </div>
+            
+            <button type="submit" class="bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                Invia richiesta
+                <i data-lucide="arrow-right" class="inline ml-2 w-4 h-4"></i>
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+# Wagtail CMS
+wagtail>=6.0,<7.0
+
+# Django
+Django>=5.0,<6.0
+
+# Database
+psycopg2-binary>=2.9
+
+# Environment
+dj-database-url>=2.1
+python-dotenv>=1.0
+
+# Payment gateways
+stripe>=7.0
+paypalrestsdk>=1.13
+
+# Forms & uploads
+django-widget-tweaks>=1.5
+
+# Production
+gunicorn>=21.0
+whitenoise>=6.6
+
+# Image processing
+Pillow>=10.0
+
+# Testing
+pytest>=8.0
+pytest-django>=4.5

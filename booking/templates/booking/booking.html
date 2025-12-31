@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-4xl mx-auto px-6">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-black mb-4">
+            PRENOTA<span class="text-brand-accent">.</span>
+        </h1>
+        <p class="text-brand-gray text-lg">
+            Seleziona data e orario per prenotare una consulenza. Costo: <strong class="text-brand-accent">€{{ booking_price }}</strong>
+        </p>
+    </div>
+</section>
+
+<section class="py-16 bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Calendario -->
+            <div>
+                <h2 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">
+                    <i data-lucide="calendar" class="inline w-5 h-5 text-brand-accent mr-2"></i>
+                    Seleziona data
+                </h2>
+                <div id="calendar" class="bg-brand-silver p-6 rounded"></div>
+                
+                <div id="slots-container" class="mt-6 hidden">
+                    <h3 class="text-lg font-bold text-brand-black mb-4">Orari disponibili</h3>
+                    <div id="slots" class="grid grid-cols-4 gap-2"></div>
+                </div>
+            </div>
+            
+            <!-- Form -->
+            <div>
+                <h2 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">
+                    <i data-lucide="user" class="inline w-5 h-5 text-brand-accent mr-2"></i>
+                    I tuoi dati
+                </h2>
+                <form id="booking-form" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Nome *</label>
+                            <input type="text" name="first_name" required
+                                class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Cognome *</label>
+                            <input type="text" name="last_name" required
+                                class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Email *</label>
+                        <input type="email" name="email" required
+                            class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Telefono *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Note (opzionale)</label>
+                        <textarea name="notes" rows="3"
+                            class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent"
+                            placeholder="Descrivi brevemente il motivo della consulenza..."></textarea>
+                    </div>
+                    
+                    <input type="hidden" name="date" id="selected-date">
+                    <input type="hidden" name="time" id="selected-time">
+                    
+                    <div id="selection-summary" class="bg-brand-silver p-4 hidden">
+                        <p class="text-sm text-brand-gray">Appuntamento selezionato:</p>
+                        <p class="font-bold text-brand-black" id="summary-text"></p>
+                    </div>
+                    
+                    <!-- Scelta metodo di pagamento -->
+                    <div class="mt-6">
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Metodo di pagamento</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="payment-option cursor-pointer">
+                                <input type="radio" name="payment_method" value="stripe" checked class="sr-only peer">
+                                <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
+                                    <i data-lucide="credit-card" class="w-8 h-8 mx-auto mb-2 text-brand-gray peer-checked:text-brand-accent"></i>
+                                    <span class="block font-bold text-sm">Carta di credito</span>
+                                    <span class="text-xs text-brand-gray">Visa, Mastercard, Amex</span>
+                                </div>
+                            </label>
+                            <label class="payment-option cursor-pointer">
+                                <input type="radio" name="payment_method" value="paypal" class="sr-only peer">
+                                <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
+                                    <svg class="w-8 h-8 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.773.773 0 0 1 .76-.65h6.98c2.315 0 4.1.67 5.145 1.935.964 1.168 1.31 2.725.998 4.502-.038.22-.081.428-.133.634-.576 2.874-2.477 4.888-5.54 5.85-.644.204-1.335.333-2.067.396-.135.012-.273.02-.412.024h-1.45a.769.769 0 0 0-.76.65l-.934 5.628a.641.641 0 0 1-.633.548h.178z" fill="#003087"/>
+                                        <path d="M19.35 6.645c-.576 2.874-2.477 4.888-5.54 5.85-.644.204-1.335.333-2.067.396-.135.012-.273.02-.412.024H9.88a.769.769 0 0 0-.76.65L8.187 19.2l-.52 3.134a.538.538 0 0 0 .531.627h3.83a.674.674 0 0 0 .665-.569l.66-4.184a.769.769 0 0 1 .76-.65h.48c3.503 0 6.257-1.42 7.085-5.526.339-1.682.154-3.054-.587-4.003a3.893 3.893 0 0 0-1.16-.934 5.56 5.56 0 0 1 0 0l-.001-.45z" fill="#0070E0"/>
+                                    </svg>
+                                    <span class="block font-bold text-sm">PayPal</span>
+                                    <span class="text-xs text-brand-gray">Paga con il tuo conto</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="submit-btn" disabled
+                        class="w-full bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6">
+                        <span id="btn-text">Procedi al pagamento - €{{ booking_price }}</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const availableDates = {{ available_dates|safe }};
+let selectedDate = null;
+let selectedTime = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    renderCalendar();
+    
+    document.getElementById('booking-form').addEventListener('submit', handleSubmit);
+});
+
+function renderCalendar() {
+    const calendar = document.getElementById('calendar');
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let html = `
+        <div class="text-center mb-4">
+            <span class="font-bold text-brand-black">${new Date(currentYear, currentMonth).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}</span>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-xs text-brand-gray mb-2">
+            <span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
+        </div>
+        <div class="grid grid-cols-7 gap-1">
+    `;
+    
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const startDay = firstDay === 0 ? 6 : firstDay - 1;
+    
+    for (let i = 0; i < startDay; i++) {
+        html += '<span></span>';
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isAvailable = availableDates.includes(dateStr);
+        const isPast = new Date(dateStr) <= today;
+        
+        if (isAvailable && !isPast) {
+            html += `<button type="button" onclick="selectDate('${dateStr}')" 
+                class="p-2 text-sm font-medium hover:bg-brand-accent hover:text-white transition-colors rounded date-btn"
+                data-date="${dateStr}">${day}</button>`;
+        } else {
+            html += `<span class="p-2 text-sm text-brand-gray/40">${day}</span>`;
+        }
+    }
+    
+    html += '</div>';
+    calendar.innerHTML = html;
+}
+
+function selectDate(dateStr) {
+    selectedDate = dateStr;
+    document.getElementById('selected-date').value = dateStr;
+    
+    // Evidenzia data selezionata
+    document.querySelectorAll('.date-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-accent', 'text-white');
+    });
+    document.querySelector(`[data-date="${dateStr}"]`).classList.add('bg-brand-accent', 'text-white');
+    
+    // Carica slots
+    fetch(`/prenota/api/slots/${dateStr}/`)
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('slots-container');
+            const slots = document.getElementById('slots');
+            
+            if (data.slots && data.slots.length > 0) {
+                slots.innerHTML = data.slots.map(time => `
+                    <button type="button" onclick="selectTime('${time}')"
+                        class="p-2 text-sm border border-brand-gray/30 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-colors time-btn"
+                        data-time="${time}">${time}</button>
+                `).join('');
+                container.classList.remove('hidden');
+            } else {
+                slots.innerHTML = '<p class="col-span-4 text-brand-gray">Nessun orario disponibile</p>';
+                container.classList.remove('hidden');
+            }
+        });
+}
+
+function selectTime(time) {
+    selectedTime = time;
+    document.getElementById('selected-time').value = time;
+    
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-accent', 'text-white', 'border-brand-accent');
+    });
+    document.querySelector(`[data-time="${time}"]`).classList.add('bg-brand-accent', 'text-white', 'border-brand-accent');
+    
+    // Mostra summary
+    const summary = document.getElementById('selection-summary');
+    const date = new Date(selectedDate);
+    document.getElementById('summary-text').textContent = 
+        `${date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} alle ${time}`;
+    summary.classList.remove('hidden');
+    
+    document.getElementById('submit-btn').disabled = false;
+}
+
+async function handleSubmit(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const paymentMethod = form.querySelector('input[name="payment_method"]:checked').value;
+    
+    const data = {
+        first_name: form.first_name.value,
+        last_name: form.last_name.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        notes: form.notes.value,
+        date: selectedDate,
+        time: selectedTime,
+        payment_method: paymentMethod
+    };
+    
+    // Disabilita il bottone durante l'elaborazione
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    document.getElementById('btn-text').textContent = 'Elaborazione in corso...';
+    
+    try {
+        const response = await fetch('/prenota/checkout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.url) {
+            window.location.href = result.url;
+        } else {
+            alert(result.error || 'Errore durante la prenotazione');
+            submitBtn.disabled = false;
+            document.getElementById('btn-text').textContent = 'Procedi al pagamento - €{{ booking_price }}';
+        }
+    } catch (error) {
+        alert('Errore di connessione');
+        submitBtn.disabled = false;
+        document.getElementById('btn-text').textContent = 'Procedi al pagamento - €{{ booking_price }}';
+    }
+}
+</script>
+{% endblock %}

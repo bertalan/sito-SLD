@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="pt-32 pb-24 min-h-screen flex items-center bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <i data-lucide="x-circle" class="w-20 h-20 text-brand-gray mx-auto mb-8"></i>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-brand-black mb-8">
+            PAGAMENTO<br/>ANNULLATO<span class="text-brand-accent">.</span>
+        </h1>
+        <p class="text-brand-gray text-lg max-w-2xl mx-auto mb-12">
+            Il pagamento è stato annullato. La prenotazione non è stata confermata.
+        </p>
+        <div class="space-x-4">
+            <a href="/prenota/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                Riprova
+            </a>
+            <a href="/" class="inline-block border-2 border-brand-black text-brand-black font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black hover:text-white transition-colors">
+                Torna alla home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
