@@ -6,22 +6,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from datetime import datetime, date, timedelta
-import stripe
-import paypalrestsdk
 import json
+import logging
 
 from .models import Appointment, AvailabilityRule, BlockedDate, AppointmentAttachment
 from .email_service import send_booking_confirmation
+from .payment_service import payment_service
 
-# Configurazione Stripe
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
-# Configurazione PayPal
-paypalrestsdk.configure({
-    "mode": settings.PAYPAL_MODE,  # sandbox o live
-    "client_id": settings.PAYPAL_CLIENT_ID,
-    "client_secret": settings.PAYPAL_CLIENT_SECRET
-})
+logger = logging.getLogger(__name__)
 
 
 class BookingView(TemplateView):
@@ -32,6 +24,10 @@ class BookingView(TemplateView):
         context['stripe_public_key'] = settings.STRIPE_PUBLIC_KEY
         context['paypal_client_id'] = settings.PAYPAL_CLIENT_ID
         context['booking_price'] = settings.BOOKING_PRICE_CENTS / 100
+        
+        # Modalità pagamento per il frontend
+        context['payment_mode'] = settings.PAYMENT_MODE
+        context['is_demo_mode'] = payment_service.is_demo
         
         today = date.today()
         available_dates = []
@@ -133,85 +129,18 @@ class CreateCheckoutSession(View):
                     original_filename=f.name
                 )
             
-            if payment_method == 'paypal':
-                return self._create_paypal_payment(request, appointment, data)
+            # Usa il servizio di pagamento unificato
+            result = payment_service.create_payment(request, appointment, data)
+            
+            if result.success:
+                return JsonResponse({'url': result.redirect_url})
             else:
-                return self._create_stripe_session(request, appointment, data)
+                appointment.delete()
+                return JsonResponse({'error': result.error}, status=400)
             
         except Exception as e:
+            logger.error(f"CreateCheckoutSession error: {e}")
             return JsonResponse({'error': str(e)}, status=400)
-    
-    def _create_stripe_session(self, request, appointment, data):
-        """Crea sessione di checkout Stripe."""
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'eur',
-                    'unit_amount': settings.BOOKING_PRICE_CENTS,
-                    'product_data': {
-                        'name': 'Consulenza legale',
-                        'description': f'Appuntamento {data["date"]} alle {data["time"]}',
-                    },
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url=request.build_absolute_uri('/prenota/success/') + f'?session_id={{CHECKOUT_SESSION_ID}}&method=stripe',
-            cancel_url=request.build_absolute_uri('/prenota/cancel/'),
-            customer_email=data['email'],
-            metadata={'appointment_id': appointment.id}
-        )
-        
-        appointment.stripe_payment_intent_id = checkout_session.payment_intent
-        appointment.save()
-        
-        return JsonResponse({'url': checkout_session.url})
-    
-    def _create_paypal_payment(self, request, appointment, data):
-        """Crea pagamento PayPal."""
-        price = settings.BOOKING_PRICE_CENTS / 100
-        
-        payment = paypalrestsdk.Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"
-            },
-            "redirect_urls": {
-                "return_url": request.build_absolute_uri(f'/prenota/paypal/execute/?appointment_id={appointment.id}'),
-                "cancel_url": request.build_absolute_uri('/prenota/cancel/')
-            },
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "Consulenza legale",
-                        "description": f"Appuntamento {data['date']} alle {data['time']}",
-                        "quantity": "1",
-                        "price": f"{price:.2f}",
-                        "currency": "EUR"
-                    }]
-                },
-                "amount": {
-                    "total": f"{price:.2f}",
-                    "currency": "EUR"
-                },
-                "description": f"Consulenza legale - Appuntamento {data['date']}"
-            }]
-        })
-        
-        if payment.create():
-            appointment.paypal_payment_id = payment.id
-            appointment.save()
-            
-            # Trova l'URL di approvazione
-            for link in payment.links:
-                if link.rel == "approval_url":
-                    return JsonResponse({'url': link.href})
-            
-            return JsonResponse({'error': 'URL di approvazione PayPal non trovato'}, status=400)
-        else:
-            appointment.delete()
-            return JsonResponse({'error': payment.error}, status=400)
 
 
 class BookingSuccessView(TemplateView):
@@ -220,22 +149,53 @@ class BookingSuccessView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         session_id = self.request.GET.get('session_id')
+        appointment_id = self.request.GET.get('appointment_id')
+        is_demo = self.request.GET.get('demo') == '1'
+        method = self.request.GET.get('method', 'stripe')
         
-        if session_id:
+        context['is_demo_mode'] = payment_service.is_demo
+        context['payment_mode'] = settings.PAYMENT_MODE
+        
+        # Gestisci pagamento demo
+        if is_demo and session_id:
+            # In demo mode, trova l'appuntamento dal session_id simulato
             try:
+                appointment = Appointment.objects.filter(
+                    stripe_payment_intent_id=session_id
+                ).first()
+                if appointment and appointment.status != 'confirmed':
+                    appointment.status = 'confirmed'
+                    appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                    appointment.save()
+                    send_booking_confirmation(appointment)
+                context['appointment'] = appointment
+            except Exception as e:
+                logger.error(f"Demo success error: {e}")
+        
+        # Gestisci pagamento Stripe reale
+        elif session_id and not is_demo:
+            try:
+                import stripe
+                stripe.api_key = settings.STRIPE_SECRET_KEY
                 session = stripe.checkout.Session.retrieve(session_id)
-                appointment_id = session.metadata.get('appointment_id')
-                if appointment_id:
-                    appointment = Appointment.objects.get(id=appointment_id)
-                    # Evita di inviare email multiple se già confermato
+                apt_id = session.metadata.get('appointment_id')
+                if apt_id:
+                    appointment = Appointment.objects.get(id=apt_id)
                     if appointment.status != 'confirmed':
                         appointment.status = 'confirmed'
                         appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
                         appointment.save()
-                        # Invia email di conferma con iCal
                         send_booking_confirmation(appointment)
                     context['appointment'] = appointment
-            except Exception:
+            except Exception as e:
+                logger.error(f"Stripe success error: {e}")
+        
+        # Gestisci pagamento PayPal (redirect da paypal_execute)
+        elif appointment_id:
+            try:
+                appointment = Appointment.objects.get(id=appointment_id)
+                context['appointment'] = appointment
+            except Appointment.DoesNotExist:
                 pass
         
         return context
@@ -249,28 +209,28 @@ class BookingCancelView(TemplateView):
 @require_POST
 def stripe_webhook(request):
     """Webhook Stripe per conferma pagamento."""
-    payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    # In demo mode, accetta tutto
+    if payment_service.is_demo:
+        return JsonResponse({'status': 'demo_mode'})
     
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
-    except ValueError:
-        return JsonResponse({'error': 'Invalid payload'}, status=400)
-    except stripe.error.SignatureVerificationError:
-        return JsonResponse({'error': 'Invalid signature'}, status=400)
+    result = payment_service.verify_webhook(request, 'stripe')
     
-    if event['type'] == 'checkout.session.completed':
+    if not result.get('valid'):
+        return JsonResponse({'error': result.get('error', 'Invalid webhook')}, status=400)
+    
+    event = result.get('event')
+    if event and event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         appointment_id = session.get('metadata', {}).get('appointment_id')
         
         if appointment_id:
             try:
                 appointment = Appointment.objects.get(id=appointment_id)
-                appointment.status = 'confirmed'
-                appointment.amount_paid = session.get('amount_total', 0) / 100
-                appointment.save()
+                if appointment.status != 'confirmed':
+                    appointment.status = 'confirmed'
+                    appointment.amount_paid = session.get('amount_total', 0) / 100
+                    appointment.save()
+                    send_booking_confirmation(appointment)
             except Appointment.DoesNotExist:
                 pass
     
@@ -279,30 +239,36 @@ def stripe_webhook(request):
 
 def paypal_execute(request):
     """Esegue il pagamento PayPal dopo l'approvazione dell'utente."""
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
     appointment_id = request.GET.get('appointment_id')
+    is_demo = request.GET.get('demo') == '1'
     
-    if not all([payment_id, payer_id, appointment_id]):
+    if not appointment_id:
         return redirect('/prenota/cancel/')
     
     try:
-        payment = paypalrestsdk.Payment.find(payment_id)
+        appointment = Appointment.objects.get(id=appointment_id)
         
-        if payment.execute({"payer_id": payer_id}):
-            appointment = Appointment.objects.get(id=appointment_id)
-            appointment.status = 'confirmed'
-            appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
-            appointment.save()
-            
-            # Invia email di conferma con iCal
-            send_booking_confirmation(appointment)
-            
+        # In demo mode, conferma direttamente
+        if is_demo or payment_service.is_demo:
+            if appointment.status != 'confirmed':
+                appointment.status = 'confirmed'
+                appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                appointment.save()
+                send_booking_confirmation(appointment)
+            return redirect(f'/prenota/success/?appointment_id={appointment_id}&method=paypal&demo=1')
+        
+        # Pagamento reale PayPal
+        result = payment_service.execute_payment(request, appointment)
+        
+        if result.success:
+            if appointment.status != 'confirmed':
+                send_booking_confirmation(appointment)
             return redirect(f'/prenota/success/?appointment_id={appointment_id}&method=paypal')
         else:
             return redirect('/prenota/cancel/')
     
-    except Exception:
+    except Exception as e:
+        logger.error(f"PayPal execute error: {e}")
         return redirect('/prenota/cancel/')
 
 
@@ -313,6 +279,9 @@ class PayPalSuccessView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         appointment_id = self.request.GET.get('appointment_id')
+        
+        context['is_demo_mode'] = payment_service.is_demo
+        context['payment_mode'] = settings.PAYMENT_MODE
         
         if appointment_id:
             try:

@@ -3,6 +3,20 @@
 {% block content %}
 <section class="pt-32 pb-24 min-h-screen flex items-center bg-brand-white">
     <div class="max-w-4xl mx-auto px-6 text-center">
+        
+        {% if is_demo_mode %}
+        <!-- Banner modalità demo -->
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-4 rounded mb-8 max-w-md mx-auto">
+            <div class="flex items-center gap-3">
+                <i data-lucide="alert-triangle" class="w-6 h-6 flex-shrink-0"></i>
+                <div class="text-left">
+                    <p class="font-bold uppercase text-sm tracking-wider">Modalità Demo</p>
+                    <p class="text-sm">Nessun pagamento reale è stato effettuato. Questa è una simulazione per test.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <i data-lucide="check-circle" class="w-20 h-20 text-brand-accent mx-auto mb-8"></i>
         <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-brand-black mb-8">
             PRENOTAZIONE<br/>CONFERMATA<span class="text-brand-accent">.</span>

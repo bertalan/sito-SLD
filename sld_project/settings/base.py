@@ -193,6 +193,12 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
+# Payment Mode: demo | sandbox | live
+# - demo: Simula il pagamento (sempre successo, per test senza chiavi API)
+# - sandbox: Usa i dati di test Stripe/PayPal
+# - live: Usa i dati reali di produzione
+PAYMENT_MODE = os.environ.get('PAYMENT_MODE', 'demo')
+
 # Stripe settings
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')

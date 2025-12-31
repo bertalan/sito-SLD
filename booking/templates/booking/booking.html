@@ -2,6 +2,14 @@
 {% load wagtailcore_tags %}
 
 {% block content %}
+{% if is_demo_mode %}
+<!-- Banner modalità demo -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-yellow-400 text-yellow-900 text-center py-2 text-sm font-bold uppercase tracking-wider">
+    <i data-lucide="alert-triangle" class="inline w-4 h-4 mr-2"></i>
+    Modalità Demo - I pagamenti sono simulati
+</div>
+{% endif %}
+
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
     <div class="max-w-4xl mx-auto px-6">
         <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-black mb-4">
