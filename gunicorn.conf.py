@@ -2,9 +2,14 @@
 # https://docs.gunicorn.org/en/stable/settings.html
 
 import multiprocessing
+import os
 
 # Server socket
-bind = "0.0.0.0:8000"
+# Use Unix socket for production (Nginx), TCP for Docker
+if os.environ.get('USE_TCP_SOCKET'):
+    bind = "0.0.0.0:8000"
+else:
+    bind = "unix:/var/www/sld/sld.sock"
 backlog = 2048
 
 # Worker processes

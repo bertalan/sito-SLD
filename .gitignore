@@ -20,6 +20,9 @@ staticfiles/
 
 # Environment
 .env
+.env.production
+.env.local
+docker-compose.prod.yml
 
 # IDE
 .vscode/
