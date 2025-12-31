@@ -160,8 +160,8 @@ RIEPILOGO:
 
 Le confermeremo la presa in carico al più presto.
 
-Trovi in allegato il file calendario (.ics) da aggiungere al Suo calendario.
-Riceverà un promemoria automatico il giorno prima e 2 ore prima dell'udienza.
+In allegato si trova il file calendario (.ics) da aggiungere al proprio calendario.
+Sarà inviato un promemoria automatico il giorno prima e 2 ore prima dell'udienza.
 
 Cordiali saluti,
 RD
