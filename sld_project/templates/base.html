@@ -79,6 +79,9 @@
         {# Leaflet JS #}
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>lucide.createIcons();</script>
+        
+        {# Script protezione email anti-scraping #}
+        <script src="{% static 'js/sld_project.js' %}"></script>
 
         {% block extra_js %}{% endblock %}
     </body>

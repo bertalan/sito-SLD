@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags static %}
 
 {% block body_class %}template-homepage{% endblock %}
 
@@ -17,25 +17,25 @@
                             <span>STUDIO</span><br/>
                             <span>LEGALE</span><br/>
                             <span class="mt-4">
-                                <span class="text-brand-accent">D</span><sup class="text-brand-black">'</sup><span class="text-brand-accent">ONOFRIO</span>
+                                <span class="text-brand-accent">D</span><span class="text-brand-black">'</span><span class="text-brand-accent">ONOFRIO</span>
                             </span>
                         </span>
                         <!-- Desktop: 2 righe -->
                         <span class="hidden md:block">
                             {{ page.hero_title|default:"STUDIO LEGALE" }} <br/>
                             <span class="block mt-8">
-                                <span class="text-brand-accent">D</span><sup class="text-brand-black">'</sup><span class="text-brand-accent">ONOFRIO</span>
+                                <span class="text-brand-accent">D</span><span class="text-brand-black">'</span><span class="text-brand-accent">ONOFRIO</span>
                             </span>
                         </span>
                 </h1>
             </div>
 
-            <div class="lg:col-span-4 flex flex-col justify-end pb-10">
-                <div class="text-lg md:text-xl text-brand-gray leading-relaxed mb-5 max-w-md -mt-[5px]">
+            <div class="lg:col-span-4 flex flex-col justify-end pb-10 relative">
+                <div class="text-lg md:text-l text-brand-gray leading-snug mb-5 max-w-md -mt-[5px]">
                     {% if page.hero_description %}
                         {{ page.hero_description|richtext }}
                     {% else %}
-                        <p>Assistenza legale professionale con rigore e competenza. Consulenza e assistenza giudiziale e stragiudiziale.</p>
+                        <p>Consulenza e assistenza giudiziale e stragiudiziale per una tutela di elevata efficacia e competenza.</p>
                     {% endif %}
                 </div>
                 
@@ -45,6 +45,11 @@
                         <span>Avv. Rossella D'Onofrio</span>
                         <span>{{ page.hero_location|default:"Lecce • Martina Franca" }}</span>
                     </div>
+                </div>
+                
+                <!-- Logo con ombra - posizionato sotto il box, alzato di 60px -->
+                <div class="hidden lg:block absolute -top-[60px] left-0">
+                    <img src="{% static 'images/dr_Logo_ombra.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto">
                 </div>
             </div>
         </div>
@@ -101,7 +106,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
             <div>
                 <h2 class="text-4xl md:text-6xl font-bold tracking-tighter text-brand-black mb-8">
-                    {{ page.about_title|default:"LO STUDIO" }}<span class="text-brand-accent">.</span>
+                    {{ page.about_title|default:"LO STUDIO" }}<span class="text-brand-accent">,</span>
                 </h2>
             </div>
             <div class="flex flex-col justify-center">
@@ -123,7 +128,7 @@
 <section class="py-24 bg-brand-dark">
     <div class="max-w-7xl mx-auto px-6 text-center">
         <h2 class="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-8">
-            {{ page.cta_title|default:"PARLIAMO" }}<span class="text-brand-accent">.</span>
+            {{ page.cta_title|default:"PARLIAMO" }}<span class="text-brand-accent">,</span>
         </h2>
         <p class="text-brand-gray text-xl max-w-2xl mx-auto mb-12">
             {{ page.cta_text|default:"Prenota una consulenza per discutere del tuo caso." }}
