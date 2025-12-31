@@ -15,12 +15,32 @@
                 <p><strong>Data:</strong> {{ appointment.date|date:"l d F Y" }}</p>
                 <p><strong>Ora:</strong> {{ appointment.time|time:"H:i" }}</p>
                 <p><strong>Nome:</strong> {{ appointment.first_name }} {{ appointment.last_name }}</p>
+                <p><strong>Tipo:</strong> {% if appointment.consultation_type == 'video' %}Videochiamata{% else %}In presenza{% endif %}</p>
             </div>
+            
+            {% if appointment.jitsi_url %}
+            <div class="mt-6 pt-6 border-t border-brand-gray/20">
+                <h4 class="font-bold text-brand-black mb-3 uppercase tracking-wider text-sm flex items-center gap-2">
+                    <i data-lucide="video" class="w-4 h-4"></i> Link Videochiamata
+                </h4>
+                <p class="text-sm text-brand-gray mb-3">
+                    Usa questo link il giorno dell'appuntamento:
+                </p>
+                <a href="{{ appointment.jitsi_url }}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 bg-brand-accent text-white font-bold text-sm uppercase tracking-widest px-6 py-3 hover:bg-brand-black transition-colors">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    Apri Jitsi Meet
+                </a>
+                <p class="text-xs text-brand-gray/70 mt-3 break-all">
+                    {{ appointment.jitsi_url }}
+                </p>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         
         <p class="text-brand-gray text-lg max-w-2xl mx-auto mb-12">
-            Riceverai una email di conferma con tutti i dettagli. Ti aspettiamo!
+            Riceverai una email di conferma con tutti i dettagli{% if appointment.jitsi_url %}, incluso il link per la videochiamata{% endif %}. Ti aspettiamo!
         </p>
         <a href="/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
             Torna alla home

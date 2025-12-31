@@ -1,13 +1,13 @@
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags static %}
 <nav id="nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b bg-transparent border-transparent">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <!-- Logo -->
-        <a href="/" class="flex items-center space-x-3 z-50">
-            <img src="https://www.studiolegaledonofrio.it/images/stories/drLogo.png" 
+        <a href="/" class="flex items-end space-x-3 z-50">
+            <img src="{% static 'images/dr_Logo.svg' %}" 
                  alt="Studio Legale D'Onofrio" 
                  class="h-12 w-auto">
-            <span class="text-xl font-bold tracking-tighter text-brand-black hidden sm:inline">
-                Studio Legale D'Onofrio<span class="text-brand-accent">.</span>
+            <span class="text-xl font-bold tracking-tighter text-brand-black hidden sm:inline -mb-[5px]">
+                Studio Legale D'Onofrio
             </span>
         </a>
 
@@ -27,7 +27,7 @@
 
         <!-- Mobile Menu Overlay -->
         <div id="mobile-menu" class="fixed inset-0 bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden">
-            <img src="https://www.studiolegaledonofrio.it/images/stories/drLogo.png" 
+            <img src="{% static 'images/dr_Logo.svg' %}" 
                  alt="Studio Legale D'Onofrio" 
                  class="h-16 w-auto mb-4">
             <a href="/#about" class="text-3xl font-bold text-brand-black tracking-tighter hover:text-brand-accent transition-colors">Lo Studio</a>

@@ -205,7 +205,22 @@ PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
 
 # Booking settings
 BOOKING_SLOT_DURATION = 30  # minutes
-BOOKING_PRICE_CENTS = 5000  # 50.00 EUR
+BOOKING_PRICE_CENTS = 6000  # 60.00 EUR per 30 minuti
 
-# Logo
-SITE_LOGO_URL = 'https://www.studiolegaledonofrio.it/images/stories/drLogo.png'
+# Email settings
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Studio Legale D\'Onofrio <info@studiolegaledonofrio.it>')
+STUDIO_EMAIL = os.environ.get('STUDIO_EMAIL', 'info@studiolegaledonofrio.it')
+
+# Studio contact info
+STUDIO_NAME = os.environ.get('STUDIO_NAME', 'Avv. Rossella D\'Onofrio')
+STUDIO_ADDRESS = os.environ.get('STUDIO_ADDRESS', 'Piazza G. Mazzini, 72 - 73100 Lecce')
+STUDIO_PHONE = os.environ.get('STUDIO_PHONE', '+39 320 7044664')
+STUDIO_PEC = os.environ.get('STUDIO_PEC', 'rossella.donofrio@pec.it')
+STUDIO_WEBSITE = os.environ.get('STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')
+STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?daddr=40.35333,18.17833')

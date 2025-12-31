@@ -5,10 +5,11 @@
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
     <div class="max-w-4xl mx-auto px-6">
         <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-black mb-4">
-            PRENOTA<span class="text-brand-accent">.</span>
+            PRENOTA<span class="text-brand-accent">,</span>
         </h1>
         <p class="text-brand-gray text-lg">
-            Seleziona data e orario per prenotare una consulenza. Costo: <strong class="text-brand-accent">€{{ booking_price }}</strong>
+            Prenota una consulenza di 30 minuti, in presenza o in videochiamata.<br>
+            Costo: <strong class="text-brand-accent">€{{ booking_price }}</strong> (IVA inclusa)
         </p>
     </div>
 </section>
@@ -16,17 +17,19 @@
 <section class="py-16 bg-brand-white">
     <div class="max-w-4xl mx-auto px-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <!-- Calendario -->
+            <!-- Calendario con orari -->
             <div>
                 <h2 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">
                     <i data-lucide="calendar" class="inline w-5 h-5 text-brand-accent mr-2"></i>
-                    Seleziona data
+                    Seleziona data e orario
                 </h2>
                 <div id="calendar" class="bg-brand-silver p-6 rounded"></div>
                 
-                <div id="slots-container" class="mt-6 hidden">
+                <div id="slots-container" class="mt-6">
                     <h3 class="text-lg font-bold text-brand-black mb-4">Orari disponibili</h3>
-                    <div id="slots" class="grid grid-cols-4 gap-2"></div>
+                    <div id="slots" class="grid grid-cols-4 gap-2">
+                        <p class="col-span-4 text-brand-gray text-sm">Seleziona una data per vedere gli orari</p>
+                    </div>
                 </div>
             </div>
             
@@ -59,6 +62,36 @@
                         <input type="tel" name="phone" required
                             class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
                     </div>
+                    
+                    <!-- Riepilogo appuntamento selezionato -->
+                    <div id="selection-summary" class="bg-brand-silver p-4 hidden">
+                        <p class="text-sm text-brand-gray">Appuntamento selezionato:</p>
+                        <p class="font-bold text-brand-black" id="summary-text"></p>
+                    </div>
+                    
+                    <!-- Tipo consulenza -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Modalità consulenza *</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="consultation_type" value="in_person" checked class="sr-only peer">
+                                <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
+                                    <i data-lucide="building-2" class="w-6 h-6 mx-auto mb-2 text-brand-gray"></i>
+                                    <span class="block font-bold text-sm">In presenza</span>
+                                    <span class="text-xs text-brand-gray">Presso lo studio a Lecce</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="consultation_type" value="video" class="sr-only peer">
+                                <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
+                                    <i data-lucide="video" class="w-6 h-6 mx-auto mb-2 text-brand-gray"></i>
+                                    <span class="block font-bold text-sm">Videochiamata</span>
+                                    <span class="text-xs text-brand-gray">Collegamento Jitsi</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div>
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Note (opzionale)</label>
                         <textarea name="notes" rows="3"
@@ -66,13 +99,23 @@
                             placeholder="Descrivi brevemente il motivo della consulenza..."></textarea>
                     </div>
                     
+                    <!-- Upload allegati -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Allegati (opzionale)</label>
+                        <div class="border-2 border-dashed border-brand-gray/30 p-4 text-center hover:border-brand-accent transition-colors cursor-pointer relative"
+                             onclick="document.getElementById('file-input').click()">
+                            <input type="file" id="file-input" name="attachments" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                   class="hidden" onchange="handleFileSelect(this)">
+                            <i data-lucide="paperclip" class="w-6 h-6 mx-auto mb-2 text-brand-gray"></i>
+                            <p class="text-sm text-brand-gray">Clicca o trascina i file qui</p>
+                            <p class="text-xs text-brand-gray/60 mt-1">PDF, DOC, DOCX, JPG, PNG (max 20MB totali)</p>
+                        </div>
+                        <div id="file-list" class="mt-2 space-y-1"></div>
+                        <p id="file-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+                    
                     <input type="hidden" name="date" id="selected-date">
                     <input type="hidden" name="time" id="selected-time">
-                    
-                    <div id="selection-summary" class="bg-brand-silver p-4 hidden">
-                        <p class="text-sm text-brand-gray">Appuntamento selezionato:</p>
-                        <p class="font-bold text-brand-black" id="summary-text"></p>
-                    </div>
                     
                     <!-- Scelta metodo di pagamento -->
                     <div class="mt-6">
@@ -116,23 +159,106 @@
 const availableDates = {{ available_dates|safe }};
 let selectedDate = null;
 let selectedTime = null;
+let selectedFiles = [];
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
-    renderCalendar();
+    
+    // Se oggi è l'ultimo giorno del mese o non ci sono date disponibili questo mese, mostra il prossimo
+    const today = new Date();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const hasAvailableThisMonth = availableDates.some(d => {
+        const date = new Date(d);
+        return date.getMonth() === today.getMonth() && date > today;
+    });
+    
+    renderCalendar(hasAvailableThisMonth ? 0 : 1);
     
     document.getElementById('booking-form').addEventListener('submit', handleSubmit);
+    
+    // Drag and drop per i file
+    const dropZone = document.querySelector('[onclick*="file-input"]');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-brand-accent', 'bg-brand-accent/5');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-brand-accent', 'bg-brand-accent/5');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-brand-accent', 'bg-brand-accent/5');
+        handleFileSelect({ files: e.dataTransfer.files });
+    });
 });
 
-function renderCalendar() {
+function handleFileSelect(input) {
+    const files = Array.from(input.files || []);
+    const errorEl = document.getElementById('file-error');
+    errorEl.classList.add('hidden');
+    
+    // Calcola dimensione totale
+    let totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+    
+    for (const file of files) {
+        totalSize += file.size;
+        if (totalSize > MAX_FILE_SIZE) {
+            errorEl.textContent = 'La dimensione totale degli allegati supera i 20MB';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        selectedFiles.push(file);
+    }
+    
+    renderFileList();
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    renderFileList();
+    document.getElementById('file-error').classList.add('hidden');
+}
+
+function renderFileList() {
+    const listEl = document.getElementById('file-list');
+    if (selectedFiles.length === 0) {
+        listEl.innerHTML = '';
+        return;
+    }
+    
+    listEl.innerHTML = selectedFiles.map((file, i) => `
+        <div class="flex items-center justify-between bg-brand-silver px-3 py-2 text-sm">
+            <span class="text-brand-black truncate mr-2">${file.name}</span>
+            <button type="button" onclick="removeFile(${i})" class="text-brand-gray hover:text-red-500">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+function renderCalendar(monthOffset = 0) {
     const calendar = document.getElementById('calendar');
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    
+    // Calcola il mese da mostrare
+    let displayDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+    const currentMonth = displayDate.getMonth();
+    const currentYear = displayDate.getFullYear();
+    
+    // Salva l'offset corrente per la navigazione
+    calendar.dataset.monthOffset = monthOffset;
     
     let html = `
-        <div class="text-center mb-4">
-            <span class="font-bold text-brand-black">${new Date(currentYear, currentMonth).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}</span>
+        <div class="flex items-center justify-between mb-4">
+            <button type="button" onclick="renderCalendar(${monthOffset - 1})" class="p-2 hover:bg-brand-accent hover:text-white rounded transition-colors ${monthOffset <= 0 ? 'invisible' : ''}">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <span class="font-bold text-brand-black capitalize">${displayDate.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}</span>
+            <button type="button" onclick="renderCalendar(${monthOffset + 1})" class="p-2 hover:bg-brand-accent hover:text-white rounded transition-colors ${monthOffset >= 2 ? 'invisible' : ''}">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
         </div>
         <div class="grid grid-cols-7 gap-1 text-center text-xs text-brand-gray mb-2">
             <span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
@@ -151,7 +277,8 @@ function renderCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const isAvailable = availableDates.includes(dateStr);
-        const isPast = new Date(dateStr) <= today;
+        const checkDate = new Date(currentYear, currentMonth, day);
+        const isPast = checkDate <= today;
         
         if (isAvailable && !isPast) {
             html += `<button type="button" onclick="selectDate('${dateStr}')" 
@@ -164,6 +291,7 @@ function renderCalendar() {
     
     html += '</div>';
     calendar.innerHTML = html;
+    lucide.createIcons();
 }
 
 function selectDate(dateStr) {
@@ -177,7 +305,7 @@ function selectDate(dateStr) {
     document.querySelector(`[data-date="${dateStr}"]`).classList.add('bg-brand-accent', 'text-white');
     
     // Carica slots
-    fetch(`/prenota/api/slots/${dateStr}/`)
+    fetch(`/prenota/slots/${dateStr}/`)
         .then(r => r.json())
         .then(data => {
             const container = document.getElementById('slots-container');
@@ -222,16 +350,29 @@ async function handleSubmit(e) {
     const form = e.target;
     const paymentMethod = form.querySelector('input[name="payment_method"]:checked').value;
     
-    const data = {
-        first_name: form.first_name.value,
-        last_name: form.last_name.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        notes: form.notes.value,
-        date: selectedDate,
-        time: selectedTime,
-        payment_method: paymentMethod
-    };
+    // Verifica dimensione file prima di inviare
+    const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+    if (totalSize > MAX_FILE_SIZE) {
+        document.getElementById('file-error').textContent = 'La dimensione totale degli allegati supera i 20MB';
+        document.getElementById('file-error').classList.remove('hidden');
+        return;
+    }
+    
+    // Usa FormData per inviare anche i file
+    const formData = new FormData();
+    formData.append('first_name', form.first_name.value);
+    formData.append('last_name', form.last_name.value);
+    formData.append('email', form.email.value);
+    formData.append('phone', form.phone.value);
+    formData.append('notes', form.notes.value);
+    formData.append('consultation_type', document.querySelector('input[name="consultation_type"]:checked').value);
+    formData.append('date', selectedDate);
+    formData.append('time', selectedTime);
+    formData.append('payment_method', paymentMethod);
+    
+    selectedFiles.forEach((file, i) => {
+        formData.append('attachments', file);
+    });
     
     // Disabilita il bottone durante l'elaborazione
     const submitBtn = document.getElementById('submit-btn');
@@ -242,10 +383,9 @@ async function handleSubmit(e) {
         const response = await fetch('/prenota/checkout/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify(data)
+            body: formData
         });
         
         const result = await response.json();

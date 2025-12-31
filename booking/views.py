@@ -10,7 +10,8 @@ import stripe
 import paypalrestsdk
 import json
 
-from .models import Appointment, AvailabilityRule, BlockedDate
+from .models import Appointment, AvailabilityRule, BlockedDate, AppointmentAttachment
+from .email_service import send_booking_confirmation
 
 # Configurazione Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -35,7 +36,7 @@ class BookingView(TemplateView):
         today = date.today()
         available_dates = []
         
-        for i in range(1, 31):
+        for i in range(1, 61):  # 60 giorni di disponibilità
             check_date = today + timedelta(days=i)
             if Appointment.get_available_slots(check_date):
                 available_dates.append(check_date.isoformat())
@@ -57,10 +58,54 @@ def get_available_slots(request, date):
 
 
 class CreateCheckoutSession(View):
+    MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20MB
+    PENDING_TIMEOUT_MINUTES = 30  # Timeout per appuntamenti pending
+    
     def post(self, request):
         try:
-            data = json.loads(request.body)
+            # Supporta sia JSON che FormData
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                data = request.POST.dict()
+                files = request.FILES.getlist('attachments')
+                
+                # Verifica dimensione totale file
+                total_size = sum(f.size for f in files)
+                if total_size > self.MAX_UPLOAD_SIZE:
+                    return JsonResponse({'error': 'La dimensione totale degli allegati supera i 20MB'}, status=400)
+            else:
+                data = json.loads(request.body)
+                files = []
+            
             payment_method = data.get('payment_method', 'stripe')
+            consultation_type = data.get('consultation_type', 'in_person')
+            
+            target_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+            target_time = datetime.strptime(data['time'], '%H:%M').time()
+            
+            # Pulisci appuntamenti pending scaduti (più vecchi di 30 minuti)
+            from django.utils import timezone
+            cutoff_time = timezone.now() - timedelta(minutes=self.PENDING_TIMEOUT_MINUTES)
+            Appointment.objects.filter(
+                status='pending',
+                created_at__lt=cutoff_time
+            ).delete()
+            
+            # Verifica se lo slot è già occupato da un appuntamento confermato
+            existing = Appointment.objects.filter(
+                date=target_date,
+                time=target_time,
+                status='confirmed'
+            ).exists()
+            
+            if existing:
+                return JsonResponse({'error': 'Questo slot non è più disponibile. Seleziona un altro orario.'}, status=400)
+            
+            # Rimuovi eventuali pending per lo stesso slot (stesso utente che riprova)
+            Appointment.objects.filter(
+                date=target_date,
+                time=target_time,
+                status='pending'
+            ).delete()
             
             # Crea l'appuntamento in stato pending
             appointment = Appointment.objects.create(
@@ -69,11 +114,24 @@ class CreateCheckoutSession(View):
                 email=data['email'],
                 phone=data['phone'],
                 notes=data.get('notes', ''),
-                date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
-                time=datetime.strptime(data['time'], '%H:%M').time(),
+                consultation_type=consultation_type,
+                date=target_date,
+                time=target_time,
                 status='pending',
                 payment_method=payment_method
             )
+            
+            # Genera il codice videochiamata se necessario (forza save per avere pk)
+            if consultation_type == 'video':
+                appointment.save()
+            
+            # Salva gli allegati
+            for f in files:
+                AppointmentAttachment.objects.create(
+                    appointment=appointment,
+                    file=f,
+                    original_filename=f.name
+                )
             
             if payment_method == 'paypal':
                 return self._create_paypal_payment(request, appointment, data)
@@ -169,9 +227,13 @@ class BookingSuccessView(TemplateView):
                 appointment_id = session.metadata.get('appointment_id')
                 if appointment_id:
                     appointment = Appointment.objects.get(id=appointment_id)
-                    appointment.status = 'confirmed'
-                    appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
-                    appointment.save()
+                    # Evita di inviare email multiple se già confermato
+                    if appointment.status != 'confirmed':
+                        appointment.status = 'confirmed'
+                        appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                        appointment.save()
+                        # Invia email di conferma con iCal
+                        send_booking_confirmation(appointment)
                     context['appointment'] = appointment
             except Exception:
                 pass
@@ -232,6 +294,9 @@ def paypal_execute(request):
             appointment.status = 'confirmed'
             appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
             appointment.save()
+            
+            # Invia email di conferma con iCal
+            send_booking_confirmation(appointment)
             
             return redirect(f'/prenota/success/?appointment_id={appointment_id}&method=paypal')
         else:

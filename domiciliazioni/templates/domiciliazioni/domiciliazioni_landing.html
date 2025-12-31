@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="pt-32 pb-24 min-h-screen flex items-center bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <i data-lucide="check-circle" class="w-20 h-20 text-brand-accent mx-auto mb-8"></i>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-brand-black mb-8">
+            RICHIESTA<br/>INVIATA<span class="text-brand-accent">.</span>
+        </h1>
+        
+        {% if submission %}
+        <div class="bg-brand-silver p-8 rounded max-w-lg mx-auto mb-8 text-left">
+            <h3 class="font-bold text-brand-black mb-4 uppercase tracking-wider text-sm">Riepilogo richiesta</h3>
+            <div class="space-y-3 text-brand-gray">
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Tribunale:</strong></p>
+                    <p class="text-sm">{{ submission.get_tribunale_display }}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Numero R.G.:</strong></p>
+                    <p class="text-sm font-mono">{{ submission.numero_rg }}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Data udienza:</strong></p>
+                    <p class="text-sm">{{ submission.data_udienza|date:"l d F Y" }}</p>
+                </div>
+                {% if submission.ora_udienza %}
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Ora:</strong></p>
+                    <p class="text-sm">{{ submission.ora_udienza|time:"H:i" }}</p>
+                </div>
+                {% endif %}
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Tipo udienza:</strong></p>
+                    <p class="text-sm">{{ submission.get_tipo_udienza_display }}</p>
+                </div>
+                {% if submission.parti_causa %}
+                <div class="grid grid-cols-2 gap-2">
+                    <p class="text-sm"><strong>Parti:</strong></p>
+                    <p class="text-sm">{{ submission.parti_causa }}</p>
+                </div>
+                {% endif %}
+                {% if submission.documents.count > 0 %}
+                <div class="pt-3 border-t border-brand-gray/20">
+                    <p class="text-sm"><strong>Documenti allegati:</strong> {{ submission.documents.count }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <p class="text-brand-gray text-lg max-w-2xl mx-auto mb-12">
+            Riceverà a breve una email di conferma all'indirizzo <strong>{{ submission.email }}</strong>.<br/>
+            La contatteremo per confermare la presa in carico della domiciliazione.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ page.url }}" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                Nuova richiesta
+            </a>
+            <a href="/" class="inline-block border-2 border-brand-black text-brand-black font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black hover:text-white transition-colors">
+                Torna alla home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

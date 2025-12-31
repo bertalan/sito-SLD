@@ -304,3 +304,172 @@ class AppointmentStatusTest(TestCase):
         
         updated = Appointment.objects.get(id=appointment.id)
         self.assertEqual(updated.status, 'confirmed')
+
+
+class VideoCallTest(TestCase):
+    """Test per le videochiamate Jitsi."""
+    
+    def test_video_appointment_generates_code(self):
+        """Verifica che un appuntamento video generi un codice Jitsi."""
+        appointment = Appointment.objects.create(
+            first_name="Test", last_name="User", email="test@example.com",
+            phone="123", date=date.today() + timedelta(days=7), time=time(11, 0),
+            consultation_type='video'
+        )
+        appointment.save()  # Forza generazione codice
+        
+        self.assertNotEqual(appointment.videocall_code, '')
+        self.assertEqual(len(appointment.videocall_code), 16)
+        self.assertIn('meet.jit.si', appointment.jitsi_url)
+    
+    def test_in_person_no_jitsi_url(self):
+        """Verifica che appuntamento in presenza non abbia link Jitsi."""
+        appointment = Appointment.objects.create(
+            first_name="Test", last_name="User", email="test@example.com",
+            phone="123", date=date.today() + timedelta(days=7), time=time(11, 30),
+            consultation_type='in_person'
+        )
+        self.assertIsNone(appointment.jitsi_url)
+
+
+class ICalTest(TestCase):
+    """Test per la generazione file iCal."""
+    
+    def test_generate_ical_in_person(self):
+        """Test generazione iCal per appuntamento in presenza."""
+        from .ical import generate_ical, generate_ical_filename
+        
+        appointment = Appointment.objects.create(
+            first_name="Mario", last_name="Rossi", email="mario@example.com",
+            phone="123", date=date(2026, 1, 15), time=time(10, 30),
+            consultation_type='in_person', status='confirmed'
+        )
+        
+        ical = generate_ical(appointment)
+        
+        self.assertIn('BEGIN:VCALENDAR', ical)
+        self.assertIn('BEGIN:VEVENT', ical)
+        self.assertIn('Lecce', ical)
+        self.assertIn('TRIGGER:-PT1H', ical)  # Reminder 1h
+    
+    def test_generate_ical_video(self):
+        """Test generazione iCal per videochiamata."""
+        from .ical import generate_ical
+        
+        appointment = Appointment.objects.create(
+            first_name="Luigi", last_name="Verdi", email="luigi@example.com",
+            phone="123", date=date(2026, 1, 16), time=time(14, 0),
+            consultation_type='video', status='confirmed'
+        )
+        appointment.save()
+        
+        ical = generate_ical(appointment)
+        
+        self.assertIn('meet.jit.si', ical)
+        self.assertIn(appointment.videocall_code, ical)
+    
+    def test_ical_filename(self):
+        """Test formato nome file iCal."""
+        from .ical import generate_ical_filename
+        
+        appointment = Appointment.objects.create(
+            first_name="Test", last_name="User", email="test@example.com",
+            phone="123", date=date(2026, 1, 15), time=time(10, 30),
+            consultation_type='in_person'
+        )
+        
+        filename = generate_ical_filename(appointment)
+        
+        self.assertIn('20260115', filename)
+        self.assertIn('1030', filename)
+        self.assertTrue(filename.endswith('.ics'))
+
+
+class DuplicateSlotTest(TestCase):
+    """Test per la gestione slot duplicati."""
+    
+    def setUp(self):
+        self.client = Client()
+        # Crea regola disponibilità per lunedì
+        AvailabilityRule.objects.create(
+            weekday=0, start_time=time(9, 0), end_time=time(18, 0), is_active=True
+        )
+    
+    @patch('stripe.checkout.Session.create')
+    def test_pending_slot_replaced(self, mock_stripe):
+        """Test che slot pending viene sostituito."""
+        mock_stripe.return_value = MagicMock(
+            id='cs_test', url='https://stripe.com/test', payment_intent='pi_test'
+        )
+        
+        today = date.today()
+        days_until_monday = (7 - today.weekday()) % 7 or 7
+        next_monday = today + timedelta(days=days_until_monday)
+        
+        data = {
+            'first_name': 'Mario', 'last_name': 'Rossi',
+            'email': 'mario@example.com', 'phone': '123',
+            'date': next_monday.isoformat(), 'time': '09:30',
+            'payment_method': 'stripe', 'consultation_type': 'in_person'
+        }
+        
+        # Prima prenotazione
+        self.client.post('/prenota/checkout/', json.dumps(data), content_type='application/json')
+        
+        # Seconda prenotazione stesso slot
+        self.client.post('/prenota/checkout/', json.dumps(data), content_type='application/json')
+        
+        # Solo 1 pending deve esistere
+        pending_count = Appointment.objects.filter(status='pending', date=next_monday, time=time(9, 30)).count()
+        self.assertEqual(pending_count, 1)
+    
+    def test_confirmed_slot_blocks(self):
+        """Test che slot confermato blocca nuove prenotazioni."""
+        today = date.today()
+        days_until_monday = (7 - today.weekday()) % 7 or 7
+        next_monday = today + timedelta(days=days_until_monday)
+        
+        # Crea appuntamento confermato
+        Appointment.objects.create(
+            first_name='Altro', last_name='Utente', email='altro@example.com',
+            phone='123', date=next_monday, time=time(9, 30), status='confirmed'
+        )
+        
+        data = {
+            'first_name': 'Mario', 'last_name': 'Rossi',
+            'email': 'mario@example.com', 'phone': '123',
+            'date': next_monday.isoformat(), 'time': '09:30',
+            'payment_method': 'stripe'
+        }
+        
+        response = self.client.post('/prenota/checkout/', json.dumps(data), content_type='application/json')
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('non è più disponibile', response.json()['error'])
+
+
+class EmailServiceTest(TestCase):
+    """Test per il servizio email."""
+    
+    @patch('booking.email_service.EmailMultiAlternatives')
+    def test_send_confirmation_emails(self, mock_email_class):
+        """Test invio email conferma a cliente e studio."""
+        from .email_service import send_booking_confirmation
+        
+        mock_email = MagicMock()
+        mock_email_class.return_value = mock_email
+        
+        appointment = Appointment.objects.create(
+            first_name="Mario", last_name="Rossi", email="mario@example.com",
+            phone="123", date=date(2026, 1, 15), time=time(10, 30),
+            consultation_type='in_person', status='confirmed'
+        )
+        
+        send_booking_confirmation(appointment)
+        
+        # 2 email: cliente + studio
+        self.assertEqual(mock_email_class.call_count, 2)
+        # iCal allegato a entrambe
+        self.assertEqual(mock_email.attach.call_count, 2)
+        # Entrambe inviate
+        self.assertEqual(mock_email.send.call_count, 2)

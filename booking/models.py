@@ -63,6 +63,7 @@ class BlockedDate(models.Model):
         return f"{self.date} - {self.reason}"
 
 
+@register_snippet
 class Appointment(models.Model):
     """Prenotazione appuntamento."""
     
@@ -78,12 +79,21 @@ class Appointment(models.Model):
         ('paypal', 'PayPal'),
     ]
     
+    CONSULTATION_TYPE_CHOICES = [
+        ('in_person', 'In presenza'),
+        ('video', 'Videochiamata'),
+    ]
+    
     # Dati cliente
     first_name = models.CharField("Nome", max_length=100)
     last_name = models.CharField("Cognome", max_length=100)
     email = models.EmailField("Email")
     phone = models.CharField("Telefono", max_length=20)
     notes = models.TextField("Note", blank=True)
+    
+    # Tipo consulenza
+    consultation_type = models.CharField("Tipo consulenza", max_length=20, choices=CONSULTATION_TYPE_CHOICES, default='in_person')
+    videocall_code = models.CharField("Codice videochiamata", max_length=32, blank=True)
     
     # Data/ora appuntamento
     date = models.DateField("Data")
@@ -100,6 +110,20 @@ class Appointment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    panels = [
+        FieldPanel('first_name'),
+        FieldPanel('last_name'),
+        FieldPanel('email'),
+        FieldPanel('phone'),
+        FieldPanel('notes'),
+        FieldPanel('consultation_type'),
+        FieldPanel('date'),
+        FieldPanel('time'),
+        FieldPanel('status'),
+        FieldPanel('payment_method'),
+        FieldPanel('amount_paid'),
+    ]
+    
     class Meta:
         verbose_name = "Appuntamento"
         verbose_name_plural = "Appuntamenti"
@@ -109,15 +133,37 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.date} {self.time}"
     
+    def save(self, *args, **kwargs):
+        # Genera codice videochiamata se è una consulenza video e non esiste già
+        if self.consultation_type == 'video' and not self.videocall_code:
+            import hashlib
+            import secrets
+            # Codice anonimo: hash di ID + segreto random
+            secret = secrets.token_hex(8)
+            raw = f"sld-{self.pk or secrets.token_hex(4)}-{secret}"
+            self.videocall_code = hashlib.sha256(raw.encode()).hexdigest()[:16]
+        super().save(*args, **kwargs)
+    
+    @property
+    def jitsi_url(self):
+        """Restituisce l'URL Jitsi per la videochiamata."""
+        if self.consultation_type == 'video' and self.videocall_code:
+            return f"https://meet.jit.si/StudioLegaleDOnofrio-{self.videocall_code}"
+        return None
+    
     @classmethod
     def get_available_slots(cls, date):
         """Restituisce gli slot disponibili per una data."""
         from django.conf import settings
         
+        # Blocca solo domenica (6)
+        weekday = date.weekday()
+        if weekday == 6:
+            return []
+        
         if BlockedDate.objects.filter(date=date).exists():
             return []
         
-        weekday = date.weekday()
         rules = AvailabilityRule.objects.filter(weekday=weekday, is_active=True)
         
         if not rules.exists():
@@ -137,3 +183,29 @@ class Appointment(models.Model):
                 current_time += timedelta(minutes=slot_duration)
         
         return sorted(set(slots))
+
+
+def appointment_attachment_path(instance, filename):
+    """Genera il path per gli allegati degli appuntamenti."""
+    return f'appointments/{instance.appointment.id}/{filename}'
+
+
+class AppointmentAttachment(models.Model):
+    """Allegato per un appuntamento."""
+    
+    appointment = models.ForeignKey(
+        Appointment, 
+        on_delete=models.CASCADE, 
+        related_name='attachments',
+        verbose_name="Appuntamento"
+    )
+    file = models.FileField("File", upload_to=appointment_attachment_path)
+    original_filename = models.CharField("Nome file originale", max_length=255)
+    uploaded_at = models.DateTimeField("Caricato il", auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Allegato"
+        verbose_name_plural = "Allegati"
+    
+    def __str__(self):
+        return f"{self.original_filename} - {self.appointment}"

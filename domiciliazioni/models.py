@@ -4,6 +4,7 @@ from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
+from wagtail.snippets.models import register_snippet
 
 
 class DomiciliazioniFormField(AbstractFormField):
@@ -39,25 +40,130 @@ class DomiciliazioniPage(AbstractEmailForm):
         if self.tribunali:
             return [t.strip() for t in self.tribunali.split('\n') if t.strip()]
         return []
+    
+    def serve(self, request):
+        from django.shortcuts import render, redirect
+        from .views import process_domiciliazione_form
+        
+        if request.method == 'POST':
+            submission = process_domiciliazione_form(request, self)
+            if submission:
+                # Mostra pagina di ringraziamento
+                return render(request, 'domiciliazioni/domiciliazioni_landing.html', {
+                    'page': self,
+                    'submission': submission,
+                })
+        
+        # GET: mostra il form
+        return render(request, 'domiciliazioni/domiciliazioni_page.html', {
+            'page': self,
+            'self': self,
+        })
 
 
+# Scelte per tipo udienza
+TIPO_UDIENZA_CHOICES = [
+    ('civile', 'Udienza Civile'),
+    ('penale', 'Udienza Penale'),
+    ('lavoro', 'Udienza Lavoro'),
+    ('famiglia', 'Udienza Famiglia'),
+    ('esecuzioni', 'Esecuzioni'),
+    ('fallimentare', 'Fallimentare'),
+    ('volontaria', 'Volontaria Giurisdizione'),
+    ('altro', 'Altro'),
+]
+
+# Scelte per tribunale
+TRIBUNALE_CHOICES = [
+    ('lecce', 'Tribunale di Lecce'),
+    ('brindisi', 'Tribunale di Brindisi'),
+    ('taranto', 'Tribunale di Taranto'),
+    ('bari', 'Tribunale di Bari'),
+]
+
+
+@register_snippet
 class DomiciliazioniSubmission(models.Model):
     """Submission domiciliazione con allegati."""
     
-    page = models.ForeignKey(DomiciliazioniPage, on_delete=models.CASCADE, related_name='submissions')
-    form_data = models.JSONField()
+    STATUS_CHOICES = [
+        ('pending', 'In attesa'),
+        ('accepted', 'Accettata'),
+        ('completed', 'Completata'),
+        ('cancelled', 'Annullata'),
+    ]
+    
+    page = models.ForeignKey(DomiciliazioniPage, on_delete=models.CASCADE, related_name='submissions', null=True, blank=True)
+    form_data = models.JSONField(default=dict, blank=True)
     submit_time = models.DateTimeField(auto_now_add=True)
-    nome_avvocato = models.CharField("Nome Avvocato", max_length=200)
+    
+    # Dati avvocato richiedente
+    nome_avvocato = models.CharField("Nome e Cognome Avvocato", max_length=200)
     email = models.EmailField("Email")
-    tribunale = models.CharField("Tribunale", max_length=100)
-    tipo_udienza = models.CharField("Tipo udienza", max_length=100)
-    data_udienza = models.DateField("Data udienza")
-    note = models.TextField("Note", blank=True)
+    telefono = models.CharField("Telefono", max_length=30, blank=True)
+    ordine_appartenenza = models.CharField("Ordine di appartenenza", max_length=100, blank=True)
+    
+    # Dati udienza
+    tribunale = models.CharField("Tribunale", max_length=100, choices=TRIBUNALE_CHOICES)
+    sezione = models.CharField("Sezione", max_length=50, blank=True, help_text="Es: Sezione Civile, Sezione Lavoro")
+    giudice = models.CharField("Giudice", max_length=100, blank=True)
+    tipo_udienza = models.CharField("Tipo udienza", max_length=100, choices=TIPO_UDIENZA_CHOICES, default='civile')
+    
+    # Dati causa
+    numero_rg = models.CharField("Numero R.G.", max_length=50, default='', help_text="Numero di Ruolo Generale (es: 1234/2025)")
+    parti_causa = models.TextField("Parti in causa", blank=True, help_text="Attore vs Convenuto")
+    
+    # Data e ora udienza
+    data_udienza = models.DateField("Data udienza", null=True, blank=True)
+    ora_udienza = models.TimeField("Ora udienza", null=True, blank=True)
+    
+    # Attività richieste
+    attivita_richieste = models.TextField("Attività richieste", blank=True, 
+        help_text="Descrivi le attività da svolgere in udienza (es: mera comparizione, deposito atti, richiesta rinvio)")
+    
+    # Note e istruzioni
+    note = models.TextField("Note e istruzioni", blank=True)
+    
+    # Stato
+    status = models.CharField("Stato", max_length=20, choices=STATUS_CHOICES, default='pending')
+    esito_udienza = models.TextField("Esito udienza", blank=True)
+    
+    panels = [
+        MultiFieldPanel([
+            FieldPanel('nome_avvocato'),
+            FieldPanel('email'),
+            FieldPanel('telefono'),
+            FieldPanel('ordine_appartenenza'),
+        ], heading="Dati Avvocato"),
+        MultiFieldPanel([
+            FieldPanel('tribunale'),
+            FieldPanel('sezione'),
+            FieldPanel('giudice'),
+            FieldPanel('tipo_udienza'),
+        ], heading="Tribunale"),
+        MultiFieldPanel([
+            FieldPanel('numero_rg'),
+            FieldPanel('parti_causa'),
+            FieldPanel('data_udienza'),
+            FieldPanel('ora_udienza'),
+        ], heading="Dati Causa"),
+        MultiFieldPanel([
+            FieldPanel('attivita_richieste'),
+            FieldPanel('note'),
+        ], heading="Attività"),
+        MultiFieldPanel([
+            FieldPanel('status'),
+            FieldPanel('esito_udienza'),
+        ], heading="Stato"),
+    ]
     
     class Meta:
         verbose_name = "Richiesta domiciliazione"
         verbose_name_plural = "Richieste domiciliazione"
         ordering = ['-submit_time']
+    
+    def __str__(self):
+        return f"{self.tribunale} - {self.data_udienza} - {self.numero_rg}"
 
 
 class DomiciliazioniDocument(models.Model):

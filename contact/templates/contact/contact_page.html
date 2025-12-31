@@ -18,33 +18,7 @@
 <section class="py-16 bg-brand-white">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            <!-- Form -->
-            <div>
-                <h2 class="text-2xl font-bold text-brand-black mb-8 uppercase tracking-wider">Invia un messaggio</h2>
-                <form action="{{ page.url }}" method="POST" class="space-y-6">
-                    {% csrf_token %}
-                    {% for field in form %}
-                    <div>
-                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">{{ field.label }}</label>
-                        {% if field.field.widget.input_type == 'textarea' %}
-                        <textarea name="{{ field.html_name }}" rows="4" 
-                            class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
-                            {% if field.field.required %}required{% endif %}></textarea>
-                        {% else %}
-                        <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.html_name }}"
-                            class="w-full bg-transparent border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
-                            {% if field.field.required %}required{% endif %}>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <button type="submit" class="bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
-                        Invia messaggio
-                        <i data-lucide="arrow-right" class="inline ml-2 w-4 h-4"></i>
-                    </button>
-                </form>
-            </div>
-            
-            <!-- Info & Map -->
+            <!-- Info contatti -->
             <div>
                 <h2 class="text-2xl font-bold text-brand-black mb-8 uppercase tracking-wider">Dove trovarci</h2>
                 
@@ -53,7 +27,7 @@
                         <i data-lucide="map-pin" class="w-6 h-6 text-brand-accent flex-shrink-0 mt-1"></i>
                         <div>
                             <h4 class="font-bold text-brand-black">Lecce</h4>
-                            <p class="text-brand-gray">{{ page.address_lecce|default:"Piazza Mazzini, 72 - 73100 Lecce" }}</p>
+                            <p class="text-brand-gray">{{ page.address_lecce|default:"Via Salvatore Trinchese 61, 73100 Lecce" }}</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-4">
@@ -66,7 +40,7 @@
                     <div class="flex items-start space-x-4">
                         <i data-lucide="phone" class="w-6 h-6 text-brand-accent flex-shrink-0 mt-1"></i>
                         <div>
-                            <p class="text-brand-gray">{{ page.phone|default:"+39 0832 1832129" }}</p>
+                            <!-- <p class="text-brand-gray">{{ page.phone|default:"+39 0832 1832129" }}</p> -->
                             <p class="text-brand-gray">{{ page.mobile|default:"+39 320 7044664" }}</p>
                         </div>
                     </div>
@@ -79,8 +53,40 @@
                     </div>
                 </div>
                 
+                <!-- CTA Prenotazione -->
+                <div class="bg-brand-silver p-8 border border-brand-gray/20">
+                    <h3 class="text-xl font-bold text-brand-black mb-4 uppercase tracking-wider">
+                        Prenota un appuntamento
+                    </h3>
+                    <p class="text-brand-gray mb-6">
+                        Consulenza legale di 30 minuti in presenza presso lo studio di Lecce o in videochiamata.
+                    </p>
+                    <a href="/prenota/" class="inline-flex items-center gap-2 bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        Prenota appuntamento
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mappa Studio Lecce -->
+            <div>
+                <h2 class="text-2xl font-bold text-brand-black mb-8 uppercase tracking-wider">Studio di Lecce</h2>
+                
                 <!-- OpenStreetMap -->
-                <div id="map" class="h-80 w-full border border-brand-gray/20"></div>
+                <div id="map" class="h-96 w-full border border-brand-gray/20 mb-6"></div>
+                
+                <div class="flex items-center gap-4">
+                    <a href="https://maps.apple.com/?q=40.35333,18.17833" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2 text-brand-gray hover:text-brand-accent transition-colors text-sm">
+                        <i data-lucide="navigation" class="w-4 h-4"></i>
+                        Apri in Apple Maps
+                    </a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=40.35333,18.17833" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2 text-brand-gray hover:text-brand-accent transition-colors text-sm">
+                        <i data-lucide="map" class="w-4 h-4"></i>
+                        Apri in Google Maps
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -90,25 +96,32 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inizializza mappa OpenStreetMap con Leaflet
-    const lecceLat = {{ page.lecce_lat|default:40.3516 }};
-    const lecceLng = {{ page.lecce_lng|default:18.1718 }};
-    const martinaLat = {{ page.martina_lat|default:40.7051 }};
-    const martinaLng = {{ page.martina_lng|default:17.3361 }};
+    // Coordinate studio Lecce (corrette)
+    const lecceLat = 40.35333;
+    const lecceLng = 18.17833;
     
-    const map = L.map('map').setView([40.5, 17.8], 9);
+    // Verifica che Leaflet sia caricato
+    if (typeof L === 'undefined') {
+        console.error('Leaflet non caricato');
+        return;
+    }
+    
+    // Inizializza mappa centrata su Lecce
+    const map = L.map('map').setView([lecceLat, lecceLng], 17);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
     
-    // Marker Lecce
+    // Marker Studio Lecce
     L.marker([lecceLat, lecceLng]).addTo(map)
-        .bindPopup('<strong>Studio Legale D\'Onofrio</strong><br>Lecce');
+        .bindPopup('<strong>Studio Legale D\'Onofrio</strong><br>Piazza Mazzini, 72<br>73100 Lecce')
+        .openPopup();
     
-    // Marker Martina Franca
-    L.marker([martinaLat, martinaLng]).addTo(map)
-        .bindPopup('<strong>Studio Legale D\'Onofrio</strong><br>Martina Franca');
+    // Forza resize per risolvere problemi di rendering
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 100);
 });
 </script>
 {% endblock %}

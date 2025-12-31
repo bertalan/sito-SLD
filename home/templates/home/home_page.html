@@ -30,28 +30,31 @@
                 </h1>
             </div>
 
-            <div class="lg:col-span-4 flex flex-col justify-end pb-10 relative">
-                <div class="text-lg md:text-l text-brand-gray leading-snug mb-5 max-w-md -mt-[5px]">
-                    {% if page.hero_description %}
-                        {{ page.hero_description|richtext }}
-                    {% else %}
-                        <p>Consulenza e assistenza giudiziale e stragiudiziale per una tutela di elevata efficacia e competenza.</p>
-                    {% endif %}
-                </div>
-                
-                <div class="flex flex-col space-y-4 -mt-[5px]">
-                    <div class="h-[1px] w-full bg-brand-black"></div>
-                    <div class="flex justify-between text-sm text-brand-black uppercase tracking-widest">
-                        <span>Avv. Rossella D'Onofrio</span>
-                        <span>{{ page.hero_location|default:"Lecce • Martina Franca" }}</span>
-                    </div>
-                </div>
-                
-                <!-- Logo con ombra - posizionato sotto il box, alzato di 60px -->
-                <div class="hidden lg:block absolute -top-[60px] left-0">
-                    <img src="{% static 'images/dr_Logo_ombra.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto">
-                </div>
+            <!-- Logo con ombra - colonna 4 -->
+            <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
+                <img src="{% static 'images/dr_Logo_ombra.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto -mt-[80px] scale-[1.2] origin-top-right">
             </div>
+        </div>
+        
+        <!-- Gruppo testo descrizione - sopra la linea -->
+        <div class="lg:ml-auto lg:max-w-md mt-4 lg:-mt-[100px]">
+            <div class="text-lg md:text-l text-brand-gray leading-snug">
+                {% if page.hero_description %}
+                    {{ page.hero_description|richtext }}
+                {% else %}
+                    <p>Consulenza e assistenza giudiziale e stragiudiziale per una tutela di elevata efficacia e competenza.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Linea sotto la griglia - larghezza piena max-w-7xl -->
+        <div class="hidden lg:block h-[1px] w-full bg-brand-black mt-4"></div>
+        <div class="lg:hidden h-[1px] w-full bg-brand-black mt-8"></div>
+        
+        <!-- Info avvocato - sotto la linea -->
+        <div class="flex justify-between text-sm text-brand-black uppercase tracking-widest mt-4 lg:max-w-md lg:ml-auto">
+            <span>Avv. Rossella D'Onofrio</span>
+            <span>{{ page.hero_location|default:"Lecce • Martina Franca" }}</span>
         </div>
     </div>
 </section>
@@ -114,9 +117,9 @@
                     {% if page.about_text %}
                         {{ page.about_text|richtext }}
                     {% else %}
-                    <p>L'attività dell'Avv. Rossella D'Onofrio si svolge dinanzi ai Tribunali di Lecce, Brindisi e Taranto.</p>
-                    <p>Lo Studio si caratterizza per una struttura organizzativa idonea ad assicurare la consulenza ed assistenza, giudiziale e stragiudiziale, nei settori giuridici di rilievo.</p>
-                    <p>La filosofia dello Studio configura il ricorso all'autorità giudiziaria nei soli casi in cui ciò si renda assolutamente necessario per la miglior tutela degli interessi della parte assistita.</p>
+                    <p>L'attività dell'Avv. Rossella D'Onofrio si svolge dinanzi ai Tribunali del Crote d'Appello di Lecce, ad esclusione del Foro di Taranto dove ricopre l'incarico di Vice Procuratore Onorario.</p>
+                    <p>Lo Studio D'Onofrio si caratterizza per una struttura organizzativa idonea ad assicurare la consulenza ed assistenza, giudiziale e stragiudiziale, nei settori giuridici di rilievo.</p>
+                    <p>La filosofia dello Studio Legale configura il ricorso all'autorità giudiziaria nei soli casi in cui ciò si renda assolutamente necessario per la miglior tutela degli interessi della parte assistita.</p>
                     {% endif %}
                 </div>
             </div>
