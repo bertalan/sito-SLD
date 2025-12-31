@@ -1,16 +1,22 @@
 """
 Servizio email per invio conferme prenotazione con allegato iCal.
 """
+import logging
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from .ical import generate_ical, generate_ical_filename
 
+logger = logging.getLogger(__name__)
+
 
 def send_booking_confirmation(appointment):
     """
     Invia email di conferma al cliente e allo studio con allegato iCal.
+    Ritorna un dict con lo stato di invio per ogni destinatario.
     """
+    logger.info(f"Invio email conferma per appuntamento #{appointment.id} - {appointment.email}")
+    
     # Genera il file iCal
     ical_content = generate_ical(appointment)
     ical_filename = generate_ical_filename(appointment)
@@ -27,11 +33,28 @@ def send_booking_confirmation(appointment):
         'studio_maps_url': settings.STUDIO_MAPS_URL,
     }
     
+    results = {'client': False, 'studio': False, 'errors': []}
+    
     # Email al cliente
-    _send_client_email(appointment, context, ical_content, ical_filename)
+    try:
+        _send_client_email(appointment, context, ical_content, ical_filename)
+        results['client'] = True
+    except Exception as e:
+        results['errors'].append(f"Cliente ({appointment.email}): {e}")
     
     # Email allo studio
-    _send_studio_email(appointment, context, ical_content, ical_filename)
+    try:
+        _send_studio_email(appointment, context, ical_content, ical_filename)
+        results['studio'] = True
+    except Exception as e:
+        results['errors'].append(f"Studio ({settings.STUDIO_EMAIL}): {e}")
+    
+    if results['errors']:
+        logger.warning(f"Errori invio email per appuntamento #{appointment.id}: {results['errors']}")
+    else:
+        logger.info(f"Email inviate con successo per appuntamento #{appointment.id}")
+    
+    return results
 
 
 def _send_client_email(appointment, context, ical_content, ical_filename):
@@ -114,9 +137,12 @@ Web: {context['studio_website']}
     email.attach(ical_filename, ical_content, 'text/calendar')
     
     try:
-        email.send()
+        result = email.send()
+        logger.info(f"Email cliente inviata a {appointment.email} (result={result})")
+        return result
     except Exception as e:
-        print(f"Errore invio email cliente: {e}")
+        logger.error(f"ERRORE invio email cliente a {appointment.email}: {type(e).__name__}: {e}")
+        raise
 
 
 def _send_studio_email(appointment, context, ical_content, ical_filename):
@@ -167,6 +193,9 @@ Il file calendario (.ics) è allegato a questa email.
     email.attach(ical_filename, ical_content, 'text/calendar')
     
     try:
-        email.send()
+        result = email.send()
+        logger.info(f"Email studio inviata a {settings.STUDIO_EMAIL} (result={result})")
+        return result
     except Exception as e:
-        print(f"Errore invio email studio: {e}")
+        logger.error(f"ERRORE invio email studio a {settings.STUDIO_EMAIL}: {type(e).__name__}: {e}")
+        raise
