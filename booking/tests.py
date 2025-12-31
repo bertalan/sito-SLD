@@ -243,21 +243,19 @@ class PaymentGatewayTest(TestCase):
         data = json.loads(response.content)
         self.assertIn('url', data)
     
-    @patch('booking.views.paypalrestsdk.Payment')
-    def test_paypal_checkout_creates_payment(self, mock_payment_class):
+    @patch('booking.payment_service.RealPayPalProvider')
+    def test_paypal_checkout_creates_payment(self, mock_provider_class):
         """Verifica che PayPal crei un pagamento."""
-        # Configura il mock
-        mock_payment_instance = MagicMock()
-        mock_payment_instance.create.return_value = True
-        mock_payment_instance.id = 'PAY-123456'
+        from booking.payment_service import PaymentResult
         
-        # Crea mock per i links con attributo rel corretto
-        mock_link = MagicMock()
-        mock_link.rel = 'approval_url'
-        mock_link.href = 'https://paypal.com/approve/test'
-        mock_payment_instance.links = [mock_link]
-        
-        mock_payment_class.return_value = mock_payment_instance
+        # Configura il mock del provider
+        mock_provider = MagicMock()
+        mock_provider.create_payment.return_value = PaymentResult(
+            success=True,
+            redirect_url='https://paypal.com/approve/test',
+            payment_id='PAY-123456'
+        )
+        mock_provider_class.return_value = mock_provider
         
         today = date.today()
         days_until_monday = (7 - today.weekday()) % 7 or 7
