@@ -7,58 +7,6 @@ from wagtail.models import Page, Site
 from .models import ServiceArea, ServicesIndexPage, ServicePage
 
 
-def setup_wagtail_home():
-    """Helper per creare la HomePage se non esiste.
-    
-    Wagtail crea una pagina di benvenuto con slug='home' nella migrazione 0002_initial_data.
-    Dobbiamo sostituirla con la nostra HomePage.
-    """
-    from home.models import HomePage
-    
-    # Se la nostra HomePage esiste già, restituiscila
-    if HomePage.objects.filter(slug='home').exists():
-        return HomePage.objects.get(slug='home')
-    
-    # Ottieni la pagina root
-    root = Page.objects.get(slug='root')
-    
-    # Cerca la pagina di benvenuto di Wagtail (ha slug='home' ma non è HomePage)
-    try:
-        welcome_page = Page.objects.get(slug='home', depth=2)
-        # Verifica se è già una HomePage
-        if hasattr(welcome_page, 'homepage'):
-            return welcome_page.specific
-        # Elimina la welcome page
-        welcome_page.delete()
-    except Page.DoesNotExist:
-        pass
-    
-    # Ripara l'albero Wagtail dopo la cancellazione
-    Page.fix_tree()
-    
-    # Ricarica root dopo fix_tree
-    root = Page.objects.get(slug='root')
-    
-    # Crea la nostra HomePage usando add_child (metodo corretto)
-    home = HomePage(title="Home", slug="home")
-    root.add_child(instance=home)
-    
-    # Aggiorna o crea il site
-    site = Site.objects.first()
-    if site:
-        site.root_page = home
-        site.save()
-    else:
-        Site.objects.create(
-            hostname='localhost',
-            port=80,
-            root_page=home,
-            is_default_site=True
-        )
-    
-    return home
-
-
 class ServiceAreaModelTest(TestCase):
     """Test per il modello ServiceArea (snippet)."""
     
@@ -98,7 +46,16 @@ class ServicesIndexPageTest(TestCase):
     
     def setUp(self):
         """Setup: creo la struttura delle pagine."""
-        self.home = setup_wagtail_home()
+        root = Page.objects.get(slug='root')
+        
+        try:
+            home = Page.objects.get(slug='home')
+        except Page.DoesNotExist:
+            from home.models import HomePage
+            home = HomePage(title="Home", slug="home")
+            root.add_child(instance=home)
+        
+        self.home = home
     
     def test_create_services_index_page(self):
         """Verifica che una pagina indice servizi possa essere creata."""
@@ -135,7 +92,14 @@ class ServicePageTest(TestCase):
     
     def setUp(self):
         """Setup: creo la struttura delle pagine."""
-        home = setup_wagtail_home()
+        root = Page.objects.get(slug='root')
+        
+        try:
+            home = Page.objects.get(slug='home')
+        except Page.DoesNotExist:
+            from home.models import HomePage
+            home = HomePage(title="Home", slug="home")
+            root.add_child(instance=home)
         
         self.services_index = ServicesIndexPage(title="Servizi", slug="servizi")
         home.add_child(instance=self.services_index)
