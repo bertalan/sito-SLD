@@ -3,6 +3,25 @@
 from django.db import migrations
 
 
+def remove_fields_if_exist(apps, schema_editor):
+    """Rimuove i campi solo se esistono nel database."""
+    from django.db import connection
+    
+    with connection.cursor() as cursor:
+        # Verifica quali colonne esistono
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'contact_contactpage'
+            AND column_name IN ('address_martina', 'martina_lat', 'martina_lng')
+        """)
+        existing_columns = [row[0] for row in cursor.fetchall()]
+        
+        # Rimuovi solo le colonne che esistono
+        for col in existing_columns:
+            cursor.execute(f'ALTER TABLE contact_contactpage DROP COLUMN IF EXISTS {col}')
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,16 +29,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='contactpage',
-            name='address_martina',
-        ),
-        migrations.RemoveField(
-            model_name='contactpage',
-            name='martina_lat',
-        ),
-        migrations.RemoveField(
-            model_name='contactpage',
-            name='martina_lng',
-        ),
+        migrations.RunPython(remove_fields_if_exist, migrations.RunPython.noop),
     ]
