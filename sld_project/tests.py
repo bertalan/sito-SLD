@@ -274,3 +274,61 @@ class MatomoTest(TestCase):
             self.assertIn('G-TEST123', content)
             self.assertIn('_paq', content)
             self.assertIn('matomo.test.com', content)
+
+
+class PrivacyConsentFormTest(TestCase):
+    """Test per verificare il checkbox consenso privacy nei form."""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Setup pagine Wagtail
+        from wagtail.models import Page, Site
+        from home.models import HomePage
+        from domiciliazioni.models import DomiciliazioniPage
+        
+        root = Page.objects.get(slug='root')
+        
+        # Trova o crea la home
+        try:
+            self.home = HomePage.objects.get(slug='home')
+        except HomePage.DoesNotExist:
+            self.home = HomePage(title="Home", slug="home")
+            root.add_child(instance=self.home)
+            
+            site = Site.objects.first()
+            if site:
+                site.root_page = self.home
+                site.save()
+        
+        # Crea pagina domiciliazioni
+        if not DomiciliazioniPage.objects.filter(slug='domiciliazioni').exists():
+            dom = DomiciliazioniPage(title="Domiciliazioni", slug="domiciliazioni")
+            self.home.add_child(instance=dom)
+    
+    def test_booking_page_has_privacy_consent_checkbox(self):
+        """Verifica che la pagina prenotazione abbia il checkbox privacy."""
+        response = self.client.get('/prenota/')
+        # La pagina deve essere accessibile
+        self.assertIn(response.status_code, [200, 302])
+        
+        if response.status_code == 200:
+            content = response.content.decode('utf-8')
+            # Deve contenere il checkbox privacy_consent required
+            self.assertIn('name="privacy_consent"', content)
+            self.assertIn('required', content)
+            self.assertIn('/privacy/', content)
+            self.assertIn('GDPR', content)
+    
+    def test_domiciliazioni_page_has_privacy_consent_checkbox(self):
+        """Verifica che la pagina domiciliazioni abbia il checkbox privacy."""
+        response = self.client.get('/domiciliazioni/')
+        self.assertEqual(response.status_code, 200)
+        
+        content = response.content.decode('utf-8')
+        
+        # Deve contenere il checkbox privacy_consent required
+        self.assertIn('name="privacy_consent"', content)
+        self.assertIn('required', content)
+        self.assertIn('/privacy/', content)
+        self.assertIn('GDPR', content)
