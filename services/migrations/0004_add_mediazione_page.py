@@ -43,16 +43,31 @@ def add_mediazione_page(apps, schema_editor):
 <p>L'approccio conciliativo permette di ottenere soluzioni rapide, preservare i rapporti commerciali o personali e beneficiare delle agevolazioni fiscali previste dalla legge.</p>'''
 
     # Calcola path e depth
-    new_path = index.path + '0001'  # Placeholder, verrà corretto
     new_depth = index.depth + 1
     
-    # Trova il prossimo path disponibile
+    # Trova il prossimo path disponibile usando base 36 (Wagtail usa treebeard)
     from django.db.models import Max
-    last_child = ServicePage.objects.filter(path__startswith=index.path, depth=new_depth).aggregate(Max('path'))
+    Page = apps.get_model('wagtailcore', 'Page')
+    
+    # Cerca tutte le child pages del parent
+    children = Page.objects.filter(path__startswith=index.path, depth=new_depth)
+    last_child = children.aggregate(Max('path'))
+    
     if last_child['path__max']:
-        # Incrementa l'ultimo path
-        last_num = int(last_child['path__max'][-4:])
-        new_path = index.path + str(last_num + 1).zfill(4)
+        # Il path usa base 36: 0-9 poi A-Z
+        last_suffix = last_child['path__max'][-4:]
+        last_num = int(last_suffix, 36)
+        new_num = last_num + 1
+        # Converti in base 36
+        def to_base36(num):
+            chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            result = ''
+            while num:
+                result = chars[num % 36] + result
+                num //= 36
+            return result or '0'
+        new_suffix = to_base36(new_num).zfill(4)
+        new_path = index.path + new_suffix
     else:
         new_path = index.path + '0001'
     
