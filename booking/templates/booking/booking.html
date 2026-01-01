@@ -82,7 +82,7 @@
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Modalità consulenza *</label>
                         <div class="grid grid-cols-2 gap-4">
                             <label class="cursor-pointer">
-                                <input type="radio" name="consultation_type" value="in_person" class="sr-only peer">
+                                <input type="radio" name="consultation_type" value="in_person" required class="sr-only peer">
                                 <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
                                     <i data-lucide="building-2" class="w-6 h-6 mx-auto mb-2 text-brand-gray"></i>
                                     <span class="block font-bold text-sm">In presenza</span>
@@ -127,10 +127,10 @@
                     
                     <!-- Scelta metodo di pagamento -->
                     <div class="mt-6">
-                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Metodo di pagamento</label>
+                        <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Metodo di pagamento *</label>
                         <div class="grid grid-cols-2 gap-4">
                             <label class="payment-option cursor-pointer">
-                                <input type="radio" name="payment_method" value="stripe" class="sr-only peer">
+                                <input type="radio" name="payment_method" value="stripe" required class="sr-only peer">
                                 <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
                                     <i data-lucide="credit-card" class="w-8 h-8 mx-auto mb-2 text-brand-gray peer-checked:text-brand-accent"></i>
                                     <span class="block font-bold text-sm">Carta di credito</span>
