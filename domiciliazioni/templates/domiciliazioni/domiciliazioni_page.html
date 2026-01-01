@@ -108,29 +108,31 @@
                 </div>
             </div>
             
-            <!-- Dati Tribunale -->
+            <!-- Attività richiesta -->
             <div class="bg-brand-silver p-6 border border-brand-gray/20">
                 <h3 class="text-lg font-bold text-brand-black mb-6 uppercase tracking-wider flex items-center gap-2">
                     <i data-lucide="scale" class="w-5 h-5 text-brand-accent"></i>
-                    Tribunale e Udienza
+                    Attività richiesta
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
-                            Tribunale <span class="text-brand-accent">*</span>
+                            Tribunale / Ufficio <span class="text-brand-accent">*</span>
                         </label>
-                        <select name="tribunale" required
+                        <select name="tribunale" id="tribunale-select" required
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
-                            <option value="lecce" selected>Tribunale di Lecce</option>
+                            <option value="">-- Seleziona --</option>
+                            <option value="lecce">Tribunale di Lecce</option>
+                            <option value="unep">Ufficio UNEP di Lecce</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
-                            Tipo udienza <span class="text-brand-accent">*</span>
+                            Servizio <span class="text-brand-accent">*</span>
                         </label>
-                        <select name="tipo_udienza" required
+                        <select name="tipo_udienza" id="servizio-select" required
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
-                            <option value="">Seleziona tipo...</option>
+                            <option value="">Seleziona servizio...</option>
                             <option value="civile">Udienza Civile</option>
                             <option value="penale">Udienza Penale</option>
                             <option value="lavoro">Udienza Lavoro</option>
@@ -138,6 +140,8 @@
                             <option value="esecuzioni">Esecuzioni</option>
                             <option value="fallimentare">Fallimentare</option>
                             <option value="volontaria">Volontaria Giurisdizione</option>
+                            <option value="notificazioni">Ufficio notificazioni</option>
+                            <option value="esecuzione_protesti">Ufficio esecuzione e protesti</option>
                             <option value="altro">Altro</option>
                         </select>
                     </div>
@@ -167,11 +171,11 @@
                     Dati Causa
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div id="numero-rg-container">
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
-                            Numero R.G. <span class="text-brand-accent">*</span>
+                            Numero R.G. <span class="text-brand-accent rg-required">*</span>
                         </label>
-                        <input type="text" name="numero_rg" required
+                        <input type="text" name="numero_rg" id="numero-rg-input"
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
                             placeholder="Es: 1234/2025">
                     </div>
@@ -183,11 +187,11 @@
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors"
                             placeholder="Rossi c/ Bianchi">
                     </div>
-                    <div>
+                    <div id="data-udienza-container">
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">
-                            Data udienza <span class="text-brand-accent">*</span>
+                            Data udienza <span class="text-brand-accent data-required">*</span>
                         </label>
-                        <input type="date" name="data_udienza" required
+                        <input type="date" name="data_udienza" id="data-udienza-input"
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
                     </div>
                     <div>
@@ -276,5 +280,35 @@ function updateFileList(input) {
         lucide.createIcons();
     }
 }
+
+// Logica condizionale per campi obbligatori
+document.addEventListener('DOMContentLoaded', function() {
+    const tribunaleSelect = document.getElementById('tribunale-select');
+    const numeroRgInput = document.getElementById('numero-rg-input');
+    const dataUdienzaInput = document.getElementById('data-udienza-input');
+    const rgRequired = document.querySelector('.rg-required');
+    const dataRequired = document.querySelector('.data-required');
+    
+    function updateRequiredFields() {
+        const isTribunale = tribunaleSelect.value === 'lecce';
+        
+        if (isTribunale) {
+            numeroRgInput.setAttribute('required', 'required');
+            dataUdienzaInput.setAttribute('required', 'required');
+            rgRequired.style.display = 'inline';
+            dataRequired.style.display = 'inline';
+        } else {
+            numeroRgInput.removeAttribute('required');
+            dataUdienzaInput.removeAttribute('required');
+            rgRequired.style.display = 'none';
+            dataRequired.style.display = 'none';
+        }
+    }
+    
+    tribunaleSelect.addEventListener('change', updateRequiredFields);
+    
+    // Esegui all'avvio
+    updateRequiredFields();
+});
 </script>
 {% endblock %}
