@@ -41,3 +41,4 @@ Thumbs.db
 # Database backups
 backup_*.sql
 *.sql.gz
+static/
