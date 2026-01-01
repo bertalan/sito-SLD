@@ -8,7 +8,7 @@ class HomePage(Page):
     """Homepage Studio Legale D'Onofrio."""
     
     # Hero
-    hero_title = models.CharField("Titolo Hero", max_length=200, default="STUDIO LEGALE")
+    hero_title = models.TextField("Titolo Hero", default="ASSISTENZA LEGALE\nPER UNA TUTELA\nDI ELEVATA EFFICACIA\nE COMPETENZA")
     hero_subtitle = models.CharField("Sottotitolo", max_length=200, default="D'ONOFRIO")
     hero_accent = models.CharField("Testo accent", max_length=100, default="GIUSTIZIA.")
     hero_description = RichTextField("Descrizione", blank=True)
