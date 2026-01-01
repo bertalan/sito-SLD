@@ -230,3 +230,7 @@ STUDIO_PHONE = os.environ.get('STUDIO_PHONE', '+39 320 7044664')
 STUDIO_PEC = os.environ.get('STUDIO_PEC', 'rossella.donofrio@pec.it')
 STUDIO_WEBSITE = os.environ.get('STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')
 STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?daddr=40.35333,18.17833')
+
+# Google Calendar settings
+GOOGLE_CALENDAR_ICAL_URL = os.environ.get('GOOGLE_CALENDAR_ICAL_URL', '')
+GOOGLE_CALENDAR_CACHE_TTL = int(os.environ.get('GOOGLE_CALENDAR_CACHE_TTL', 600))  # 10 minuti

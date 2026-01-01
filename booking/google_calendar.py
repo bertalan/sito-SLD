@@ -11,19 +11,6 @@ from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-# URL del feed iCal privato (con token)
-GOOGLE_CALENDAR_ICAL_URL = getattr(
-    settings, 
-    'GOOGLE_CALENDAR_ICAL_URL',
-    ''
-)
-
-# Cache TTL in secondi (10 minuti)
-CALENDAR_CACHE_TTL = getattr(settings, 'GOOGLE_CALENDAR_CACHE_TTL', 600)
-
-# Prefisso per identificare appuntamenti telefonici
-APPOINTMENT_PREFIX = 'App '
-
 
 def fetch_calendar_events():
     """
@@ -33,7 +20,12 @@ def fetch_calendar_events():
     try:
         from icalendar import Calendar
         
-        response = requests.get(GOOGLE_CALENDAR_ICAL_URL, timeout=30)
+        ical_url = getattr(settings, 'GOOGLE_CALENDAR_ICAL_URL', '')
+        if not ical_url:
+            logger.warning("GOOGLE_CALENDAR_ICAL_URL non configurato")
+            return []
+        
+        response = requests.get(ical_url, timeout=30)
         response.raise_for_status()
         
         cal = Calendar.from_ical(response.content)
@@ -97,6 +89,8 @@ def sync_google_calendar_events():
     """
     from .models import GoogleCalendarEvent
     
+    cache_ttl = getattr(settings, 'GOOGLE_CALENDAR_CACHE_TTL', 600)
+    
     # Check cache
     cache_key = 'google_calendar_last_sync'
     last_sync = cache.get(cache_key)
@@ -109,7 +103,7 @@ def sync_google_calendar_events():
     
     if not events:
         # Se non ci sono eventi o errore, non aggiornare
-        cache.set(cache_key, timezone.now(), CALENDAR_CACHE_TTL)
+        cache.set(cache_key, timezone.now(), cache_ttl)
         return False
     
     # Filtra solo eventi futuri (da oggi in poi)
@@ -139,7 +133,7 @@ def sync_google_calendar_events():
         )
     
     # Imposta cache
-    cache.set(cache_key, timezone.now(), CALENDAR_CACHE_TTL)
+    cache.set(cache_key, timezone.now(), cache_ttl)
     logger.info(f"Sincronizzati {len(future_events)} eventi 'App' da Google Calendar")
     
     return True

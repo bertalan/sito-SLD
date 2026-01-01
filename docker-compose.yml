@@ -31,6 +31,9 @@ services:
       - STUDIO_PEC=${STUDIO_PEC:-}
       - STUDIO_WEBSITE=${STUDIO_WEBSITE:-}
       - STUDIO_MAPS_URL=${STUDIO_MAPS_URL:-}
+      # Google Calendar
+      - GOOGLE_CALENDAR_ICAL_URL=${GOOGLE_CALENDAR_ICAL_URL:-}
+      - GOOGLE_CALENDAR_CACHE_TTL=${GOOGLE_CALENDAR_CACHE_TTL:-600}
     depends_on:
       - db
 
