@@ -13,12 +13,10 @@
             <div class="lg:col-span-8">
                 <h1 class="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-brand-black leading-[0.9] mb-8">
                         <!-- Mobile: 3 righe -->
-                        <span class="block md:hidden">
-                            <span>Assistenza legale</span><br/>
-                            <span>per una tutela</span><br/>
-                            <span class="mt-4">
-                                <span class="text-brand-accent">di elevata efficacia e competenza</span>
-                            </span>
+                        <span class="block md:hidden text-4xl">
+                            <span>ASSISTENZA LEGALE</span><br/>
+                            <span>PER UNA TUTELA</span><br/>
+                            <span class="text-brand-accent">DI ELEVATA EFFICACIA E COMPETENZA</span>
                         </span>
                         <!-- Desktop: 2 righe -->
                         <span class="hidden md:block">
@@ -32,18 +30,7 @@
 
             <!-- Logo - colonna 4 -->
             <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
-                <img src="{% static 'images/dr_Logo.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto -mt-[80px] ml-[10px] scale-[1.22] origin-top-right opacity-[0.12]">
-            </div>
-        </div>
-        
-        <!-- Gruppo testo descrizione - sopra la linea -->
-        <div class="lg:ml-auto lg:max-w-md mt-4 lg:-mt-[100px]">
-            <div class="text-lg md:text-l text-brand-black leading-snug">
-                {% if page.hero_description %}
-                    {{ page.hero_description|richtext }}
-                {% else %}
-                    <p>Consulenza e assistenza giudiziale e stragiudiziale per una tutela di elevata efficacia e competenza.</p>
-                {% endif %}
+                <img src="{% static 'images/dr_Logo.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto -mt-[80px] ml-[10px] scale-[1.46] origin-top-right opacity-[0.12]">
             </div>
         </div>
         
@@ -52,9 +39,8 @@
         <div class="lg:hidden h-[1px] w-full bg-brand-black mt-8"></div>
         
         <!-- Info avvocato - sotto la linea -->
-        <div class="flex justify-between text-sm text-brand-black uppercase tracking-widest mt-4 lg:max-w-md lg:ml-auto">
-            <span>Avv. Rossella D'Onofrio</span>
-            <span>{{ page.hero_location|default:"• Lecce" }}</span>
+        <div class="flex justify-end text-sm text-brand-black uppercase tracking-widest mt-4 lg:max-w-md lg:ml-auto">
+            <span>Avv. Rossella D'Onofrio • Lecce</span>
         </div>
     </div>
 </section>
