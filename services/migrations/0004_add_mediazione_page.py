@@ -71,6 +71,10 @@ def add_mediazione_page(apps, schema_editor):
     else:
         new_path = index.path + '0001'
     
+    # Ottieni il locale predefinito
+    Locale = apps.get_model('wagtailcore', 'Locale')
+    default_locale = Locale.objects.first()
+    
     page = ServicePage.objects.create(
         title='Mediazione e Negoziazione Assistita',
         slug='mediazione-negoziazione',
@@ -83,6 +87,7 @@ def add_mediazione_page(apps, schema_editor):
         live=True,
         has_unpublished_changes=False,
         url_path=index.url_path + 'mediazione-negoziazione/',
+        locale=default_locale,
     )
     
     # Aggiorna numchild del parent
