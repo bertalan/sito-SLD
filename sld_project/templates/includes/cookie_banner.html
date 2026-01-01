@@ -103,9 +103,10 @@
         
         hideBanner();
         
-        // Se ha accettato analytics, inizializza GA4
-        if (type === 'all' && typeof initGA4 === 'function') {
-            initGA4();
+        // Se ha accettato analytics, inizializza entrambi i sistemi
+        if (type === 'all') {
+            if (typeof initGA4 === 'function') initGA4();
+            if (typeof initMatomo === 'function') initMatomo();
         }
     };
     
@@ -125,9 +126,10 @@
         
         hideBanner();
         
-        // Se ha accettato analytics, inizializza GA4
-        if (analytics && typeof initGA4 === 'function') {
-            initGA4();
+        // Se ha accettato analytics, inizializza entrambi i sistemi
+        if (analytics) {
+            if (typeof initGA4 === 'function') initGA4();
+            if (typeof initMatomo === 'function') initMatomo();
         }
     };
     

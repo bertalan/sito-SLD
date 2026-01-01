@@ -239,5 +239,10 @@ STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?dad
 GOOGLE_CALENDAR_ICAL_URL = os.environ.get('GOOGLE_CALENDAR_ICAL_URL', '')
 GOOGLE_CALENDAR_CACHE_TTL = int(os.environ.get('GOOGLE_CALENDAR_CACHE_TTL', 600))  # 10 minuti
 
+# Analytics - Configura UNO dei due (o entrambi)
 # Google Analytics 4
 GA4_MEASUREMENT_ID = os.environ.get('GA4_MEASUREMENT_ID', '')
+
+# Matomo (alternativa privacy-friendly)
+MATOMO_URL = os.environ.get('MATOMO_URL', '')  # es: https://matomo.example.com
+MATOMO_SITE_ID = os.environ.get('MATOMO_SITE_ID', '')  # es: 1

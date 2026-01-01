@@ -228,3 +228,49 @@ class GoogleAnalyticsTest(TestCase):
         
         # Senza GA4_MEASUREMENT_ID, non deve esserci gtag
         self.assertNotIn('googletagmanager.com/gtag', content)
+
+class MatomoTest(TestCase):
+    """Test per Matomo Analytics."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_matomo_script_present_when_configured(self):
+        """Verifica che lo script Matomo sia presente quando configurato."""
+        from django.test import override_settings
+        
+        with override_settings(MATOMO_URL='https://matomo.test.com', MATOMO_SITE_ID='5'):
+            response = self.client.get('/')
+            content = response.content.decode('utf-8')
+            
+            # Lo script Matomo deve essere presente
+            self.assertIn('_paq', content)
+            self.assertIn('matomo.test.com', content)
+            self.assertIn('5', content)
+    
+    def test_matomo_not_loaded_without_config(self):
+        """Verifica che Matomo non sia caricato senza configurazione."""
+        response = self.client.get('/')
+        content = response.content.decode('utf-8')
+        
+        # Senza MATOMO_URL, non deve esserci _paq push per trackPageView
+        # (potrebbe esserci l'array _paq vuoto ma non il tracking)
+        self.assertNotIn('trackPageView', content)
+    
+    def test_both_analytics_can_coexist(self):
+        """Verifica che GA4 e Matomo possano coesistere."""
+        from django.test import override_settings
+        
+        with override_settings(
+            GA4_MEASUREMENT_ID='G-TEST123',
+            MATOMO_URL='https://matomo.test.com',
+            MATOMO_SITE_ID='5'
+        ):
+            response = self.client.get('/')
+            content = response.content.decode('utf-8')
+            
+            # Entrambi devono essere presenti
+            self.assertIn('gtag', content)
+            self.assertIn('G-TEST123', content)
+            self.assertIn('_paq', content)
+            self.assertIn('matomo.test.com', content)

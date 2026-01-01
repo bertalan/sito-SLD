@@ -110,14 +110,9 @@
         {# Schema.org JSON-LD per SEO #}
         {% schema_org_jsonld %}
         
-        {# Google Analytics 4 - Caricato solo dopo consenso cookie #}
-        {% if ga4_measurement_id %}
+        {# Analytics - Caricati solo dopo consenso cookie #}
         <script>
-            // GA4 - Caricamento condizionato dal consenso
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            
-            // Verifica consenso cookie
+            // Verifica consenso cookie per analytics
             function hasAnalyticsConsent() {
                 const consent = document.cookie.split('; ').find(row => row.startsWith('cookie_consent='));
                 if (!consent) return false;
@@ -129,7 +124,28 @@
                 }
             }
             
-            // Inizializza GA4 solo se c'è consenso
+            // Funzione generica per tracking eventi (funziona con entrambi)
+            window.trackEvent = function(eventName, params) {
+                if (!hasAnalyticsConsent()) return;
+                
+                // GA4
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, params);
+                }
+                
+                // Matomo
+                if (typeof _paq !== 'undefined') {
+                    _paq.push(['trackEvent', params.category || 'General', eventName, params.label || '']);
+                }
+            };
+        </script>
+        
+        {# Google Analytics 4 #}
+        {% if ga4_measurement_id %}
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            
             function initGA4() {
                 if (hasAnalyticsConsent() && !window.ga4Loaded) {
                     window.ga4Loaded = true;
@@ -139,7 +155,6 @@
                         'cookie_flags': 'SameSite=None;Secure'
                     });
                     
-                    // Carica lo script GA4
                     const script = document.createElement('script');
                     script.async = true;
                     script.src = 'https://www.googletagmanager.com/gtag/js?id={{ ga4_measurement_id }}';
@@ -147,17 +162,31 @@
                 }
             }
             
-            // Controlla al caricamento
-            if (hasAnalyticsConsent()) {
-                initGA4();
+            if (hasAnalyticsConsent()) { initGA4(); }
+        </script>
+        {% endif %}
+        
+        {# Matomo Analytics #}
+        {% if matomo_url and matomo_site_id %}
+        <script>
+            var _paq = window._paq = window._paq || [];
+            
+            function initMatomo() {
+                if (hasAnalyticsConsent() && !window.matomoLoaded) {
+                    window.matomoLoaded = true;
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    _paq.push(['setTrackerUrl', '{{ matomo_url }}/matomo.php']);
+                    _paq.push(['setSiteId', '{{ matomo_site_id }}']);
+                    
+                    var script = document.createElement('script');
+                    script.async = true;
+                    script.src = '{{ matomo_url }}/matomo.js';
+                    document.head.appendChild(script);
+                }
             }
             
-            // Funzioni per tracking eventi
-            window.trackEvent = function(eventName, params) {
-                if (hasAnalyticsConsent()) {
-                    gtag('event', eventName, params);
-                }
-            };
+            if (hasAnalyticsConsent()) { initMatomo(); }
         </script>
         {% endif %}
 
