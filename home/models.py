@@ -26,7 +26,7 @@ class HomePage(Page):
     about_text = RichTextField("Testo", blank=True)
     
     # CTA
-    cta_title = models.CharField("Titolo CTA", max_length=100, default="PARLIAMO")
+    cta_title = models.CharField("Titolo CTA", max_length=100, default="TI ASCOLTIAMO")
     cta_text = models.CharField("Testo CTA", max_length=200, blank=True)
     cta_button_text = models.CharField("Pulsante", max_length=50, default="Prenota appuntamento")
     cta_button_url = models.CharField("URL", max_length=200, default="/prenota/")

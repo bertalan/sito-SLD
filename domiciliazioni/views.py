@@ -109,11 +109,11 @@ AVVOCATO RICHIEDENTE:
 - Telefono: {submission.telefono or 'Non indicato'}
 - Ordine: {submission.ordine_appartenenza or 'Non indicato'}
 
-TRIBUNALE:
-- Tribunale: {tribunale_display}
+ATTIVITÀ RICHIESTE:
+- Tribunale/ufficio: {tribunale_display}
+- Servizio: {tipo_display}
 - Sezione: {submission.sezione or 'Non indicata'}
 - Giudice: {submission.giudice or 'Non indicato'}
-- Tipo udienza: {tipo_display}
 
 CAUSA:
 - Numero R.G.: {submission.numero_rg}
@@ -122,7 +122,7 @@ CAUSA:
 - Ora udienza: {ora_str}
 
 ATTIVITÀ RICHIESTE:
-{submission.attivita_richieste or 'Mera comparizione'}
+{submission.attivita_richieste or 'Nessuna attità richiesta'}
 
 NOTE:
 {submission.note or 'Nessuna nota'}
@@ -136,7 +136,7 @@ File calendario (.ics) allegato.
         email = EmailMultiAlternatives(
             subject=subject,
             body=body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@studiolegaledonofrio.it'),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@studiolegaledonofrio.it'),
             to=[getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')],
             reply_to=[submission.email],
         )
@@ -154,19 +154,20 @@ File calendario (.ics) allegato.
     except Exception as e:
         print(f"Errore invio email domiciliazione: {e}")
     
-    # Email di conferma all'avvocato
-    confirm_subject = f"Conferma richiesta domiciliazione - R.G. {submission.numero_rg}"
-    confirm_body = f"""Gentile {submission.nome_avvocato},
+    # Email di avviso all'avvocato
+    confirm_subject = f"Avviso richiesta domiciliazione - R.G. {submission.numero_rg}"
+    confirm_body = f"""Gentile Collega {submission.nome_avvocato},
 
-La Sua richiesta di domiciliazione è stata ricevuta correttamente.
+La tua richiesta di domiciliazione è stata ricevuta correttamente.
 
 RIEPILOGO:
-- Tribunale: {tribunale_display}
+- Tribunale/Attività: {tribunale_display}
+- Servizio: {tipo_display}
 - R.G.: {submission.numero_rg}
 - Data udienza: {data_italiana}
 - Ora: {ora_str}
 
-Le confermeremo la presa in carico al più presto.
+Ti confermeremo la presa in carico al più presto.
 
 In allegato si trova il file calendario (.ics) da aggiungere al proprio calendario.
 Sarà inviato un promemoria automatico il giorno prima e 2 ore prima dell'udienza.
@@ -186,11 +187,11 @@ Web: {getattr(settings, 'STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')}
         confirm_email = EmailMultiAlternatives(
             subject=confirm_subject,
             body=confirm_body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@studiolegaledonofrio.it'),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@studiolegaledonofrio.it'),
             to=[submission.email],
         )
         # Allega il file iCal
         confirm_email.attach(ical_filename, ical_content, 'text/calendar')
         confirm_email.send()
     except Exception as e:
-        print(f"Errore invio email conferma: {e}")
+        print(f"Errore invio email avviso: {e}")
