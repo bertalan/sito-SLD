@@ -471,3 +471,144 @@ class EmailServiceTest(TestCase):
         self.assertEqual(mock_email.attach.call_count, 2)
         # Entrambe inviate
         self.assertEqual(mock_email.send.call_count, 2)
+
+
+class AppointmentAttachmentModelTest(TestCase):
+    """Test per il modello AppointmentAttachment."""
+    
+    def setUp(self):
+        """Setup comune per i test."""
+        from .models import AppointmentAttachment
+        self.AppointmentAttachment = AppointmentAttachment
+        
+        self.appointment = Appointment.objects.create(
+            first_name="Test",
+            last_name="User",
+            email="test@example.com",
+            phone="+39 333 1234567",
+            notes="Test appointment",
+            consultation_type="video",
+            date=date(2026, 2, 15),
+            time=time(10, 30),
+            status="confirmed"
+        )
+    
+    def test_create_attachment(self):
+        """Verifica che un allegato con spazi nel nome possa essere creato."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        fake_file = SimpleUploadedFile(
+            name="documento test 1.pdf",
+            content=b"contenuto fake del pdf",
+            content_type="application/pdf"
+        )
+        
+        attachment = self.AppointmentAttachment.objects.create(
+            appointment=self.appointment,
+            file=fake_file,
+            original_filename="documento test 1.pdf"
+        )
+        
+        self.assertEqual(attachment.original_filename, "documento test 1.pdf")
+        self.assertEqual(attachment.appointment, self.appointment)
+        self.assertTrue(attachment.file.name.endswith(".pdf"))
+    
+    def test_multiple_attachments(self):
+        """Verifica che si possano allegare più documenti."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        for i in range(3):
+            fake_file = SimpleUploadedFile(
+                name=f"documento_{i}.pdf",
+                content=f"contenuto {i}".encode(),
+                content_type="application/pdf"
+            )
+            self.AppointmentAttachment.objects.create(
+                appointment=self.appointment,
+                file=fake_file,
+                original_filename=f"documento_{i}.pdf"
+            )
+        
+        self.assertEqual(self.appointment.attachments.count(), 3)
+    
+    def test_attachment_str_with_file(self):
+        """Verifica la rappresentazione stringa con file con spazi."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        fake_file = SimpleUploadedFile(
+            name="test 2.pdf",
+            content=b"test",
+            content_type="application/pdf"
+        )
+        attachment = self.AppointmentAttachment.objects.create(
+            appointment=self.appointment,
+            file=fake_file,
+            original_filename="test 2.pdf"
+        )
+        
+        # Il __str__ contiene HTML con link download
+        str_repr = str(attachment)
+        self.assertIn("test 2.pdf", str_repr)
+    
+    def test_attachment_cascade_delete(self):
+        """Verifica che gli allegati vengano eliminati con l'appuntamento."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        fake_file = SimpleUploadedFile(
+            name="file da eliminare.pdf",
+            content=b"test",
+            content_type="application/pdf"
+        )
+        self.AppointmentAttachment.objects.create(
+            appointment=self.appointment,
+            file=fake_file,
+            original_filename="file da eliminare.pdf"
+        )
+        
+        appointment_id = self.appointment.id
+        self.appointment.delete()
+        
+        # Gli allegati devono essere stati eliminati
+        self.assertEqual(
+            self.AppointmentAttachment.objects.filter(appointment_id=appointment_id).count(),
+            0
+        )
+    
+    def test_attachment_file_path(self):
+        """Verifica il path corretto per file con spazi nel nome."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        fake_file = SimpleUploadedFile(
+            name="test path file.pdf",
+            content=b"test",
+            content_type="application/pdf"
+        )
+        attachment = self.AppointmentAttachment.objects.create(
+            appointment=self.appointment,
+            file=fake_file,
+            original_filename="test path file.pdf"
+        )
+        
+        # Il path deve contenere l'ID dell'appuntamento
+        self.assertIn(f"appointments/{self.appointment.id}/", attachment.file.name)
+    
+    def test_attachments_count(self):
+        """Verifica il conteggio allegati."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        self.assertEqual(self.appointment.attachments.count(), 0)
+        
+        # Aggiungo allegati
+        for i in range(2):
+            fake_file = SimpleUploadedFile(
+                name=f"doc_{i}.pdf",
+                content=b"test",
+                content_type="application/pdf"
+            )
+            self.AppointmentAttachment.objects.create(
+                appointment=self.appointment,
+                file=fake_file,
+                original_filename=f"doc_{i}.pdf"
+            )
+        
+        self.assertEqual(self.appointment.attachments.count(), 2)
