@@ -29,9 +29,16 @@ resend_confirmation_email.short_description = "📧 Reinvia email di conferma"
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'date', 'time', 'status', 'created_at']
+    list_display = ['first_name', 'last_name', 'date', 'time', 'allegati_count', 'status', 'created_at']
     list_filter = ['status', 'date']
     search_fields = ['first_name', 'last_name', 'email']
-    readonly_fields = ['created_at', 'updated_at', 'stripe_payment_intent_id']
+    readonly_fields = ['created_at', 'updated_at', 'stripe_payment_intent_id', 'allegati_count']
     ordering = ['-date', '-time']
     actions = [resend_confirmation_email]
+    
+    @admin.display(description='📎 Allegati')
+    def allegati_count(self, obj):
+        count = obj.attachments.count()
+        if count == 0:
+            return '—'
+        return f'✓ {count}'

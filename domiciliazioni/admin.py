@@ -32,13 +32,20 @@ class DomiciliazioniDocumentInline(admin.TabularInline):
 
 @admin.register(DomiciliazioniSubmission)
 class DomiciliazioniSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['numero_rg', 'tribunale', 'nome_avvocato', 'data_udienza', 'ora_udienza', 'status', 'submit_time']
+    list_display = ['numero_rg', 'tribunale', 'nome_avvocato', 'data_udienza', 'ora_udienza', 'allegati_count', 'status', 'submit_time']
     list_filter = ['status', 'tribunale', 'tipo_udienza', 'data_udienza']
     search_fields = ['nome_avvocato', 'email', 'numero_rg', 'parti_causa']
-    readonly_fields = ['submit_time']
+    readonly_fields = ['submit_time', 'allegati_count']
     ordering = ['-submit_time']
     inlines = [DomiciliazioniDocumentInline]
     actions = [resend_domiciliazione_email]
+    
+    @admin.display(description='📎 Allegati')
+    def allegati_count(self, obj):
+        count = obj.documents.count()
+        if count == 0:
+            return '—'
+        return f'✓ {count}'
     
     fieldsets = (
         ('Avvocato Richiedente', {
