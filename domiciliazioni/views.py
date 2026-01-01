@@ -142,6 +142,14 @@ File calendario (.ics) allegato.
         )
         # Allega il file iCal
         email.attach(ical_filename, ical_content, 'text/calendar')
+        # Allega i documenti caricati dall'utente
+        for doc in submission.documents.all():
+            try:
+                doc.file.open('rb')
+                email.attach(doc.original_filename, doc.file.read(), None)
+                doc.file.close()
+            except Exception as doc_err:
+                print(f"Errore allegando documento {doc.original_filename}: {doc_err}")
         email.send()
     except Exception as e:
         print(f"Errore invio email domiciliazione: {e}")
