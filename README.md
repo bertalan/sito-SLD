@@ -46,6 +46,31 @@ Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Djang
 - Condizioni Generali di Contratto (`/termini/`)
 - Privacy Policy GDPR (`/privacy/`)
 
+### 🍪 Cookie Banner GDPR
+- Banner conforme al GDPR con 3 opzioni: Accetta, Rifiuta, Personalizza
+- Gestione consenso cookie tecnici e analitici
+- Preferenze salvate per 365 giorni
+- Link alla Privacy Policy integrato
+
+### 📊 Analytics (GA4 + Matomo)
+- Supporto **Google Analytics 4** (GA4)
+- Supporto **Matomo** (alternativa privacy-friendly)
+- Possibilità di usare uno, entrambi o nessuno
+- Caricamento condizionale basato sul consenso cookie
+- Funzione `trackEvent()` unificata per entrambe le piattaforme
+
+### 🔒 Protezione Anti-Scraping Email
+- Email codificate in **Base64** nell'HTML sorgente
+- Decodifica solo su interazione utente (hover/click)
+- Bot vedono solo placeholder testuali
+- Protezione su tutte le pagine pubbliche
+
+### 🗺️ SEO & Indicizzazione
+- **Sitemap XML** dinamica (`/sitemap.xml`) via Wagtail
+- **robots.txt** dinamico (`/robots.txt`)
+- Meta tag Open Graph e Twitter Card
+- Canonical URL automatici
+
 ### 🎨 Design
 - Stile **brutalista** moderno
 - Palette: nero, bianco, grigio, magenta (#e91e63)
@@ -80,7 +105,7 @@ Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Djang
 Il progetto segue il metodo TDD (Test Driven Development):
 
 - **Pytest + pytest-django**: tutti i moduli hanno test automatici
-- **40 test** su modelli, viste, pagine, pagamenti, email, iCal
+- **93 test** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR
 - **Esecuzione**:
   ```sh
   docker compose exec web python manage.py test
@@ -95,6 +120,10 @@ Il progetto segue il metodo TDD (Test Driven Development):
 - ✅ Videochiamate Jitsi
 - ✅ Gestione slot duplicati
 - ✅ Servizi e aree di pratica
+- ✅ Sitemap XML e robots.txt
+- ✅ Cookie banner GDPR
+- ✅ Google Analytics 4 e Matomo
+- ✅ Consenso privacy nei form
 
 ## Configurazione
 
@@ -128,6 +157,11 @@ EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=...
 EMAIL_HOST_PASSWORD=...
+
+# Analytics (scegli uno o entrambi)
+GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+MATOMO_URL=https://matomo.example.com
+MATOMO_SITE_ID=1
 ```
 
 ## Avvio rapido
