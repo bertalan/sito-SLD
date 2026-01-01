@@ -17,9 +17,9 @@
 
 <section class="py-16 bg-brand-silver">
     <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- Tribunali coperti -->
-            <div class="bg-brand-white p-8 border border-brand-gray/20">
+            <div class="lg:col-span-5 bg-brand-white p-8 border border-brand-gray/20">
                 <h3 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">
                     <i data-lucide="scale" class="inline w-5 h-5 text-brand-accent mr-2"></i>
                     Tribunali coperti
@@ -34,18 +34,12 @@
                     <li class="flex items-center text-brand-gray">
                         <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Lecce
                     </li>
-                    <li class="flex items-center text-brand-gray">
-                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Brindisi
-                    </li>
-                    <li class="flex items-center text-brand-gray">
-                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Taranto
-                    </li>
                     {% endfor %}
                 </ul>
             </div>
             
             <!-- Descrizione servizio -->
-            <div class="lg:col-span-2 bg-brand-white p-8 border border-brand-gray/20">
+            <div class="lg:col-span-7 bg-brand-white p-8 border border-brand-gray/20">
                 <h3 class="text-xl font-bold text-brand-black mb-6 uppercase tracking-wider">Il servizio</h3>
                 {% if page.service_description %}
                 <div class="text-brand-gray prose">

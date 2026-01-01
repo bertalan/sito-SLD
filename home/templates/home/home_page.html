@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative min-h-screen flex items-center pt-20 bg-brand-white overflow-hidden border-b border-brand-gray/20">
+<section class="relative min-h-screen flex items-center pt-10 md:pt-20 bg-brand-white overflow-hidden border-b border-brand-gray/20">
     <div class="absolute inset-0 z-0 opacity-50 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-silver via-brand-white to-brand-white pointer-events-none"></div>
     
     <div class="max-w-7xl mx-auto px-6 w-full relative z-10">
@@ -17,18 +17,22 @@
                     <span>PER UNA TUTELA</span><br/>
                     <span class="text-brand-accent">DI ELEVATA EFFICACIA E COMPETENZA</span>
                 </h1>
-                <!-- Desktop: 2 righe -->
+                <!-- Desktop: titolo standard -->
                 <h1 class="hidden md:block text-8xl lg:text-9xl font-bold tracking-tighter text-brand-black leading-[0.9] mb-8">
                     {{ page.hero_title|default:"STUDIO LEGALE" }} <br/>
                     <span class="block mt-8">
                         <span class="text-brand-accent">D</span><span class="text-brand-black">'</span><span class="text-brand-accent">ONOFRIO</span>
                     </span>
                 </h1>
+                <!-- Sottotitolo desktop -->
+                <p class="hidden md:block text-xl lg:text-2xl font-medium tracking-tight text-brand-gray uppercase mb-4">
+                    Assistenza legale per una tutela di elevata efficacia e competenza
+                </p>
             </div>
 
             <!-- Logo - colonna 4 -->
             <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
-                <img src="{% static 'images/dr_Logo.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto -mt-[80px] ml-[10px] scale-[1.5] origin-top-right opacity-[0.12]">
+                <img src="{% static 'images/dr_Logo.svg' %}" alt="Studio Legale D'Onofrio" class="w-96 h-auto -mt-[80px] ml-[10px] scale-[1.52] origin-top-right opacity-[0.12]">
             </div>
         </div>
         
