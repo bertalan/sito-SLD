@@ -513,6 +513,35 @@ class AppointmentAttachmentModelTest(TestCase):
         self.assertEqual(attachment.appointment, self.appointment)
         self.assertTrue(attachment.file.name.endswith(".pdf"))
     
+    def test_attachment_with_special_characters(self):
+        """Verifica file con caratteri speciali nel nome (à, è, ì, ò, ù, &, !, @, #)."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        
+        special_names = [
+            "documento à termine.pdf",
+            "allegato & note.pdf",
+            "ricevuta n° 123!.pdf",
+            "pratica Rossi-Bianchi (2026).pdf",
+            "pagamento €50.pdf",
+            "riferimento #789.pdf",
+            "certificato 1° livello.pdf",
+            "appunto 01-01-2026.pdf",
+        ]
+        
+        for name in special_names:
+            fake_file = SimpleUploadedFile(
+                name=name,
+                content=b"contenuto test",
+                content_type="application/pdf"
+            )
+            attachment = self.AppointmentAttachment.objects.create(
+                appointment=self.appointment,
+                file=fake_file,
+                original_filename=name
+            )
+            self.assertEqual(attachment.original_filename, name)
+            self.assertTrue(attachment.file.name.endswith(".pdf"))
+    
     def test_multiple_attachments(self):
         """Verifica che si possano allegare più documenti."""
         from django.core.files.uploadedfile import SimpleUploadedFile

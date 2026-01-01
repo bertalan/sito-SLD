@@ -1,0 +1,290 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags %}
+
+{% block titletag %}Calendario Studio{% endblock %}
+{% block extra_css %}
+{{ block.super }}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<style>
+    .calendar-container {
+        background: var(--w-color-surface-page);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .calendar-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .calendar-controls button {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--w-color-border-furniture);
+        background: var(--w-color-surface-page);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .calendar-controls button:hover {
+        background: var(--w-color-surface-header);
+    }
+    
+    .calendar-controls button.active {
+        background: var(--w-color-primary);
+        color: white;
+        border-color: var(--w-color-primary);
+    }
+    
+    #calendar {
+        min-height: 500px;
+    }
+    
+    .fc .fc-toolbar-title {
+        text-transform: capitalize;
+    }
+    
+    .fc-event {
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    
+    .fc-event-google {
+        background-color: #4285f4 !important;
+        border-color: #3367d6 !important;
+    }
+    
+    .fc-event-booking {
+        background-color: #34a853 !important;
+        border-color: #2d8f47 !important;
+    }
+    
+    .fc-event-pending {
+        background-color: #fbbc04 !important;
+        border-color: #e5a800 !important;
+        color: #333 !important;
+    }
+    
+    .appointments-list {
+        background: var(--w-color-surface-page);
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+    
+    .appointments-list h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        color: var(--w-color-text-context);
+    }
+    
+    .appointment-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--w-color-border-furniture);
+        gap: 1rem;
+    }
+    
+    .appointment-item:last-child {
+        border-bottom: none;
+    }
+    
+    .appointment-date {
+        min-width: 90px;
+        font-weight: 600;
+        color: var(--w-color-primary);
+    }
+    
+    .appointment-time {
+        min-width: 60px;
+        color: var(--w-color-text-meta);
+    }
+    
+    .appointment-title {
+        flex: 1;
+    }
+    
+    .appointment-type {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .type-google {
+        background: #e8f0fe;
+        color: #4285f4;
+    }
+    
+    .type-booking {
+        background: #e6f4ea;
+        color: #34a853;
+    }
+    
+    .type-pending {
+        background: #fef7e0;
+        color: #b36b00;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--w-color-text-meta);
+    }
+    
+    .legend {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+    
+    .legend-google { background: #4285f4; }
+    .legend-booking { background: #34a853; }
+    .legend-pending { background: #fbbc04; }
+    
+    .sync-info {
+        font-size: 0.8rem;
+        color: var(--w-color-text-meta);
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "wagtailadmin/shared/header.html" with title="Calendario Studio" icon="calendar" %}
+
+<div class="nice-padding">
+    <div class="legend">
+        <div class="legend-item">
+            <span class="legend-color legend-google"></span>
+            <span>Appuntamenti telefonici (Google)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-booking"></span>
+            <span>Prenotazioni online (confermate)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-pending"></span>
+            <span>Prenotazioni in attesa</span>
+        </div>
+    </div>
+    
+    <div class="calendar-container">
+        <div class="calendar-controls">
+            <button type="button" id="view-month" class="active">Mese</button>
+            <button type="button" id="view-week">Settimana</button>
+            <button type="button" id="view-day">Giorno</button>
+        </div>
+        <div id="calendar"></div>
+        <p class="sync-info">
+            {% if last_sync %}
+                Ultimo aggiornamento Google Calendar: {{ last_sync|date:"d/m/Y H:i" }}
+            {% else %}
+                Google Calendar non ancora sincronizzato
+            {% endif %}
+        </p>
+    </div>
+    
+    <div class="appointments-list">
+        <h3>📅 Prossimi appuntamenti</h3>
+        
+        {% if upcoming_events %}
+            {% for event in upcoming_events %}
+            <div class="appointment-item">
+                <span class="appointment-date">{{ event.date|date:"d/m/Y" }}</span>
+                <span class="appointment-time">{{ event.time }}</span>
+                <span class="appointment-title">{{ event.title }}</span>
+                <span class="appointment-type type-{{ event.type }}">{{ event.type_label }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                Nessun appuntamento programmato
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/it.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    
+    const events = {{ calendar_events_json|safe }};
+    
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'it',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: ''
+        },
+        buttonText: {
+            today: 'Oggi'
+        },
+        events: events,
+        eventClassNames: function(arg) {
+            return ['fc-event-' + arg.event.extendedProps.eventType];
+        },
+        eventClick: function(info) {
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        },
+        firstDay: 1, // Lunedì
+        fixedWeekCount: false,
+        dayMaxEvents: 3,
+        moreLinkText: 'altri'
+    });
+    
+    calendar.render();
+    
+    // View buttons
+    document.getElementById('view-month').addEventListener('click', function() {
+        calendar.changeView('dayGridMonth');
+        updateActiveButton(this);
+    });
+    
+    document.getElementById('view-week').addEventListener('click', function() {
+        calendar.changeView('timeGridWeek');
+        updateActiveButton(this);
+    });
+    
+    document.getElementById('view-day').addEventListener('click', function() {
+        calendar.changeView('timeGridDay');
+        updateActiveButton(this);
+    });
+    
+    function updateActiveButton(activeBtn) {
+        document.querySelectorAll('.calendar-controls button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        activeBtn.classList.add('active');
+    }
+});
+</script>
+{% endblock %}

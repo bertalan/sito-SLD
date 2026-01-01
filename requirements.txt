@@ -25,6 +25,10 @@ whitenoise>=6.6
 # Image processing
 Pillow>=11.0
 
+# Google Calendar
+icalendar>=6.0
+requests>=2.31
+
 # Testing
 pytest>=9.0
 pytest-django>=4.5

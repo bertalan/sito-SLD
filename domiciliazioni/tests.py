@@ -47,6 +47,34 @@ class DomiciliazioniDocumentModelTest(TestCase):
         self.assertEqual(doc.submission, self.submission)
         self.assertTrue(doc.file.name.endswith(".pdf"))
     
+    def test_document_with_special_characters(self):
+        """Verifica file con caratteri speciali nel nome (à, è, ì, ò, ù, &, !, @, #)."""
+        special_names = [
+            "contratto à termine.pdf",
+            "documento & allegati.pdf",
+            "atto n° 123!.pdf",
+            "pratica Rossi-Bianchi (2026).pdf",
+            "fattura €100.pdf",
+            "nota_credito #45.pdf",
+            "sentenza 1° grado.pdf",
+            "verbale udienza 15-01-2026.pdf",
+        ]
+        
+        for name in special_names:
+            fake_file = SimpleUploadedFile(
+                name=name,
+                content=b"contenuto test",
+                content_type="application/pdf"
+            )
+            doc = DomiciliazioniDocument.objects.create(
+                submission=self.submission,
+                file=fake_file,
+                original_filename=name
+            )
+            self.assertEqual(doc.original_filename, name)
+            # Il file deve essere salvato (anche se il nome su disco può essere diverso)
+            self.assertTrue(doc.file.name.endswith(".pdf"))
+    
     def test_multiple_documents(self):
         """Verifica che si possano allegare più documenti."""
         for i in range(3):

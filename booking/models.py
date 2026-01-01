@@ -8,6 +8,32 @@ from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.snippets.models import register_snippet
 
 
+class GoogleCalendarEvent(models.Model):
+    """
+    Cache locale degli eventi Google Calendar con prefisso "App ".
+    Sincronizzato on-demand quando un visitatore accede alla pagina prenotazioni.
+    """
+    google_uid = models.CharField("UID Google", max_length=255, unique=True, db_index=True)
+    summary = models.CharField("Titolo", max_length=255)
+    start_datetime = models.DateTimeField("Inizio")
+    end_datetime = models.DateTimeField("Fine")
+    synced_at = models.DateTimeField("Ultima sincronizzazione")
+    
+    class Meta:
+        verbose_name = "Evento Google Calendar"
+        verbose_name_plural = "Eventi Google Calendar"
+        ordering = ['start_datetime']
+    
+    def __str__(self):
+        return f"{self.summary} - {self.start_datetime.strftime('%d/%m/%Y %H:%M')}"
+    
+    @property
+    def duration_minutes(self):
+        """Durata in minuti."""
+        delta = self.end_datetime - self.start_datetime
+        return int(delta.total_seconds() / 60)
+
+
 @register_snippet
 class AvailabilityRule(models.Model):
     """Regola di disponibilità ricorsiva per appuntamenti."""
@@ -172,6 +198,10 @@ class Appointment(ClusterableModel):
         if not rules.exists():
             return []
         
+        # Ottieni slot bloccati da Google Calendar
+        from .google_calendar import get_blocked_slots_from_google
+        google_blocked_slots = get_blocked_slots_from_google(date)
+        
         slots = []
         slot_duration = getattr(settings, 'BOOKING_SLOT_DURATION', 30)
         
@@ -181,7 +211,12 @@ class Appointment(ClusterableModel):
             
             while current_time + timedelta(minutes=slot_duration) <= end_time:
                 time_slot = current_time.time()
-                if not cls.objects.filter(date=date, time=time_slot).exclude(status='cancelled').exists():
+                # Escludi slot già prenotati nel DB
+                is_booked = cls.objects.filter(date=date, time=time_slot).exclude(status='cancelled').exists()
+                # Escludi slot bloccati da Google Calendar
+                is_google_blocked = time_slot in google_blocked_slots
+                
+                if not is_booked and not is_google_blocked:
                     slots.append(time_slot)
                 current_time += timedelta(minutes=slot_duration)
         
