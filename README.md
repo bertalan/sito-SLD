@@ -189,7 +189,16 @@ MATOMO_SITE_ID=1
    docker compose exec web python manage.py createsuperuser
    ```
 
-5. Accedi:
+5. (Opzionale) Crea dati di esempio:
+   ```sh
+   docker compose exec web python manage.py setup_demo_data
+   ```
+   Questo comando crea:
+   - HomePage con testi di esempio
+   - 8 aree di pratica (Diritto Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
+   - Pagina indice "Aree di Pratica"
+
+6. Accedi:
    - Sito: [http://localhost:8000](http://localhost:8000)
    - Admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
