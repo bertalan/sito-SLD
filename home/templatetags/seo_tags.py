@@ -45,7 +45,7 @@ def schema_org_jsonld(context):
                         "name": "Puglia"
                     }
                 ],
-                "serviceType": [
+                "knowsAbout": [
                     "Diritto Penale",
                     "Famiglia e Successioni",
                     "Privacy e GDPR",
@@ -56,8 +56,8 @@ def schema_org_jsonld(context):
                     "Infortunistica Stradale",
                     "Cittadinanza Italiana"
                 ],
-                "attorney": {
-                    "@type": "Attorney",
+                "employee": {
+                    "@type": "Person",
                     "name": "Rossella D'Onofrio",
                     "jobTitle": "Avvocato",
                     "email": "info@studiolegaledonofrio.it",
