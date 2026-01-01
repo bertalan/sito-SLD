@@ -36,7 +36,7 @@ Per informazioni:
 Mobile: {settings.STUDIO_PHONE}
 Email: {settings.STUDIO_EMAIL}"""
     else:
-        location = f"Studio Legale D'Onofrio - {settings.STUDIO_ADDRESS}"
+        location = f"Studio Legale - {settings.STUDIO_ADDRESS}"
         description = f"""Consulenza legale in presenza con {settings.STUDIO_NAME}.
 
 Indirizzo:
@@ -63,18 +63,18 @@ Email: {settings.STUDIO_EMAIL}"""
     
     ical_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Studio Legale D'Onofrio//Prenotazioni//IT
+PRODID:-//Studio Legale//Prenotazioni//IT
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:{uid}@studiolegaledonofrio.it
+UID:{uid}@example.com
 DTSTAMP:{dtstamp}
 DTSTART:{format_datetime(start_dt)}
 DTEND:{format_datetime(end_dt)}
-SUMMARY:Consulenza legale - Studio Legale D'Onofrio
+SUMMARY:Consulenza legale - Studio Legale
 LOCATION:{escape_ical(location)}
 DESCRIPTION:{escape_ical(description + notes_text)}
-ORGANIZER;CN=Studio Legale D'Onofrio:mailto:info@studiolegaledonofrio.it
+ORGANIZER;CN=Studio Legale:mailto:info@example.com
 ATTENDEE;CN={escape_ical(appointment.first_name)} {escape_ical(appointment.last_name)};RSVP=TRUE:mailto:{appointment.email}
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -87,7 +87,7 @@ BEGIN:VALARM
 TRIGGER:-PT1H
 ACTION:EMAIL
 SUMMARY:Promemoria: Consulenza legale tra 1 ora
-DESCRIPTION:La tua consulenza con lo Studio Legale D'Onofrio inizierà tra 1 ora.
+DESCRIPTION:La tua consulenza con lo Studio Legale inizierà tra 1 ora.
 ATTENDEE:mailto:{appointment.email}
 END:VALARM
 END:VEVENT
@@ -100,4 +100,4 @@ def generate_ical_filename(appointment):
     """Genera il nome del file iCal."""
     date_str = appointment.date.strftime('%Y%m%d')
     time_str = appointment.time.strftime('%H%M')
-    return f"appuntamento-studio-donofrio-{date_str}-{time_str}.ics"
+    return f"appuntamento-studio-studiolegaledemo-{date_str}-{time_str}.ics"

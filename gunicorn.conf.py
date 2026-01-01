@@ -1,4 +1,4 @@
-# Gunicorn configuration file for Studio Legale D'Onofrio
+# Gunicorn configuration file for Studio Legale
 # https://docs.gunicorn.org/en/stable/settings.html
 
 import multiprocessing
@@ -9,7 +9,7 @@ import os
 if os.environ.get('USE_TCP_SOCKET'):
     bind = "0.0.0.0:8000"
 else:
-    bind = "unix:/www/wwwroot/new.studiolegaledonofrio.it/sld.sock"
+    bind = "unix:/www/wwwroot/new.example.com/sld.sock"
 backlog = 2048
 
 # Worker processes

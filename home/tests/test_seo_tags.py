@@ -9,7 +9,7 @@ class SchemaOrgJsonLDTest(TestCase):
     def test_schema_org_jsonld_valid(self):
         # Simula una pagina Wagtail con attributi SEO
         class DummyPage:
-            seo_title = "Studio Legale D'Onofrio"
+            seo_title = "Studio Legale"
             title = "Home"
             search_description = "Descrizione SEO"
             url_path = "/home/"

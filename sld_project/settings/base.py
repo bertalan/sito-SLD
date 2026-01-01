@@ -176,7 +176,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 # Wagtail settings
 
-WAGTAIL_SITE_NAME = "Studio Legale D'Onofrio"
+WAGTAIL_SITE_NAME = "Studio Legale"
 
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
@@ -224,15 +224,15 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Studio Legale D\'Onofrio <info@studiolegaledonofrio.it>')
-STUDIO_EMAIL = os.environ.get('STUDIO_EMAIL', 'info@studiolegaledonofrio.it')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Studio Legale D\'Onofrio <info@example.it>')
+STUDIO_EMAIL = os.environ.get('STUDIO_EMAIL', 'info@example.it')
 
 # Studio contact info
-STUDIO_NAME = os.environ.get('STUDIO_NAME', 'Avv. Rossella D\'Onofrio')
-STUDIO_ADDRESS = os.environ.get('STUDIO_ADDRESS', 'Piazza G. Mazzini, 72 - 73100 Lecce')
-STUDIO_PHONE = os.environ.get('STUDIO_PHONE', '+39 320 7044664')
-STUDIO_PEC = os.environ.get('STUDIO_PEC', 'rossella.donofrio@pec.it')
-STUDIO_WEBSITE = os.environ.get('STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')
+STUDIO_NAME = os.environ.get('STUDIO_NAME', 'Avv. Mario Rossi')
+STUDIO_ADDRESS = os.environ.get('STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma')
+STUDIO_PHONE = os.environ.get('STUDIO_PHONE', '+39 06 12345678')
+STUDIO_PEC = os.environ.get('STUDIO_PEC', 'avvocato@pec.it')
+STUDIO_WEBSITE = os.environ.get('STUDIO_WEBSITE', 'www.example.it')
 STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?daddr=40.35333,18.17833')
 
 # Google Calendar settings

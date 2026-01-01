@@ -178,7 +178,7 @@ class Appointment(ClusterableModel):
     def jitsi_url(self):
         """Restituisce l'URL Jitsi per la videochiamata."""
         if self.consultation_type == 'video' and self.videocall_code:
-            return f"https://meet.jit.si/StudioLegaleDOnofrio-{self.videocall_code}"
+            return f"https://meet.jit.si/StudioLegale-{self.videocall_code}"
         return None
     
     @property

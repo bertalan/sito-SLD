@@ -136,8 +136,8 @@ File calendario (.ics) allegato.
         email = EmailMultiAlternatives(
             subject=subject,
             body=body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@studiolegaledonofrio.it'),
-            to=[getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')],
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@example.com'),
+            to=[getattr(settings, 'STUDIO_EMAIL', 'info@example.com')],
             reply_to=[submission.email],
         )
         # Allega il file iCal
@@ -175,19 +175,19 @@ Sarà inviato un promemoria automatico il giorno prima e 2 ore prima dell'udienz
 Cordiali saluti,
 RD
 -- 
-{getattr(settings, 'STUDIO_NAME', "Avv. Rossella D'Onofrio")}
-{getattr(settings, 'STUDIO_ADDRESS', 'Piazza G. Mazzini, 72 - 73100 Lecce')}
-Email: {getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')}
-PEC: {getattr(settings, 'STUDIO_PEC', 'rossella.donofrio@pec.it')}
+{getattr(settings, 'STUDIO_NAME', "Avv. Mario Rossi")}
+{getattr(settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma')}
+Email: {getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}
+PEC: {getattr(settings, 'STUDIO_PEC', 'avvocato@pec.it')}
 Mobile: {getattr(settings, 'STUDIO_PHONE', '+39 320 7044664')}
-Web: {getattr(settings, 'STUDIO_WEBSITE', 'www.studiolegaledonofrio.it')}
+Web: {getattr(settings, 'STUDIO_WEBSITE', 'www.example.com')}
 """
     
     try:
         confirm_email = EmailMultiAlternatives(
             subject=confirm_subject,
             body=confirm_body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@studiolegaledonofrio.it'),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@example.com'),
             to=[submission.email],
         )
         # Allega il file iCal

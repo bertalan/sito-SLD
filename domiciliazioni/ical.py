@@ -82,9 +82,9 @@ NOTE:
 {submission.note or 'Nessuna nota'}
 
 ---
-Studio Legale D'Onofrio
+Studio Legale
 {getattr(settings, 'STUDIO_PHONE', '+39 320 7044664')}
-{getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')}"""
+{getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}"""
     
     # Escape caratteri speciali per iCal
     def escape_ical(text):
@@ -98,18 +98,18 @@ Studio Legale D'Onofrio
     
     ical_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Studio Legale D'Onofrio//Domiciliazioni//IT
+PRODID:-//Studio Legale//Domiciliazioni//IT
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:{uid}@studiolegaledonofrio.it
+UID:{uid}@example.com
 DTSTAMP:{dtstamp}
 DTSTART:{format_datetime(start_dt)}
 DTEND:{format_datetime(end_dt)}
 SUMMARY:{escape_ical(summary)}
 LOCATION:{escape_ical(location)}
 DESCRIPTION:{escape_ical(description)}
-ORGANIZER;CN=Studio Legale D'Onofrio:mailto:{getattr(settings, 'STUDIO_EMAIL', 'info@studiolegaledonofrio.it')}
+ORGANIZER;CN=Studio Legale:mailto:{getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}
 ATTENDEE;CN={escape_ical(submission.nome_avvocato)};RSVP=TRUE:mailto:{submission.email}
 STATUS:CONFIRMED
 TRANSP:OPAQUE

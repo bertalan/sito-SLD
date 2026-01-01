@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='homepage',
             name='hero_subtitle',
-            field=models.CharField(default="D'ONOFRIO", max_length=200, verbose_name='Sottotitolo'),
+            field=models.CharField(default="AVVOCATO", max_length=200, verbose_name='Sottotitolo'),
         ),
         migrations.AddField(
             model_name='homepage',

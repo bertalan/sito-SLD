@@ -1,6 +1,6 @@
-# Studio Legale D'Onofrio – SLD
+# Studio Legale – SLD
 
-Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
+Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
 
 ## Funzionalità principali
 
@@ -32,7 +32,7 @@ Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Djang
 - Notifica email automatica allo studio
 
 ### 📍 Contatti
-- Indirizzo studio (Lecce)
+- Indirizzo studio (Roma)
 - Mappa interattiva **OpenStreetMap** con Leaflet.js
 - Form contatto con invio email
 
@@ -240,7 +240,7 @@ gunicorn sld_project.wsgi:application -c gunicorn.conf.py
 ## Licenze
 
 ### Codice sorgente
-Il codice di questo progetto è **proprietario** e riservato a Studio Legale D'Onofrio.
+Il codice di questo progetto è **proprietario** e riservato a Studio Legale.
 
 ### Dipendenze open source
 
@@ -262,7 +262,7 @@ Il codice di questo progetto è **proprietario** e riservato a Studio Legale D'O
 | pytest | MIT |
 
 ### Font e risorse
-- Logo: design proprietario Studio Legale D'Onofrio
+- Logo: design proprietario Studio Legale
 
 ---
 

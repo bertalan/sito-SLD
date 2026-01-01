@@ -94,7 +94,7 @@ def send_booking_confirmation(appointment):
 
 def _send_client_email(appointment, context, ical_content, ical_filename):
     """Invia email di avviso al cliente."""
-    subject = f"Avviso prenotazione - Studio Legale D'Onofrio"
+    subject = f"Avviso prenotazione - Studio Legale"
     
     # Formatta la data in italiano
     data_italiana = format_date_italian(appointment.date)
@@ -150,7 +150,7 @@ DETTAGLI APPUNTAMENTO:
 - Importo: €{importo}
 
 DOVE TROVARCI:
-Studio Legale D'Onofrio - {context['studio_name']}
+Studio Legale - {context['studio_name']}
 {context['studio_address']}
 
 Mappa: {context['studio_maps_url']}

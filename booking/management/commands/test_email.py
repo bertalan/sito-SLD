@@ -187,7 +187,7 @@ Configurazione usata:
 Timestamp: {__import__('datetime').datetime.now().isoformat()}
 
 ---
-Studio Legale D'Onofrio
+Studio Legale
 Sistema automatico di prenotazione
 """,
                 from_email=settings.DEFAULT_FROM_EMAIL,

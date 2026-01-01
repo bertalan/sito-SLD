@@ -27,12 +27,12 @@ def schema_org_jsonld(context):
             {
                 "@type": "LegalService",
                 "@id": f"{site_url}/#legalservice",
-                "name": "Studio Legale D'Onofrio",
+                "name": "Studio Legale",
                 "description": "Studio legale specializzato in diritto penale, famiglia e successioni, cittadinanza italiana e altre aree di pratica. Ufficio in Piazza G. Mazzini 72 a Lecce.",
                 "url": site_url,
                 "logo": f"{site_url}/static/images/dr_Logo.svg",
                 "image": f"{site_url}/static/images/dr_Logo.svg",
-                "email": "info@studiolegaledonofrio.it",
+                "email": "info@example.it",
                 "telephone": "+39-320-7044664",
                 "priceRange": "€€",
                 "areaServed": [
@@ -58,16 +58,16 @@ def schema_org_jsonld(context):
                 ],
                 "employee": {
                     "@type": "Person",
-                    "name": "Rossella D'Onofrio",
+                    "name": "Mario Rossi",
                     "jobTitle": "Avvocato",
-                    "email": "info@studiolegaledonofrio.it",
+                    "email": "info@example.it",
                     "telephone": "+39-320-7044664"
                 },
                 "location": [
                     {
                         "@type": "Place",
                         "@id": f"{site_url}/#lecce-office",
-                        "name": "Studio Legale D'Onofrio - Lecce",
+                        "name": "Studio Legale - Lecce",
                         "address": {
                             "@type": "PostalAddress",
                             "streetAddress": "Piazza Mazzini 72",
@@ -86,7 +86,7 @@ def schema_org_jsonld(context):
                     },
                 ],
                 "sameAs": [
-                    "https://www.facebook.com/studiolegaledonofrio/",
+                    "https://www.facebook.com/example/",
                     "https://twitter.com/avv_dr"
                 ]
             },
@@ -95,12 +95,12 @@ def schema_org_jsonld(context):
                 "@id": page_url,
                 "url": page_url,
                 "name": page.seo_title if hasattr(page, 'seo_title') and page.seo_title else page.title,
-                "description": page.search_description if hasattr(page, 'search_description') and page.search_description else "Studio Legale Avv. Rossella D'Onofrio",
+                "description": page.search_description if hasattr(page, 'search_description') and page.search_description else "Studio Legale Avv. Mario Rossi",
                 "isPartOf": {
                     "@type": "WebSite",
                     "@id": f"{site_url}/#website",
                     "url": site_url,
-                    "name": "Studio Legale D'Onofrio",
+                    "name": "Studio Legale",
                     "publisher": {
                         "@id": f"{site_url}/#legalservice"
                     }

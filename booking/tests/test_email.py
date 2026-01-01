@@ -23,7 +23,7 @@ class TestEmailConfiguration:
         """Verifica che il nome con apostrofo sia caricato correttamente."""
         studio_name = settings.STUDIO_NAME
         # Deve contenere l'apostrofo
-        assert "'" in studio_name or "D'Onofrio" in studio_name or "Onofrio" in studio_name
+        assert "'" in studio_name or "Avvocato" in studio_name or "Onofrio" in studio_name
         print(f"STUDIO_NAME: {studio_name}")
     
     def test_default_from_email_format(self):
@@ -64,11 +64,11 @@ class TestEmailSending:
             mail.outbox = []
             
             # Simula il nome con apostrofo
-            from_email = f"Studio Legale D'Onofrio <info@studiolegaledonofrio.it>"
+            from_email = f"Studio Legale <info@example.it>"
             
             result = send_mail(
-                subject="Conferma Prenotazione - Avv. D'Onofrio",
-                message="Gentile Cliente,\n\nLa sua prenotazione è confermata.\n\nAvv. Rossella D'Onofrio",
+                subject="Conferma Prenotazione - Avv. Avvocato",
+                message="Gentile Cliente,\n\nLa sua prenotazione è confermata.\n\nAvv. Mario Rossi",
                 from_email=from_email,
                 recipient_list=['cliente@example.com'],
                 fail_silently=False,
@@ -79,8 +79,8 @@ class TestEmailSending:
             
             # Verifica che l'apostrofo sia presente
             sent_email = mail.outbox[0]
-            assert "D'Onofrio" in sent_email.from_email or "Onofrio" in sent_email.from_email
-            assert "D'Onofrio" in sent_email.body
+            assert "Avvocato" in sent_email.from_email or "Onofrio" in sent_email.from_email
+            assert "Avvocato" in sent_email.body
             print(f"From: {sent_email.from_email}")
             print(f"Body: {sent_email.body}")
     
@@ -92,9 +92,9 @@ class TestEmailSending:
             html_content = """
             <html>
             <body>
-                <h1>Studio Legale D'Onofrio</h1>
+                <h1>Studio Legale</h1>
                 <p>Gentile Cliente,</p>
-                <p>La sua prenotazione presso l'Avv. Rossella D'Onofrio è confermata.</p>
+                <p>La sua prenotazione presso l'Avv. Mario Rossi è confermata.</p>
                 <p>Indirizzo: Piazza G. Mazzini, 72 - 73100 Lecce</p>
             </body>
             </html>
@@ -111,7 +111,7 @@ class TestEmailSending:
             
             assert result == 1
             assert len(mail.outbox) == 1
-            assert "D'Onofrio" in mail.outbox[0].body
+            assert "Avvocato" in mail.outbox[0].body
             assert "Piazza G. Mazzini" in mail.outbox[0].body
 
 
@@ -189,9 +189,9 @@ class TestEmailValidation:
         """Test che i caratteri speciali nel display name siano gestiti."""
         # Simula vari formati possibili
         test_cases = [
-            "Studio Legale D'Onofrio <info@example.com>",
+            "Studio Legale <info@example.com>",
             '"Studio Legale D\'Onofrio" <info@example.com>',
-            "Avv. Rossella D'Onofrio <avv@example.com>",
+            "Avv. Mario Rossi <avv@example.com>",
         ]
         
         for from_email in test_cases:
