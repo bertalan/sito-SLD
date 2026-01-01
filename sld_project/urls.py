@@ -1,13 +1,35 @@
 from django.conf import settings
 from django.urls import include, path
 from django.contrib import admin
+from django.http import HttpResponse
 
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
+from wagtail.contrib.sitemaps.views import sitemap
 
 from search import views as search_views
 from django.views.generic import TemplateView
+
+
+def robots_txt(request):
+    """Genera robots.txt dinamicamente."""
+    # Ottieni il dominio corrente
+    protocol = 'https' if request.is_secure() else 'http'
+    host = request.get_host()
+    sitemap_url = f"{protocol}://{host}/sitemap.xml"
+    
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Disallow: /django-admin/",
+        "Disallow: /prenota/checkout/",
+        "",
+        f"Sitemap: {sitemap_url}",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -17,6 +39,8 @@ urlpatterns = [
     path("prenota/", include("booking.urls")),
     path("termini/", TemplateView.as_view(template_name="pages/terms.html"), name="terms"),
     path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),
+    path("sitemap.xml", sitemap, name="sitemap"),
+    path("robots.txt", robots_txt, name="robots_txt"),
 ]
 
 

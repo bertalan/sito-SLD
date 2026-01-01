@@ -74,6 +74,8 @@ class ServicesIndexPageTest(TestCase):
         services_page = ServicesIndexPage(title="Servizi", slug="servizi")
         self.home.add_child(instance=services_page)
         
+        # Pulisco le service area esistenti e ne creo una nuova
+        ServiceArea.objects.all().delete()
         ServiceArea.objects.create(name="Test", slug="test", short_description="Desc")
         
         from django.test import RequestFactory

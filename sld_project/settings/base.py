@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     # Wagtail
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.sitemaps",
+    "django.contrib.sitemaps",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -83,6 +85,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "sld_project.context_processors.global_settings",
             ],
         },
     },
@@ -235,3 +238,6 @@ STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?dad
 # Google Calendar settings
 GOOGLE_CALENDAR_ICAL_URL = os.environ.get('GOOGLE_CALENDAR_ICAL_URL', '')
 GOOGLE_CALENDAR_CACHE_TTL = int(os.environ.get('GOOGLE_CALENDAR_CACHE_TTL', 600))  # 10 minuti
+
+# Google Analytics 4
+GA4_MEASUREMENT_ID = os.environ.get('GA4_MEASUREMENT_ID', '')

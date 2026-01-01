@@ -1,0 +1,137 @@
+{# Cookie Banner GDPR #}
+<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-brand-black text-white z-50 transform translate-y-full transition-transform duration-300">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div class="flex-1">
+                <h3 class="font-semibold text-lg mb-2">🍪 Utilizziamo i cookie</h3>
+                <p class="text-brand-gray text-sm">
+                    Utilizziamo cookie tecnici necessari per il funzionamento del sito e cookie analitici 
+                    per migliorare la tua esperienza. Puoi accettare tutti i cookie, rifiutarli o 
+                    personalizzare le tue preferenze.
+                    <a href="/privacy/" class="text-brand-accent hover:underline ml-1">Privacy Policy</a>
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="setCookieConsent('reject')" 
+                        class="px-4 py-2 text-sm border border-brand-gray text-brand-gray hover:bg-brand-gray hover:text-white transition-colors rounded">
+                    Rifiuta
+                </button>
+                <button onclick="showCookieSettings()" 
+                        class="px-4 py-2 text-sm border border-white text-white hover:bg-white hover:text-brand-black transition-colors rounded">
+                    Personalizza
+                </button>
+                <button onclick="setCookieConsent('all')" 
+                        class="px-4 py-2 text-sm bg-brand-accent text-white hover:bg-pink-600 transition-colors rounded font-medium">
+                    Accetta tutti
+                </button>
+            </div>
+        </div>
+        
+        {# Pannello impostazioni (nascosto di default) #}
+        <div id="cookie-settings" class="hidden mt-6 pt-6 border-t border-brand-gray/30">
+            <h4 class="font-semibold mb-4">Personalizza le tue preferenze</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="flex items-start gap-3">
+                    <input type="checkbox" id="cookie-necessary" checked disabled 
+                           class="mt-1 w-4 h-4 accent-brand-accent">
+                    <div>
+                        <label for="cookie-necessary" class="font-medium">Cookie tecnici</label>
+                        <p class="text-xs text-brand-gray">Necessari per il funzionamento del sito. Non possono essere disattivati.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <input type="checkbox" id="cookie-analytics" 
+                           class="mt-1 w-4 h-4 accent-brand-accent">
+                    <div>
+                        <label for="cookie-analytics" class="font-medium">Cookie analitici</label>
+                        <p class="text-xs text-brand-gray">Ci aiutano a capire come viene utilizzato il sito per migliorarlo.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="saveCookieSettings()" 
+                        class="px-6 py-2 bg-brand-accent text-white hover:bg-pink-600 transition-colors rounded font-medium">
+                    Salva preferenze
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const COOKIE_NAME = 'cookie_consent';
+    const COOKIE_DAYS = 365;
+    
+    // Verifica se il consenso è già stato dato
+    function hasConsent() {
+        return document.cookie.split('; ').some(row => row.startsWith(COOKIE_NAME + '='));
+    }
+    
+    // Mostra il banner se non c'è consenso
+    function showBanner() {
+        const banner = document.getElementById('cookie-banner');
+        if (banner && !hasConsent()) {
+            setTimeout(() => {
+                banner.classList.remove('translate-y-full');
+            }, 500);
+        }
+    }
+    
+    // Nascondi il banner
+    function hideBanner() {
+        const banner = document.getElementById('cookie-banner');
+        if (banner) {
+            banner.classList.add('translate-y-full');
+        }
+    }
+    
+    // Imposta il cookie di consenso
+    window.setCookieConsent = function(type) {
+        let value;
+        if (type === 'all') {
+            value = JSON.stringify({ necessary: true, analytics: true });
+        } else if (type === 'reject') {
+            value = JSON.stringify({ necessary: true, analytics: false });
+        } else {
+            value = type;
+        }
+        
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (COOKIE_DAYS * 24 * 60 * 60 * 1000));
+        document.cookie = COOKIE_NAME + '=' + encodeURIComponent(value) + ';expires=' + expires.toUTCString() + ';path=/;SameSite=Lax';
+        
+        hideBanner();
+        
+        // Se ha accettato analytics, inizializza GA4
+        if (type === 'all' && typeof initGA4 === 'function') {
+            initGA4();
+        }
+    };
+    
+    // Mostra pannello impostazioni
+    window.showCookieSettings = function() {
+        document.getElementById('cookie-settings').classList.toggle('hidden');
+    };
+    
+    // Salva impostazioni personalizzate
+    window.saveCookieSettings = function() {
+        const analytics = document.getElementById('cookie-analytics').checked;
+        const value = JSON.stringify({ necessary: true, analytics: analytics });
+        
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (COOKIE_DAYS * 24 * 60 * 60 * 1000));
+        document.cookie = COOKIE_NAME + '=' + encodeURIComponent(value) + ';expires=' + expires.toUTCString() + ';path=/;SameSite=Lax';
+        
+        hideBanner();
+        
+        // Se ha accettato analytics, inizializza GA4
+        if (analytics && typeof initGA4 === 'function') {
+            initGA4();
+        }
+    };
+    
+    // Inizializza al caricamento della pagina
+    document.addEventListener('DOMContentLoaded', showBanner);
+})();
+</script>

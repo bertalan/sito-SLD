@@ -121,3 +121,110 @@ class WagtailPagesTest(TestCase):
         
         response = self.client.get('/domiciliazioni/')
         self.assertEqual(response.status_code, 200)
+
+
+class SitemapTest(TestCase):
+    """Test per la sitemap XML."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_sitemap_returns_xml(self):
+        """Verifica che la sitemap restituisca XML valido."""
+        response = self.client.get('/sitemap.xml')
+        self.assertEqual(response.status_code, 200)
+        # Wagtail usa application/xml
+        self.assertIn('xml', response['Content-Type'])
+    
+    def test_sitemap_contains_urls(self):
+        """Verifica che la sitemap contenga URL."""
+        response = self.client.get('/sitemap.xml')
+        content = response.content.decode('utf-8')
+        self.assertIn('<?xml', content)
+        self.assertIn('<urlset', content)
+        self.assertIn('<url>', content)
+        self.assertIn('<loc>', content)
+
+
+class RobotsTxtTest(TestCase):
+    """Test per robots.txt."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_robots_txt_accessible(self):
+        """Verifica che robots.txt sia accessibile."""
+        response = self.client.get('/robots.txt')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/plain', response['Content-Type'])
+    
+    def test_robots_txt_content(self):
+        """Verifica il contenuto di robots.txt."""
+        response = self.client.get('/robots.txt')
+        content = response.content.decode('utf-8')
+        
+        # Deve contenere le direttive base
+        self.assertIn('User-agent:', content)
+        self.assertIn('Allow:', content)
+        self.assertIn('Sitemap:', content)
+        
+        # Deve bloccare admin
+        self.assertIn('/admin/', content)
+
+
+class CookieBannerTest(TestCase):
+    """Test per il cookie banner GDPR."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_cookie_banner_present_in_html(self):
+        """Verifica che il cookie banner sia presente nell'HTML."""
+        response = self.client.get('/')
+        content = response.content.decode('utf-8')
+        
+        # Deve contenere il div del cookie banner
+        self.assertIn('cookie-banner', content)
+        self.assertIn('Accetta', content)
+    
+    def test_cookie_banner_has_privacy_link(self):
+        """Verifica che il banner abbia link alla privacy policy."""
+        response = self.client.get('/')
+        content = response.content.decode('utf-8')
+        
+        self.assertIn('/privacy/', content)
+
+
+class GoogleAnalyticsTest(TestCase):
+    """Test per Google Analytics."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_ga_script_present_when_configured(self):
+        """Verifica che lo script GA sia presente quando configurato."""
+        from django.test import override_settings
+        
+        with override_settings(GA4_MEASUREMENT_ID='G-TEST123'):
+            response = self.client.get('/')
+            content = response.content.decode('utf-8')
+            
+            # Lo script GA deve essere presente nel template
+            self.assertIn('gtag', content)
+            self.assertIn('G-TEST123', content)
+    
+    def test_ga_conditional_loading(self):
+        """Verifica che GA sia condizionato dal consenso cookie."""
+        response = self.client.get('/')
+        content = response.content.decode('utf-8')
+        
+        # Deve esserci la logica di verifica del consenso nel cookie banner
+        self.assertIn('cookie_consent', content)
+    
+    def test_ga_not_loaded_without_config(self):
+        """Verifica che GA non sia caricato senza configurazione."""
+        response = self.client.get('/')
+        content = response.content.decode('utf-8')
+        
+        # Senza GA4_MEASUREMENT_ID, non deve esserci gtag
+        self.assertNotIn('googletagmanager.com/gtag', content)

@@ -109,6 +109,57 @@
         
         {# Schema.org JSON-LD per SEO #}
         {% schema_org_jsonld %}
+        
+        {# Google Analytics 4 - Caricato solo dopo consenso cookie #}
+        {% if ga4_measurement_id %}
+        <script>
+            // GA4 - Caricamento condizionato dal consenso
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            
+            // Verifica consenso cookie
+            function hasAnalyticsConsent() {
+                const consent = document.cookie.split('; ').find(row => row.startsWith('cookie_consent='));
+                if (!consent) return false;
+                try {
+                    const value = JSON.parse(decodeURIComponent(consent.split('=')[1]));
+                    return value.analytics === true;
+                } catch {
+                    return consent.includes('all');
+                }
+            }
+            
+            // Inizializza GA4 solo se c'è consenso
+            function initGA4() {
+                if (hasAnalyticsConsent() && !window.ga4Loaded) {
+                    window.ga4Loaded = true;
+                    gtag('js', new Date());
+                    gtag('config', '{{ ga4_measurement_id }}', {
+                        'anonymize_ip': true,
+                        'cookie_flags': 'SameSite=None;Secure'
+                    });
+                    
+                    // Carica lo script GA4
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = 'https://www.googletagmanager.com/gtag/js?id={{ ga4_measurement_id }}';
+                    document.head.appendChild(script);
+                }
+            }
+            
+            // Controlla al caricamento
+            if (hasAnalyticsConsent()) {
+                initGA4();
+            }
+            
+            // Funzioni per tracking eventi
+            window.trackEvent = function(eventName, params) {
+                if (hasAnalyticsConsent()) {
+                    gtag('event', eventName, params);
+                }
+            };
+        </script>
+        {% endif %}
 
         {% block extra_css %}{% endblock %}
     </head>
@@ -130,6 +181,9 @@
         
         {# Script protezione email anti-scraping #}
         <script src="{% static 'js/sld_project.js' %}"></script>
+        
+        {# Cookie Banner GDPR #}
+        {% include "includes/cookie_banner.html" %}
 
         {% block extra_js %}{% endblock %}
     </body>
