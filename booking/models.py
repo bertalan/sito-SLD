@@ -89,7 +89,7 @@ class Appointment(models.Model):
     last_name = models.CharField("Cognome", max_length=100)
     email = models.EmailField("Email")
     phone = models.CharField("Telefono", max_length=20)
-    notes = models.TextField("Note", blank=True)
+    notes = models.TextField("Note")
     
     # Tipo consulenza
     consultation_type = models.CharField("Tipo consulenza", max_length=20, choices=CONSULTATION_TYPE_CHOICES, default='in_person')
