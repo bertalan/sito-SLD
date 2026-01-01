@@ -61,7 +61,7 @@ class DomiciliazioniPage(AbstractEmailForm):
         })
 
 
-# Scelte per tipo udienza
+# Scelte per tipo udienza/servizio
 TIPO_UDIENZA_CHOICES = [
     ('civile', 'Udienza Civile'),
     ('penale', 'Udienza Penale'),
@@ -70,15 +70,15 @@ TIPO_UDIENZA_CHOICES = [
     ('esecuzioni', 'Esecuzioni'),
     ('fallimentare', 'Fallimentare'),
     ('volontaria', 'Volontaria Giurisdizione'),
+    ('notificazioni', 'Ufficio notificazioni'),
+    ('esecuzione_protesti', 'Ufficio esecuzione e protesti'),
     ('altro', 'Altro'),
 ]
 
-# Scelte per tribunale
+# Scelte per tribunale/ufficio
 TRIBUNALE_CHOICES = [
     ('lecce', 'Tribunale di Lecce'),
-    ('brindisi', 'Tribunale di Brindisi'),
-    ('taranto', 'Tribunale di Taranto'),
-    ('bari', 'Tribunale di Bari'),
+    ('unep', 'Ufficio UNEP di Lecce'),
 ]
 
 
