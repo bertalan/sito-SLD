@@ -6,11 +6,64 @@ from django.urls import reverse
 from wagtail.models import Page, Site
 
 
+def setup_wagtail_home():
+    """Helper per creare la HomePage se non esiste.
+    
+    Wagtail crea una pagina di benvenuto con slug='home' nella migrazione 0002_initial_data.
+    Dobbiamo sostituirla con la nostra HomePage.
+    """
+    from home.models import HomePage
+    
+    # Se la nostra HomePage esiste già, restituiscila
+    if HomePage.objects.filter(slug='home').exists():
+        return HomePage.objects.get(slug='home')
+    
+    # Ottieni la pagina root
+    root = Page.objects.get(slug='root')
+    
+    # Cerca la pagina di benvenuto di Wagtail (ha slug='home' ma non è HomePage)
+    try:
+        welcome_page = Page.objects.get(slug='home', depth=2)
+        # Verifica se è già una HomePage
+        if hasattr(welcome_page, 'homepage'):
+            return welcome_page.specific
+        # Elimina la welcome page
+        welcome_page.delete()
+    except Page.DoesNotExist:
+        pass
+    
+    # Ripara l'albero Wagtail dopo la cancellazione
+    Page.fix_tree()
+    
+    # Ricarica root dopo fix_tree
+    root = Page.objects.get(slug='root')
+    
+    # Crea la nostra HomePage usando add_child (metodo corretto)
+    home = HomePage(title="Home", slug="home")
+    root.add_child(instance=home)
+    
+    # Aggiorna o crea il site
+    site = Site.objects.first()
+    if site:
+        site.root_page = home
+        site.save()
+    else:
+        Site.objects.create(
+            hostname='localhost',
+            port=80,
+            root_page=home,
+            is_default_site=True
+        )
+    
+    return home
+
+
 class NavigationLinksTest(TestCase):
     """Test per verificare che tutti i link di navigazione funzionino."""
     
     def setUp(self):
         self.client = Client()
+        setup_wagtail_home()
     
     def test_homepage_loads(self):
         """Verifica che la homepage si carichi."""
@@ -56,25 +109,11 @@ class WagtailPagesTest(TestCase):
         self.client = Client()
         
         # Setup pagine Wagtail di base
-        from home.models import HomePage
         from services.models import ServicesIndexPage
         from contact.models import ContactPage
         from domiciliazioni.models import DomiciliazioniPage
         
-        root = Page.objects.get(slug='root')
-        
-        # Trova o crea la home
-        try:
-            self.home = HomePage.objects.get(slug='home')
-        except HomePage.DoesNotExist:
-            self.home = HomePage(title="Home", slug="home")
-            root.add_child(instance=self.home)
-            
-            # Configura il site
-            site = Site.objects.first()
-            if site:
-                site.root_page = self.home
-                site.save()
+        self.home = setup_wagtail_home()
     
     def test_services_page_accessible(self):
         """Verifica che la pagina servizi sia accessibile dopo la creazione."""
@@ -177,6 +216,7 @@ class CookieBannerTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        setup_wagtail_home()
     
     def test_cookie_banner_present_in_html(self):
         """Verifica che il cookie banner sia presente nell'HTML."""
@@ -200,6 +240,7 @@ class GoogleAnalyticsTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        setup_wagtail_home()
     
     def test_ga_script_present_when_configured(self):
         """Verifica che lo script GA sia presente quando configurato."""
@@ -234,6 +275,7 @@ class MatomoTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        setup_wagtail_home()
     
     def test_matomo_script_present_when_configured(self):
         """Verifica che lo script Matomo sia presente quando configurato."""
@@ -282,24 +324,9 @@ class PrivacyConsentFormTest(TestCase):
     def setUp(self):
         self.client = Client()
         
-        # Setup pagine Wagtail
-        from wagtail.models import Page, Site
-        from home.models import HomePage
         from domiciliazioni.models import DomiciliazioniPage
         
-        root = Page.objects.get(slug='root')
-        
-        # Trova o crea la home
-        try:
-            self.home = HomePage.objects.get(slug='home')
-        except HomePage.DoesNotExist:
-            self.home = HomePage(title="Home", slug="home")
-            root.add_child(instance=self.home)
-            
-            site = Site.objects.first()
-            if site:
-                site.root_page = self.home
-                site.save()
+        self.home = setup_wagtail_home()
         
         # Crea pagina domiciliazioni
         if not DomiciliazioniPage.objects.filter(slug='domiciliazioni').exists():
