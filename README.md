@@ -32,7 +32,7 @@ Sito web professionale per Studio Legale D'Onofrio, realizzato con Wagtail/Djang
 - Notifica email automatica allo studio
 
 ### 📍 Contatti
-- Doppio indirizzo studio (Lecce + Martina Franca)
+- Indirizzo studio (Lecce)
 - Mappa interattiva **OpenStreetMap** con Leaflet.js
 - Form contatto con invio email
 

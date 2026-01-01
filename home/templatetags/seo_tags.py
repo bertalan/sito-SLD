@@ -28,7 +28,7 @@ def schema_org_jsonld(context):
                 "@type": "LegalService",
                 "@id": f"{site_url}/#legalservice",
                 "name": "Studio Legale D'Onofrio",
-                "description": "Studio legale specializzato in diritto penale, famiglia e successioni, contratti, GDPR e altre aree di pratica. Sedi a Lecce e Martina Franca.",
+                "description": "Studio legale specializzato in diritto penale, famiglia e successioni, cittadinanza italiana e altre aree di pratica. Ufficio in Piazza G. Mazzini 72 a Lecce.",
                 "url": site_url,
                 "logo": f"{site_url}/static/images/dr_Logo.svg",
                 "image": f"{site_url}/static/images/dr_Logo.svg",
@@ -41,10 +41,6 @@ def schema_org_jsonld(context):
                         "name": "Lecce"
                     },
                     {
-                        "@type": "City",
-                        "name": "Martina Franca"
-                    },
-                    {
                         "@type": "AdministrativeArea",
                         "name": "Puglia"
                     }
@@ -52,15 +48,12 @@ def schema_org_jsonld(context):
                 "serviceType": [
                     "Diritto Penale",
                     "Famiglia e Successioni",
-                    "Diritto Fallimentare",
                     "Privacy e GDPR",
                     "Contratti",
                     "Diritto dei Consumatori",
                     "Recupero Crediti",
                     "Risarcimento Danni",
                     "Infortunistica Stradale",
-                    "Locazioni",
-                    "Sanzioni Amministrative",
                     "Cittadinanza Italiana"
                 ],
                 "attorney": {
@@ -91,26 +84,6 @@ def schema_org_jsonld(context):
                         "telephone": "+39-320-7044664",
                         "openingHoursSpecification": _get_opening_hours()
                     },
-                    {
-                        "@type": "Place",
-                        "@id": f"{site_url}/#martina-office",
-                        "name": "Studio Legale D'Onofrio - Martina Franca",
-                        "address": {
-                            "@type": "PostalAddress",
-                            "streetAddress": "Via S. Quasimodo, 12",
-                            "addressLocality": "Martina Franca",
-                            "postalCode": "74015",
-                            "addressRegion": "TA",
-                            "addressCountry": "IT"
-                        },
-                        "geo": {
-                            "@type": "GeoCoordinates",
-                            "latitude": 40.7051,
-                            "longitude": 17.3361
-                        },
-                        "telephone": "+39-320-7044664",
-                        "openingHoursSpecification": _get_opening_hours()
-                    }
                 ],
                 "sameAs": [
                     "https://www.facebook.com/studiolegaledonofrio/",

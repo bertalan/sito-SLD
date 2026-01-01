@@ -12,7 +12,7 @@ class HomePage(Page):
     hero_subtitle = models.CharField("Sottotitolo", max_length=200, default="D'ONOFRIO")
     hero_accent = models.CharField("Testo accent", max_length=100, default="GIUSTIZIA.")
     hero_description = RichTextField("Descrizione", blank=True)
-    hero_location = models.CharField("Location", max_length=100, default="Lecce • Martina Franca")
+    hero_location = models.CharField("Location", max_length=100, default="• Lecce")
     
     # Servizi
     services_title = models.CharField("Titolo Servizi", max_length=100, default="AREE DI PRATICA")
