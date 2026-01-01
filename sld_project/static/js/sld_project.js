@@ -1,26 +1,45 @@
 /**
  * Protezione email anti-scraping
- * Decodifica le email codificate in base64 a runtime
+ * Decodifica le email codificate in base64 solo su interazione utente
+ * I bot che non eseguono JS o non interagiscono non vedranno mai le email reali
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Trova tutti gli elementi con data-email (codificata in base64)
     document.querySelectorAll('[data-email]').forEach(function(el) {
-        try {
-            const encodedEmail = el.getAttribute('data-email');
-            const decodedEmail = atob(encodedEmail);
-            
-            // Se è un link, imposta href mailto:
-            if (el.tagName === 'A') {
-                el.href = 'mailto:' + decodedEmail;
+        // Decodifica solo al click
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            try {
+                const encodedEmail = el.getAttribute('data-email');
+                const decodedEmail = atob(encodedEmail);
+                
+                // Apri il client email
+                window.location.href = 'mailto:' + decodedEmail;
+            } catch (err) {
+                console.error('Errore decodifica email:', err);
             }
-            
-            // Se ha data-show-email, mostra l'email nel contenuto
-            if (el.hasAttribute('data-show-email')) {
-                el.textContent = decodedEmail;
+        });
+        
+        // Mostra l'email al passaggio del mouse (hover)
+        el.addEventListener('mouseenter', function() {
+            if (!el.dataset.decoded) {
+                try {
+                    const encodedEmail = el.getAttribute('data-email');
+                    const decodedEmail = atob(encodedEmail);
+                    
+                    // Se ha data-show-email, mostra l'email nel contenuto
+                    if (el.hasAttribute('data-show-email')) {
+                        el.textContent = decodedEmail;
+                        el.dataset.decoded = 'true';
+                    }
+                } catch (err) {
+                    console.error('Errore decodifica email:', err);
+                }
             }
-        } catch (e) {
-            console.error('Errore decodifica email:', e);
-        }
+        });
+        
+        // Imposta cursor pointer per indicare che è cliccabile
+        el.style.cursor = 'pointer';
     });
 });
 
