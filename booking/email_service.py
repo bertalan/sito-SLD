@@ -47,10 +47,10 @@ def format_date_italian(date):
 
 def send_booking_confirmation(appointment):
     """
-    Invia email di conferma al cliente e allo studio con allegato iCal.
+    Invia email di avviso al cliente e allo studio con allegato iCal.
     Ritorna un dict con lo stato di invio per ogni destinatario.
     """
-    logger.info(f"Invio email conferma per appuntamento #{appointment.id} - {appointment.email}")
+    logger.info(f"Invio email di avviso per appuntamento #{appointment.id} - {appointment.email}")
     
     # Genera il file iCal
     ical_content = generate_ical(appointment)
@@ -93,8 +93,8 @@ def send_booking_confirmation(appointment):
 
 
 def _send_client_email(appointment, context, ical_content, ical_filename):
-    """Invia email di conferma al cliente."""
-    subject = f"Conferma prenotazione - Studio Legale D'Onofrio"
+    """Invia email di avviso al cliente."""
+    subject = f"Avviso prenotazione - Studio Legale D'Onofrio"
     
     # Formatta la data in italiano
     data_italiana = format_date_italian(appointment.date)
@@ -103,7 +103,7 @@ def _send_client_email(appointment, context, ical_content, ical_filename):
     if appointment.consultation_type == 'video':
         text_content = f"""Gentile {appointment.first_name} {appointment.last_name},
 
-La tua prenotazione è stata confermata!
+La tua prenotazione è stata ricevuta!
 
 DETTAGLI APPUNTAMENTO:
 - Data: {data_italiana}
@@ -134,7 +134,7 @@ Web: {context['studio_website']}
     else:
         text_content = f"""Gentile {appointment.first_name} {appointment.last_name},
 
-La tua prenotazione è stata confermata!
+La tua prenotazione è stata ricevuta!
 
 DETTAGLI APPUNTAMENTO:
 - Data: {data_italiana}
