@@ -1,6 +1,37 @@
 from wagtail import hooks
 from wagtail.admin.menu import MenuItem, Menu, SubmenuMenuItem
+from wagtail.admin.ui.tables import Column
+from wagtail.snippets.models import register_snippet
+from wagtail.snippets.views.snippets import SnippetViewSet
 from django.urls import reverse
+
+from .models import Appointment, AvailabilityRule, BlockedDate
+
+
+class AllegatiColumn(Column):
+    """Colonna personalizzata per mostrare il conteggio allegati."""
+    
+    def get_value(self, instance):
+        count = instance.attachments.count()
+        if count == 0:
+            return "—"
+        return f"✓ {count}"
+
+
+class AppointmentViewSet(SnippetViewSet):
+    model = Appointment
+    icon = "calendar"
+    menu_label = "Appuntamenti"
+    menu_order = 100
+    add_to_admin_menu = False
+    list_display = ['first_name', 'last_name', 'date', 'time', AllegatiColumn("allegati", label="📎 Allegati"), 'status', 'created_at']
+    list_filter = ['status', 'date', 'consultation_type']
+    search_fields = ['first_name', 'last_name', 'email']
+    ordering = ['-date', '-time']
+
+
+# Registra il ViewSet personalizzato
+register_snippet(AppointmentViewSet)
 
 
 class BookingMenu(Menu):

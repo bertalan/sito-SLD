@@ -82,7 +82,6 @@ TRIBUNALE_CHOICES = [
 ]
 
 
-@register_snippet
 class DomiciliazioniSubmission(models.Model):
     """Submission domiciliazione con allegati."""
     

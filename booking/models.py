@@ -63,7 +63,6 @@ class BlockedDate(models.Model):
         return f"{self.date} - {self.reason}"
 
 
-@register_snippet
 class Appointment(models.Model):
     """Prenotazione appuntamento."""
     
