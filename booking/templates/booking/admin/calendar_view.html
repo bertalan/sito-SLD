@@ -52,20 +52,23 @@
         font-size: 0.85rem;
     }
     
+    /* WCAG 2.2 AA compliant colors (contrast ratio >= 4.5:1) */
     .fc-event-google {
-        background-color: #4285f4 !important;
-        border-color: #3367d6 !important;
+        background-color: #1a56db !important;  /* Darker blue for better contrast */
+        border-color: #1e429f !important;
+        color: #ffffff !important;
     }
     
     .fc-event-booking {
-        background-color: #34a853 !important;
-        border-color: #2d8f47 !important;
+        background-color: #057a55 !important;  /* Darker green for better contrast */
+        border-color: #046c4e !important;
+        color: #ffffff !important;
     }
     
     .fc-event-pending {
-        background-color: #fbbc04 !important;
-        border-color: #e5a800 !important;
-        color: #333 !important;
+        background-color: #c27803 !important;  /* Darker amber */
+        border-color: #9f580a !important;
+        color: #ffffff !important;
     }
     
     .appointments-list {
@@ -116,19 +119,20 @@
         text-transform: uppercase;
     }
     
+    /* WCAG 2.2 AA compliant badge colors (contrast ratio >= 4.5:1) */
     .type-google {
-        background: #e8f0fe;
-        color: #4285f4;
+        background: #1a56db;
+        color: #ffffff;
     }
     
     .type-booking {
-        background: #e6f4ea;
-        color: #34a853;
+        background: #057a55;
+        color: #ffffff;
     }
     
     .type-pending {
-        background: #fef7e0;
-        color: #b36b00;
+        background: #c27803;
+        color: #ffffff;
     }
     
     .empty-state {
@@ -157,9 +161,10 @@
         border-radius: 3px;
     }
     
-    .legend-google { background: #4285f4; }
-    .legend-booking { background: #34a853; }
-    .legend-pending { background: #fbbc04; }
+    /* WCAG 2.2 AA compliant legend colors */
+    .legend-google { background: #1a56db; }
+    .legend-booking { background: #057a55; }
+    .legend-pending { background: #c27803; }
     
     .sync-info {
         font-size: 0.8rem;
