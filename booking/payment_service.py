@@ -63,7 +63,7 @@ class DemoStripeProvider(BasePaymentProvider):
     def execute_payment(self, request, appointment) -> PaymentResult:
         # In demo mode, il pagamento è sempre confermato
         appointment.status = 'confirmed'
-        appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+        appointment.amount_paid = appointment.total_price_cents / 100
         appointment.save()
         
         logger.info(f"[DEMO] Stripe payment executed for appointment {appointment.id}")
@@ -95,7 +95,7 @@ class DemoPayPalProvider(BasePaymentProvider):
     def execute_payment(self, request, appointment) -> PaymentResult:
         # In demo mode, il pagamento è sempre confermato
         appointment.status = 'confirmed'
-        appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+        appointment.amount_paid = appointment.total_price_cents / 100
         appointment.save()
         
         logger.info(f"[DEMO] PayPal payment executed for appointment {appointment.id}")
@@ -120,10 +120,10 @@ class RealStripeProvider(BasePaymentProvider):
                 line_items=[{
                     'price_data': {
                         'currency': 'eur',
-                        'unit_amount': settings.BOOKING_PRICE_CENTS,
+                        'unit_amount': appointment.total_price_cents,
                         'product_data': {
                             'name': 'Consulenza legale',
-                            'description': f'Appuntamento {data["date"]} alle {data["time"]}',
+                            'description': f'Appuntamento {data["date"]} alle {data["time"]} ({appointment.duration_minutes} minuti)',
                         },
                     },
                     'quantity': 1,
@@ -189,7 +189,7 @@ class RealPayPalProvider(BasePaymentProvider):
         })
     
     def create_payment(self, request, appointment, data) -> PaymentResult:
-        price = settings.BOOKING_PRICE_CENTS / 100
+        price = appointment.total_price_cents / 100
         
         payment = self.paypal.Payment({
             "intent": "sale",
@@ -245,7 +245,7 @@ class RealPayPalProvider(BasePaymentProvider):
             
             if payment.execute({"payer_id": payer_id}):
                 appointment.status = 'confirmed'
-                appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                appointment.amount_paid = appointment.total_price_cents / 100
                 appointment.save()
                 return PaymentResult(success=True, payment_id=payment_id)
             else:

@@ -11,9 +11,9 @@ def generate_ical(appointment):
     Genera un file iCal (.ics) per l'appuntamento.
     Include reminder 1h prima e tutti i dettagli necessari.
     """
-    # Combina data e ora
+    # Combina data e ora, usa la durata dinamica dell'appuntamento
     start_dt = datetime.combine(appointment.date, appointment.time)
-    end_dt = start_dt + timedelta(minutes=30)
+    end_dt = start_dt + timedelta(minutes=appointment.duration_minutes)
     
     # Formatta per iCal (formato: YYYYMMDDTHHMMSS)
     def format_datetime(dt):

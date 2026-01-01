@@ -99,6 +99,12 @@ def _send_client_email(appointment, context, ical_content, ical_filename):
     # Formatta la data in italiano
     data_italiana = format_date_italian(appointment.date)
     
+    # Orari e durata dinamici
+    ora_inizio = appointment.time.strftime('%H:%M')
+    ora_fine = appointment.end_time.strftime('%H:%M')
+    durata = appointment.duration_minutes
+    importo = appointment.total_price_display
+    
     # Corpo email testuale
     if appointment.consultation_type == 'video':
         text_content = f"""Gentile {appointment.first_name} {appointment.last_name},
@@ -107,8 +113,9 @@ La tua prenotazione è stata ricevuta!
 
 DETTAGLI APPUNTAMENTO:
 - Data: {data_italiana}
-- Ora: {appointment.time.strftime('%H:%M')}
+- Orario: {ora_inizio} - {ora_fine} ({durata} minuti)
 - Modalità: Videochiamata
+- Importo: €{importo}
 
 LINK PER LA VIDEOCHIAMATA:
 {appointment.jitsi_url}
@@ -138,8 +145,9 @@ La tua prenotazione è stata ricevuta!
 
 DETTAGLI APPUNTAMENTO:
 - Data: {data_italiana}
-- Ora: {appointment.time.strftime('%H:%M')}
+- Orario: {ora_inizio} - {ora_fine} ({durata} minuti)
 - Modalità: In presenza
+- Importo: €{importo}
 
 DOVE TROVARCI:
 Studio Legale D'Onofrio - {context['studio_name']}
@@ -185,10 +193,15 @@ Web: {context['studio_website']}
 
 def _send_studio_email(appointment, context, ical_content, ical_filename):
     """Invia email di notifica allo studio."""
-    subject = f"Nuova prenotazione: {appointment.first_name} {appointment.last_name} - {appointment.date.strftime('%d/%m/%Y')} ore {appointment.time.strftime('%H:%M')}"
+    ora_inizio = appointment.time.strftime('%H:%M')
+    ora_fine = appointment.end_time.strftime('%H:%M')
+    
+    subject = f"Nuova prenotazione: {appointment.first_name} {appointment.last_name} - {appointment.date.strftime('%d/%m/%Y')} ore {ora_inizio}-{ora_fine}"
     
     consultation_type = "Videochiamata" if appointment.consultation_type == 'video' else "In presenza"
     data_italiana = format_date_italian(appointment.date)
+    durata = appointment.duration_minutes
+    importo = appointment.total_price_display
     
     text_content = f"""NUOVA PRENOTAZIONE RICEVUTA
 
@@ -199,8 +212,9 @@ CLIENTE:
 
 APPUNTAMENTO:
 - Data: {data_italiana}
-- Ora: {appointment.time.strftime('%H:%M')}
+- Orario: {ora_inizio} - {ora_fine} ({durata} minuti)
 - Modalità: {consultation_type}
+- Importo: €{importo}
 """
     
     if appointment.consultation_type == 'video':

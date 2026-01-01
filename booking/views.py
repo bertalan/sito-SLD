@@ -23,7 +23,12 @@ class BookingView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['stripe_public_key'] = settings.STRIPE_PUBLIC_KEY
         context['paypal_client_id'] = settings.PAYPAL_CLIENT_ID
+        
+        # Prezzi e durate dal settings (da .env)
+        context['booking_price_cents'] = settings.BOOKING_PRICE_CENTS
         context['booking_price'] = f"{settings.BOOKING_PRICE_CENTS / 100:.2f}".replace('.', ',')
+        context['slot_duration'] = settings.BOOKING_SLOT_DURATION
+        context['max_slots'] = settings.BOOKING_MAX_SLOTS
         
         # Modalità pagamento per il frontend
         context['payment_mode'] = settings.PAYMENT_MODE
@@ -74,9 +79,23 @@ class CreateCheckoutSession(View):
             
             payment_method = data.get('payment_method', 'stripe')
             consultation_type = data.get('consultation_type', 'in_person')
+            slot_count = int(data.get('slot_count', 1))
+            
+            # Valida slot_count
+            max_slots = settings.BOOKING_MAX_SLOTS
+            if slot_count < 1 or slot_count > max_slots:
+                return JsonResponse({'error': f'Il numero di slot deve essere tra 1 e {max_slots}'}, status=400)
             
             target_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
             target_time = datetime.strptime(data['time'], '%H:%M').time()
+            
+            # Calcola tutti gli slot necessari
+            slot_duration = settings.BOOKING_SLOT_DURATION
+            required_slots = []
+            current_dt = datetime.combine(target_date, target_time)
+            for i in range(slot_count):
+                required_slots.append(current_dt.time())
+                current_dt += timedelta(minutes=slot_duration)
             
             # Pulisci appuntamenti pending scaduti (più vecchi di 30 minuti)
             from django.utils import timezone
@@ -86,20 +105,28 @@ class CreateCheckoutSession(View):
                 created_at__lt=cutoff_time
             ).delete()
             
-            # Verifica se lo slot è già occupato da un appuntamento confermato
+            # Verifica che tutti gli slot consecutivi siano disponibili
+            available_slots = Appointment.get_available_slots(target_date)
+            for slot in required_slots:
+                if slot not in available_slots:
+                    return JsonResponse({
+                        'error': f'Lo slot delle {slot.strftime("%H:%M")} non è disponibile. Seleziona un altro orario.'
+                    }, status=400)
+            
+            # Verifica se uno degli slot è già occupato da un appuntamento confermato
             existing = Appointment.objects.filter(
                 date=target_date,
-                time=target_time,
+                time__in=required_slots,
                 status='confirmed'
             ).exists()
             
             if existing:
-                return JsonResponse({'error': 'Questo slot non è più disponibile. Seleziona un altro orario.'}, status=400)
+                return JsonResponse({'error': 'Uno o più slot selezionati non sono più disponibili. Seleziona un altro orario.'}, status=400)
             
-            # Rimuovi eventuali pending per lo stesso slot (stesso utente che riprova)
+            # Rimuovi eventuali pending per gli stessi slot (stesso utente che riprova)
             Appointment.objects.filter(
                 date=target_date,
-                time=target_time,
+                time__in=required_slots,
                 status='pending'
             ).delete()
             
@@ -113,6 +140,7 @@ class CreateCheckoutSession(View):
                 consultation_type=consultation_type,
                 date=target_date,
                 time=target_time,
+                slot_count=slot_count,
                 status='pending',
                 payment_method=payment_method
             )
@@ -165,7 +193,7 @@ class BookingSuccessView(TemplateView):
                 ).first()
                 if appointment and appointment.status != 'confirmed':
                     appointment.status = 'confirmed'
-                    appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                    appointment.amount_paid = appointment.total_price_cents / 100
                     appointment.save()
                     send_booking_confirmation(appointment)
                 context['appointment'] = appointment
@@ -183,7 +211,7 @@ class BookingSuccessView(TemplateView):
                     appointment = Appointment.objects.get(id=apt_id)
                     if appointment.status != 'confirmed':
                         appointment.status = 'confirmed'
-                        appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                        appointment.amount_paid = appointment.total_price_cents / 100
                         appointment.save()
                         send_booking_confirmation(appointment)
                     context['appointment'] = appointment
@@ -252,7 +280,7 @@ def paypal_execute(request):
         if is_demo or payment_service.is_demo:
             if appointment.status != 'confirmed':
                 appointment.status = 'confirmed'
-                appointment.amount_paid = settings.BOOKING_PRICE_CENTS / 100
+                appointment.amount_paid = appointment.total_price_cents / 100
                 appointment.save()
                 send_booking_confirmation(appointment)
             return redirect(f'/prenota/success/?appointment_id={appointment_id}&method=paypal&demo=1')

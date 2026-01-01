@@ -16,8 +16,8 @@
             PRENOTA<span class="text-brand-accent">,</span>
         </h1>
         <p class="text-brand-gray text-lg">
-            Prenota una consulenza di 30 minuti, in presenza o in videochiamata.<br>
-            Costo: <strong class="text-brand-accent">€{{ booking_price }}</strong> (IVA inclusa)
+            Prenota una consulenza in presenza o in videochiamata.<br>
+            Costo: <strong class="text-brand-accent">€{{ booking_price }}</strong> per {{ slot_duration }} minuti
         </p>
     </div>
 </section>
@@ -38,6 +38,27 @@
                     <div id="slots" class="grid grid-cols-4 gap-2">
                         <p class="col-span-4 text-brand-gray text-sm">Seleziona una data per vedere gli orari</p>
                     </div>
+                </div>
+                
+                <!-- Selettore durata -->
+                <div id="duration-container" class="mt-6 hidden">
+                    <h3 class="text-lg font-bold text-brand-black mb-4">Durata consulenza</h3>
+                    <div class="grid grid-cols-{{ max_slots }} gap-2">
+                        {% for i in "1234"|make_list %}
+                        {% if forloop.counter <= max_slots %}
+                        <button type="button" onclick="selectDuration({{ forloop.counter }})"
+                            class="p-3 text-sm border-2 border-brand-gray/30 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-colors duration-btn{% if forloop.counter == 1 %} bg-brand-accent text-white border-brand-accent{% endif %}"
+                            data-slots="{{ forloop.counter }}">
+                            <span class="block font-bold">{{ forloop.counter }}x{{ slot_duration }}min</span>
+                            <span class="text-xs opacity-75" data-price="{{ forloop.counter }}"></span>
+                        </button>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p id="duration-warning" class="text-amber-600 text-xs mt-2 hidden">
+                        <i data-lucide="alert-triangle" class="inline w-3 h-3 mr-1"></i>
+                        <span></span>
+                    </p>
                 </div>
             </div>
             
@@ -124,6 +145,7 @@
                     
                     <input type="hidden" name="date" id="selected-date">
                     <input type="hidden" name="time" id="selected-time">
+                    <input type="hidden" name="slot_count" id="selected-slot-count" value="1">
                     
                     <!-- Scelta metodo di pagamento -->
                     <div class="mt-6">
@@ -167,11 +189,41 @@
 const availableDates = {{ available_dates|safe }};
 let selectedDate = null;
 let selectedTime = null;
+let selectedSlotCount = 1;
 let selectedFiles = [];
+let currentSlots = []; // Slot disponibili per la data corrente
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+// Configurazione prezzi e slot (da Django)
+const SLOT_DURATION = {{ slot_duration }};
+const PRICE_CENTS = {{ booking_price_cents }};
+const MAX_SLOTS = {{ max_slots }};
+
+function formatPrice(cents) {
+    return (cents / 100).toFixed(2).replace('.', ',');
+}
+
+function updatePriceDisplay() {
+    const totalCents = selectedSlotCount * PRICE_CENTS;
+    const priceStr = formatPrice(totalCents);
+    const durationMins = selectedSlotCount * SLOT_DURATION;
+    
+    // Aggiorna bottone
+    document.getElementById('btn-text').textContent = `Procedi al pagamento - €${priceStr}`;
+    
+    // Aggiorna prezzi nei bottoni durata
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        const slots = parseInt(btn.dataset.slots);
+        const price = formatPrice(slots * PRICE_CENTS);
+        btn.querySelector('[data-price]').textContent = `€${price}`;
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
+    
+    // Inizializza i prezzi nei bottoni durata
+    updatePriceDisplay();
     
     // Se oggi è l'ultimo giorno del mese o non ci sono date disponibili questo mese, mostra il prossimo
     const today = new Date();
@@ -304,7 +356,24 @@ function renderCalendar(monthOffset = 0) {
 
 function selectDate(dateStr) {
     selectedDate = dateStr;
+    selectedTime = null;
+    selectedSlotCount = 1;
     document.getElementById('selected-date').value = dateStr;
+    document.getElementById('selected-time').value = '';
+    document.getElementById('selected-slot-count').value = '1';
+    
+    // Reset durata
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-accent', 'text-white', 'border-brand-accent');
+        if (btn.dataset.slots === '1') {
+            btn.classList.add('bg-brand-accent', 'text-white', 'border-brand-accent');
+        }
+    });
+    
+    // Nascondi summary e disabilita submit
+    document.getElementById('selection-summary').classList.add('hidden');
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('duration-container').classList.add('hidden');
     
     // Evidenzia data selezionata
     document.querySelectorAll('.date-btn').forEach(btn => {
@@ -320,6 +389,7 @@ function selectDate(dateStr) {
             const slots = document.getElementById('slots');
             
             if (data.slots && data.slots.length > 0) {
+                currentSlots = data.slots; // Salva per calcolo slot consecutivi
                 slots.innerHTML = data.slots.map(time => `
                     <button type="button" onclick="selectTime('${time}')"
                         class="p-2 text-sm border border-brand-gray/30 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-colors time-btn"
@@ -327,6 +397,7 @@ function selectDate(dateStr) {
                 `).join('');
                 container.classList.remove('hidden');
             } else {
+                currentSlots = [];
                 slots.innerHTML = '<p class="col-span-4 text-brand-gray">Nessun orario disponibile</p>';
                 container.classList.remove('hidden');
             }
@@ -335,21 +406,120 @@ function selectDate(dateStr) {
 
 function selectTime(time) {
     selectedTime = time;
+    selectedSlotCount = 1;
     document.getElementById('selected-time').value = time;
+    document.getElementById('selected-slot-count').value = '1';
     
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.classList.remove('bg-brand-accent', 'text-white', 'border-brand-accent');
     });
     document.querySelector(`[data-time="${time}"]`).classList.add('bg-brand-accent', 'text-white', 'border-brand-accent');
     
-    // Mostra summary
+    // Mostra selettore durata
+    document.getElementById('duration-container').classList.remove('hidden');
+    
+    // Reset durata a 1
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-accent', 'text-white', 'border-brand-accent');
+        if (btn.dataset.slots === '1') {
+            btn.classList.add('bg-brand-accent', 'text-white', 'border-brand-accent');
+        }
+    });
+    
+    // Calcola quanti slot consecutivi sono disponibili
+    updateDurationAvailability();
+    
+    updateSummary();
+    document.getElementById('submit-btn').disabled = false;
+}
+
+function getConsecutiveSlots(startTime, count) {
+    // Converte HH:MM in minuti dal mezzanotte
+    const [h, m] = startTime.split(':').map(Number);
+    let startMins = h * 60 + m;
+    
+    const neededSlots = [];
+    for (let i = 0; i < count; i++) {
+        const hours = Math.floor(startMins / 60);
+        const mins = startMins % 60;
+        const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        neededSlots.push(timeStr);
+        startMins += SLOT_DURATION;
+    }
+    return neededSlots;
+}
+
+function updateDurationAvailability() {
+    const warningEl = document.getElementById('duration-warning');
+    warningEl.classList.add('hidden');
+    
+    // Per ogni opzione durata, verifica se gli slot sono disponibili
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        const slots = parseInt(btn.dataset.slots);
+        const neededSlots = getConsecutiveSlots(selectedTime, slots);
+        const allAvailable = neededSlots.every(s => currentSlots.includes(s));
+        
+        if (allAvailable) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            // Se era selezionato, deseleziona
+            if (selectedSlotCount === slots && slots > 1) {
+                selectedSlotCount = 1;
+                document.getElementById('selected-slot-count').value = '1';
+                selectDuration(1);
+            }
+        }
+    });
+}
+
+function selectDuration(slots) {
+    // Verifica che gli slot consecutivi siano disponibili
+    const neededSlots = getConsecutiveSlots(selectedTime, slots);
+    const allAvailable = neededSlots.every(s => currentSlots.includes(s));
+    
+    if (!allAvailable) {
+        const warningEl = document.getElementById('duration-warning');
+        warningEl.querySelector('span').textContent = `Non ci sono ${slots} slot consecutivi disponibili da questo orario.`;
+        warningEl.classList.remove('hidden');
+        return;
+    }
+    
+    document.getElementById('duration-warning').classList.add('hidden');
+    selectedSlotCount = slots;
+    document.getElementById('selected-slot-count').value = slots;
+    
+    // Evidenzia bottone selezionato
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-accent', 'text-white', 'border-brand-accent');
+    });
+    document.querySelector(`.duration-btn[data-slots="${slots}"]`).classList.add('bg-brand-accent', 'text-white', 'border-brand-accent');
+    
+    updateSummary();
+    updatePriceDisplay();
+    lucide.createIcons();
+}
+
+function updateSummary() {
     const summary = document.getElementById('selection-summary');
     const date = new Date(selectedDate);
-    document.getElementById('summary-text').textContent = 
-        `${date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })} alle ${time}`;
-    summary.classList.remove('hidden');
+    const durationMins = selectedSlotCount * SLOT_DURATION;
     
-    document.getElementById('submit-btn').disabled = false;
+    // Calcola ora fine
+    const [h, m] = selectedTime.split(':').map(Number);
+    const endMins = h * 60 + m + durationMins;
+    const endH = Math.floor(endMins / 60);
+    const endM = endMins % 60;
+    const endTime = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+    
+    const priceStr = formatPrice(selectedSlotCount * PRICE_CENTS);
+    
+    document.getElementById('summary-text').innerHTML = 
+        `${date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}<br>` +
+        `<span class="text-brand-accent">${selectedTime} - ${endTime}</span> (${durationMins} min) - <strong>€${priceStr}</strong>`;
+    summary.classList.remove('hidden');
 }
 
 async function handleSubmit(e) {
@@ -376,11 +546,15 @@ async function handleSubmit(e) {
     formData.append('consultation_type', document.querySelector('input[name="consultation_type"]:checked').value);
     formData.append('date', selectedDate);
     formData.append('time', selectedTime);
+    formData.append('slot_count', selectedSlotCount);
     formData.append('payment_method', paymentMethod);
     
     selectedFiles.forEach((file, i) => {
         formData.append('attachments', file);
     });
+    
+    // Calcola prezzo per il messaggio di errore
+    const currentPrice = formatPrice(selectedSlotCount * PRICE_CENTS);
     
     // Disabilita il bottone durante l'elaborazione
     const submitBtn = document.getElementById('submit-btn');
@@ -403,12 +577,12 @@ async function handleSubmit(e) {
         } else {
             alert(result.error || 'Errore durante la prenotazione');
             submitBtn.disabled = false;
-            document.getElementById('btn-text').textContent = 'Procedi al pagamento - €{{ booking_price }}';
+            document.getElementById('btn-text').textContent = `Procedi al pagamento - €${currentPrice}`;
         }
     } catch (error) {
         alert('Errore di connessione');
         submitBtn.disabled = false;
-        document.getElementById('btn-text').textContent = 'Procedi al pagamento - €{{ booking_price }}';
+        document.getElementById('btn-text').textContent = `Procedi al pagamento - €${currentPrice}`;
     }
 }
 </script>

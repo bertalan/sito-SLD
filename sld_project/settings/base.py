@@ -209,9 +209,10 @@ PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # sandbox o live
 PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
 PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
 
-# Booking settings
-BOOKING_SLOT_DURATION = 30  # minutes
-BOOKING_PRICE_CENTS = 6000  # 60.00 EUR per 30 minuti
+# Booking settings (from .env)
+BOOKING_SLOT_DURATION = int(os.environ.get('BOOKING_SLOT_DURATION', 30))  # minutes
+BOOKING_PRICE_CENTS = int(os.environ.get('BOOKING_PRICE_CENTS', 6000))  # cents per slot
+BOOKING_MAX_SLOTS = int(os.environ.get('BOOKING_MAX_SLOTS', 4))  # max consecutive slots
 
 # Email settings
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')

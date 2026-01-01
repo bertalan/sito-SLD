@@ -126,6 +126,7 @@ class Appointment(ClusterableModel):
     # Data/ora appuntamento
     date = models.DateField("Data")
     time = models.TimeField("Ora")
+    slot_count = models.PositiveIntegerField("Numero slot", default=1, help_text="Numero di slot consecutivi da 30 minuti")
     
     # Stato e pagamento
     status = models.CharField("Stato", max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -180,6 +181,32 @@ class Appointment(ClusterableModel):
             return f"https://meet.jit.si/StudioLegaleDOnofrio-{self.videocall_code}"
         return None
     
+    @property
+    def duration_minutes(self):
+        """Durata totale in minuti."""
+        from django.conf import settings
+        slot_duration = getattr(settings, 'BOOKING_SLOT_DURATION', 30)
+        return self.slot_count * slot_duration
+    
+    @property
+    def end_time(self):
+        """Orario di fine appuntamento."""
+        start_dt = datetime.combine(self.date, self.time)
+        end_dt = start_dt + timedelta(minutes=self.duration_minutes)
+        return end_dt.time()
+    
+    @property
+    def total_price_cents(self):
+        """Prezzo totale in centesimi."""
+        from django.conf import settings
+        price_per_slot = getattr(settings, 'BOOKING_PRICE_CENTS', 6000)
+        return self.slot_count * price_per_slot
+    
+    @property
+    def total_price_display(self):
+        """Prezzo totale formattato per la visualizzazione (es: 60,00)."""
+        return f"{self.total_price_cents / 100:.2f}".replace('.', ',')
+    
     @classmethod
     def get_available_slots(cls, date):
         """Restituisce gli slot disponibili per una data."""
@@ -202,8 +229,19 @@ class Appointment(ClusterableModel):
         from .google_calendar import get_blocked_slots_from_google
         google_blocked_slots = get_blocked_slots_from_google(date)
         
-        slots = []
+        # Ottieni tutti gli slot occupati dagli appuntamenti (inclusi multi-slot)
+        booked_slots = set()
+        appointments = cls.objects.filter(date=date).exclude(status='cancelled')
         slot_duration = getattr(settings, 'BOOKING_SLOT_DURATION', 30)
+        
+        for apt in appointments:
+            # Aggiungi tutti gli slot occupati dall'appuntamento
+            apt_start = datetime.combine(date, apt.time)
+            for i in range(apt.slot_count):
+                slot_time = (apt_start + timedelta(minutes=slot_duration * i)).time()
+                booked_slots.add(slot_time)
+        
+        slots = []
         
         for rule in rules:
             current_time = datetime.combine(date, rule.start_time)
@@ -212,7 +250,7 @@ class Appointment(ClusterableModel):
             while current_time + timedelta(minutes=slot_duration) <= end_time:
                 time_slot = current_time.time()
                 # Escludi slot già prenotati nel DB
-                is_booked = cls.objects.filter(date=date, time=time_slot).exclude(status='cancelled').exists()
+                is_booked = time_slot in booked_slots
                 # Escludi slot bloccati da Google Calendar
                 is_google_blocked = time_slot in google_blocked_slots
                 
