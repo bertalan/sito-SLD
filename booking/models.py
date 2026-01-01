@@ -1,7 +1,10 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.html import format_html
 from datetime import datetime, timedelta
-from wagtail.admin.panels import FieldPanel
+from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
+from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.snippets.models import register_snippet
 
 
@@ -63,7 +66,7 @@ class BlockedDate(models.Model):
         return f"{self.date} - {self.reason}"
 
 
-class Appointment(models.Model):
+class Appointment(ClusterableModel):
     """Prenotazione appuntamento."""
     
     STATUS_CHOICES = [
@@ -121,6 +124,7 @@ class Appointment(models.Model):
         FieldPanel('status'),
         FieldPanel('payment_method'),
         FieldPanel('amount_paid'),
+        InlinePanel('attachments', label="📎 Documenti allegati", heading="Documenti allegati"),
     ]
     
     class Meta:
@@ -192,7 +196,7 @@ def appointment_attachment_path(instance, filename):
 class AppointmentAttachment(models.Model):
     """Allegato per un appuntamento."""
     
-    appointment = models.ForeignKey(
+    appointment = ParentalKey(
         Appointment, 
         on_delete=models.CASCADE, 
         related_name='attachments',
@@ -202,9 +206,16 @@ class AppointmentAttachment(models.Model):
     original_filename = models.CharField("Nome file originale", max_length=255)
     uploaded_at = models.DateTimeField("Caricato il", auto_now_add=True)
     
+    panels = [
+        FieldPanel('file'),
+        FieldPanel('original_filename', read_only=True),
+    ]
+    
     class Meta:
         verbose_name = "Allegato"
         verbose_name_plural = "Allegati"
     
     def __str__(self):
-        return f"{self.original_filename} - {self.appointment}"
+        if self.file:
+            return format_html('<a href="{}" target="_blank">📥 {}</a>', self.file.url, self.original_filename)
+        return self.original_filename

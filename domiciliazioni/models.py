@@ -1,5 +1,7 @@
 from django.db import models
+from django.utils.html import format_html
 from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
 from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
@@ -82,7 +84,7 @@ TRIBUNALE_CHOICES = [
 ]
 
 
-class DomiciliazioniSubmission(models.Model):
+class DomiciliazioniSubmission(ClusterableModel):
     """Submission domiciliazione con allegati."""
     
     STATUS_CHOICES = [
@@ -154,6 +156,7 @@ class DomiciliazioniSubmission(models.Model):
             FieldPanel('status'),
             FieldPanel('esito_udienza'),
         ], heading="Stato"),
+        InlinePanel('documents', label="📎 Documenti allegati", heading="Documenti allegati"),
     ]
     
     class Meta:
@@ -168,14 +171,21 @@ class DomiciliazioniSubmission(models.Model):
 class DomiciliazioniDocument(models.Model):
     """Documento allegato."""
     
-    submission = models.ForeignKey(DomiciliazioniSubmission, on_delete=models.CASCADE, related_name='documents')
+    submission = ParentalKey(DomiciliazioniSubmission, on_delete=models.CASCADE, related_name='documents')
     file = models.FileField("Documento", upload_to='domiciliazioni/%Y/%m/')
     original_filename = models.CharField("Nome file", max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    panels = [
+        FieldPanel('file'),
+        FieldPanel('original_filename', read_only=True),
+    ]
     
     class Meta:
         verbose_name = "Documento allegato"
         verbose_name_plural = "Documenti allegati"
     
     def __str__(self):
+        if self.file:
+            return format_html('<a href="{}" target="_blank">📥 {}</a>', self.file.url, self.original_filename)
         return self.original_filename
