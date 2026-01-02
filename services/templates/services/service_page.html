@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailsettings_tags %}
+{% get_settings %}
+
+{% block meta_description %}<meta name="description" content="{% if page.subtitle %}{{ page.subtitle }}{% elif page.search_description %}{{ page.search_description }}{% elif page.service_area and page.service_area.short_description %}{{ page.service_area.short_description }}{% else %}{{ page.title }} - {{ settings.sld_project.SiteSettings.studio_name }}{% endif %}">{% endblock %}
 
 {% block content %}
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
@@ -24,6 +27,31 @@
         </div>
     </div>
 </section>
+
+{% if related_articles %}
+<section class="py-16 bg-brand-white border-t border-brand-gray/20">
+    <div class="max-w-4xl mx-auto px-6">
+        <h3 class="text-2xl font-bold text-brand-black mb-8">Articoli correlati</h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            {% for article in related_articles %}
+            <a href="{{ article.url }}" class="group block bg-brand-silver p-6 hover:bg-brand-black transition-colors">
+                <p class="text-sm text-brand-accent uppercase tracking-widest mb-2">
+                    {{ article.first_published_at|date:"d M Y" }}
+                </p>
+                <h4 class="text-lg font-bold text-brand-black group-hover:text-white transition-colors">
+                    {{ article.title }}
+                </h4>
+                {% if article.excerpt %}
+                <p class="text-brand-gray group-hover:text-brand-silver mt-2 text-sm line-clamp-2">
+                    {{ article.excerpt }}
+                </p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
 
 <section class="py-16 bg-brand-silver">
     <div class="max-w-4xl mx-auto px-6 text-center">

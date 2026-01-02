@@ -123,6 +123,7 @@ def _get_studio_settings():
                     'mobile_phone': studio_settings.mobile_phone,
                     'address': studio_settings.address,
                     'city': studio_settings.city,
+                    'province': studio_settings.province,
                     'maps_lat': float(studio_settings.maps_lat),
                     'maps_lng': float(studio_settings.maps_lng),
                     'facebook_url': studio_settings.facebook_url,
@@ -142,6 +143,7 @@ def _get_studio_settings():
         'mobile_phone': getattr(django_settings, 'STUDIO_MOBILE', ''),
         'address': getattr(django_settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma'),
         'city': getattr(django_settings, 'STUDIO_CITY', 'Roma'),
+        'province': getattr(django_settings, 'STUDIO_PROVINCE', 'Lazio'),
         'maps_lat': 41.902782,
         'maps_lng': 12.496366,
         'facebook_url': '',
@@ -157,7 +159,7 @@ def schema_org_jsonld(context):
     request = context.get('request')
     page = context.get('page')
     
-    if not page:
+    if not request:
         return ''
     
     studio = _get_studio_settings()
@@ -172,6 +174,9 @@ def schema_org_jsonld(context):
         same_as.append(studio['x_url'])
     if studio.get('linkedin_url'):
         same_as.append(studio['linkedin_url'])
+    
+    # Recupera aree di pratica per knowsAbout
+    knows_about = _get_knows_about()
     
     # Schema base - Organization + LegalService
     logo_url = studio.get('logo_url') or f"{site_url}/static/images/StudioLegale.svg"
@@ -196,20 +201,10 @@ def schema_org_jsonld(context):
                     },
                     {
                         "@type": "AdministrativeArea",
-                        "name": "Puglia"
+                        "name": studio['province']
                     }
                 ],
-                "knowsAbout": [
-                    "Diritto Penale",
-                    "Famiglia e Successioni",
-                    "Privacy e GDPR",
-                    "Contratti",
-                    "Diritto dei Consumatori",
-                    "Recupero Crediti",
-                    "Risarcimento Danni",
-                    "Infortunistica Stradale",
-                    "Cittadinanza Italiana"
-                ],
+                "knowsAbout": knows_about,
                 "employee": {
                     "@type": "Person",
                     "name": studio['lawyer_name'].replace('Avv. ', ''),
@@ -243,8 +238,8 @@ def schema_org_jsonld(context):
                 "@type": "WebPage",
                 "@id": page_url,
                 "url": page_url,
-                "name": page.seo_title if hasattr(page, 'seo_title') and page.seo_title else page.title,
-                "description": page.search_description if hasattr(page, 'search_description') and page.search_description else f"{studio['studio_name']} {studio['lawyer_name']}",
+                "name": (page.seo_title if hasattr(page, 'seo_title') and page.seo_title else page.title) if page else studio['studio_name'],
+                "description": (page.search_description if hasattr(page, 'search_description') and page.search_description else f"{studio['studio_name']} {studio['lawyer_name']}") if page else f"{studio['studio_name']} - {studio['city']}",
                 "isPartOf": {
                     "@type": "WebSite",
                     "@id": f"{site_url}/#website",
@@ -258,13 +253,32 @@ def schema_org_jsonld(context):
         ]
     }
     
-    # Aggiungi breadcrumb se non è homepage
-    if page.url_path != '/home/':
+    # Aggiungi breadcrumb se non è homepage e se page esiste
+    if page and hasattr(page, 'url_path') and page.url_path != '/home/':
         breadcrumbs = _get_breadcrumbs(page, site_url)
         if breadcrumbs:
             schema_data["@graph"].append(breadcrumbs)
     
     return mark_safe(f'<script type="application/ld+json">{json.dumps(schema_data, ensure_ascii=False, indent=2)}</script>')
+
+
+def _get_knows_about():
+    """Recupera le aree di pratica per il campo knowsAbout."""
+    try:
+        from services.models import ServiceArea
+        areas = ServiceArea.objects.all().order_by('order', 'name')
+        if areas.exists():
+            return [area.name for area in areas]
+    except Exception:
+        pass
+    
+    # Fallback se non ci sono aree
+    return [
+        "Diritto Penale",
+        "Famiglia e Successioni", 
+        "Contratti",
+        "Recupero Crediti"
+    ]
 
 
 def _get_opening_hours():

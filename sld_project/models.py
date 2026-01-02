@@ -40,6 +40,15 @@ class SiteSettings(BaseSiteSetting):
         verbose_name="Favicon",
         help_text="Icona del sito (ICO, PNG 32x32 o SVG)"
     )
+    default_social_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Immagine Social Default",
+        help_text="Immagine 1200x630 px per condivisioni social (Facebook, Twitter, LinkedIn). Usata come fallback se la pagina non ha immagine."
+    )
     lawyer_name = models.CharField(
         "Nome Avvocato", 
         max_length=200, 
@@ -50,16 +59,22 @@ class SiteSettings(BaseSiteSetting):
     # Contatti
     email = models.EmailField(
         "Email", 
-        default="info@example.com"
+        default="",
+        blank=True,
+        help_text="Email principale visibile ai clienti (es: info@studiolegalrossi.it)"
     )
     email_pec = models.EmailField(
         "PEC", 
-        default="avvocato@pec.it"
+        default="",
+        blank=True,
+        help_text="PEC per comunicazioni ufficiali (es: avvocato.rossi@pec.ordineavvocati.it)"
     )
     phone = models.CharField(
         "Telefono", 
         max_length=30, 
-        default="+39 06 12345678"
+        default="",
+        blank=True,
+        help_text="Formato internazionale: +39 06 1234567"
     )
     mobile_phone = models.CharField(
         "Cellulare", 
@@ -72,50 +87,66 @@ class SiteSettings(BaseSiteSetting):
     address = models.CharField(
         "Indirizzo", 
         max_length=300, 
-        default="Via Roma, 1 - 00100 Roma"
+        default="",
+        blank=True,
+        help_text="Indirizzo completo con CAP (es: Via Roma, 1 - 00100 Roma)"
     )
     city = models.CharField(
         "Città", 
         max_length=100, 
-        default="Roma"
+        default="",
+        blank=True,
+        help_text="Solo il nome della città (es: Roma, Milano, Bari)"
+    )
+    province = models.CharField(
+        "Provincia/Regione",
+        max_length=100,
+        default="Lazio",
+        help_text="Provincia o regione per SEO (es: Puglia, Lazio, Lombardia)"
     )
     maps_url = models.URLField(
         "URL Mappa", 
-        default="https://maps.apple.com/?daddr=41.9028,12.4964",
-        help_text="Link Apple Maps o Google Maps"
+        default="",
+        blank=True,
+        help_text="Copia il link 'Condividi' da Google Maps o Apple Maps"
     )
     maps_lat = models.CharField(
         "Latitudine", 
         max_length=20,
-        default="41.902782",
-        help_text="Es: 41.902782 (puoi usare sia punto che virgola)"
+        default="",
+        blank=True,
+        help_text="Clicca destro su Google Maps → 'Cosa c'è qui?' per vedere le coordinate (es: 41.902782)"
     )
     maps_lng = models.CharField(
         "Longitudine", 
         max_length=20,
-        default="12.496366",
-        help_text="Es: 12.496366 (puoi usare sia punto che virgola)"
+        default="",
+        blank=True,
+        help_text="Seconda coordinata dopo la virgola (es: 12.496366)"
     )
     
     # Web & Social
     website = models.CharField(
         "Sito Web", 
         max_length=200, 
-        default="www.example.com"
+        default="",
+        blank=True,
+        help_text="Senza https:// (es: www.studiolegalrossi.it)"
     )
     facebook_url = models.URLField(
         "Facebook", 
         blank=True,
-        help_text="URL completo della pagina Facebook"
+        help_text="URL completo (es: https://facebook.com/studiolegalrossi)"
     )
     x_url = models.URLField(
         "X (ex Twitter)", 
         blank=True,
-        help_text="URL completo del profilo X (es: https://x.com/nomeutente)"
+        help_text="URL completo (es: https://x.com/avvrossi)"
     )
     linkedin_url = models.URLField(
         "LinkedIn", 
-        blank=True
+        blank=True,
+        help_text="URL completo (es: https://linkedin.com/in/mariorossi)"
     )
     
     # Jitsi
@@ -123,7 +154,7 @@ class SiteSettings(BaseSiteSetting):
         "Prefisso stanza Jitsi",
         max_length=50,
         default="StudioLegale",
-        help_text="Prefisso per le stanze videochiamata (senza spazi)"
+        help_text="Solo lettere senza spazi. Il link finale sarà: meet.jit.si/Prefisso-[codice casuale a 16 caratteri]"
     )
     
     # ═══════════════════════════════════════════════════════════════════════════
@@ -199,7 +230,7 @@ class SiteSettings(BaseSiteSetting):
     booking_slot_duration = models.PositiveIntegerField(
         "Durata slot (minuti)",
         default=30,
-        help_text="Durata di ogni slot prenotabile in minuti"
+        help_text="Valori consigliati: 15, 30, 45 o 60 minuti"
     )
     booking_price_cents = models.PositiveIntegerField(
         "Prezzo consulenza (centesimi)",
@@ -303,6 +334,7 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('studio_name'),
             FieldPanel('logo'),
             FieldPanel('favicon'),
+            FieldPanel('default_social_image'),
             FieldPanel('lawyer_name'),
         ], heading="Identità Studio"),
         MultiFieldPanel([
@@ -314,6 +346,7 @@ class SiteSettings(BaseSiteSetting):
         MultiFieldPanel([
             FieldPanel('address'),
             FieldPanel('city'),
+            FieldPanel('province'),
             FieldPanel('maps_url'),
             FieldPanel('maps_lat'),
             FieldPanel('maps_lng'),

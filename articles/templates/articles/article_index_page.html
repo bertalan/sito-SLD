@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-6xl mx-auto px-6">
+        <h1 class="text-5xl md:text-6xl font-bold tracking-tighter text-brand-black mb-4">
+            {{ page.title }}<span class="text-brand-accent">,</span>
+        </h1>
+        {% if page.intro %}
+        <div class="text-xl text-brand-gray max-w-2xl">
+            {{ page.intro|richtext }}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{# Filtri categorie #}
+{% if categories %}
+<section class="py-6 bg-brand-silver border-b border-brand-gray/20">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-wrap gap-4 items-center">
+            <span class="text-sm uppercase tracking-widest text-brand-gray">Filtra:</span>
+            <a href="{{ page.url }}" 
+               class="px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-colors {% if not current_category %}bg-brand-accent text-white{% else %}bg-white text-brand-black hover:bg-brand-accent hover:text-white{% endif %}">
+                Tutti
+            </a>
+            {% for cat in categories %}
+            <a href="?categoria={{ cat.slug }}" 
+               class="px-4 py-2 text-sm font-semibold uppercase tracking-wider transition-colors {% if current_category == cat.slug %}bg-brand-accent text-white{% else %}bg-white text-brand-black hover:bg-brand-accent hover:text-white{% endif %}">
+                <i data-lucide="{{ cat.icon }}" class="w-4 h-4 inline mr-1"></i>
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Griglia articoli #}
+<section class="py-16 bg-brand-white">
+    <div class="max-w-6xl mx-auto px-6">
+        {% if articles %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for article in articles %}
+            <article class="group border border-brand-gray/20 bg-white hover:border-brand-accent transition-colors">
+                {% if article.cover_image %}
+                <div class="aspect-video overflow-hidden">
+                    {% load wagtailimages_tags %}
+                    {% image article.cover_image fill-400x225 as cover %}
+                    <img src="{{ cover.url }}" alt="{{ article.title }}" 
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    {% if article.category %}
+                    <span class="text-xs uppercase tracking-widest text-brand-accent font-semibold">
+                        <i data-lucide="{{ article.category.icon }}" class="w-3 h-3 inline mr-1"></i>
+                        {{ article.category.name }}
+                    </span>
+                    {% endif %}
+                    
+                    <h2 class="text-xl font-bold text-brand-black mt-2 mb-3 group-hover:text-brand-accent transition-colors">
+                        <a href="{% pageurl article %}">{{ article.title }}</a>
+                    </h2>
+                    
+                    {% if article.subtitle %}
+                    <p class="text-brand-gray text-sm mb-4 line-clamp-2">{{ article.subtitle }}</p>
+                    {% endif %}
+                    
+                    <div class="flex items-center justify-between text-xs text-brand-gray">
+                        <span>
+                            <i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>
+                            {{ article.reading_time }} min
+                        </span>
+                        {% if article.first_published_at %}
+                        <time datetime="{{ article.first_published_at|date:'Y-m-d' }}">
+                            {{ article.first_published_at|date:"d M Y" }}
+                        </time>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16">
+            <i data-lucide="file-text" class="w-16 h-16 mx-auto text-brand-gray/30 mb-4"></i>
+            <p class="text-brand-gray text-lg">
+                {% if current_category %}
+                Nessun articolo in questa categoria.
+                {% else %}
+                Nessun articolo pubblicato.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{# Schema.org JSON-LD #}
+{% load wagtailsettings_tags %}
+{% get_settings %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "{{ page.title }}",
+    "description": "{% if page.intro %}{{ page.intro|striptags|truncatewords:30 }}{% else %}Articoli e approfondimenti legali a cura dello Studio{% endif %}",
+    "url": "{{ request.build_absolute_uri }}",
+    "publisher": {
+        "@type": "LegalService",
+        "name": "{{ settings.sld_project.SiteSettings.studio_name }}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ settings.sld_project.SiteSettings.address }}",
+            "addressLocality": "{{ settings.sld_project.SiteSettings.city }}",
+            "postalCode": "{{ settings.sld_project.SiteSettings.cap }}",
+            "addressCountry": "IT"
+        }
+    },
+    "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": {{ articles|length }},
+        "itemListElement": [
+            {% for article in articles %}
+            {
+                "@type": "ListItem",
+                "position": {{ forloop.counter }},
+                "url": "{{ request.scheme }}://{{ request.get_host }}{% pageurl article %}",
+                "name": "{{ article.title }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+}
+</script>
+{% endblock %}

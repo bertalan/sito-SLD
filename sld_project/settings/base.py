@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "booking",
     "domiciliazioni",
     "contact",
+    "articles",
     "sld_project",  # SiteSettings model
     # Wagtail
     "wagtail.contrib.forms",

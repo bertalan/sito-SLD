@@ -2,6 +2,8 @@
 {% load wagtailcore_tags static wagtailsettings_tags %}
 {% get_settings %}
 
+{% block meta_description %}<meta name="description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}. Assistenza legale professionale.{% endif %}">{% endblock %}
+
 {% block body_class %}template-homepage{% endblock %}
 
 {% block content %}

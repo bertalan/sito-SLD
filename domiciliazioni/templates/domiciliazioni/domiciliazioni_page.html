@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailsettings_tags %}
+{% get_settings %}
+
+{% block meta_description %}<meta name="description" content="{% if page.search_description %}{{ page.search_description }}{% elif page.intro %}{{ page.intro|striptags|truncatewords:30 }}{% else %}Servizio domiciliazioni legali - {{ settings.sld_project.SiteSettings.studio_name }}{% endif %}">{% endblock %}
 
 {% block content %}
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">

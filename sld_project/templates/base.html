@@ -16,12 +16,14 @@
             {% endblock %}
         </title>
         
-        {# Meta description #}
+        {# Meta description - sovrascrivibile per articoli #}
+        {% block meta_description %}
         {% if page.search_description %}
         <meta name="description" content="{{ page.search_description }}" />
         {% else %}
-        <meta name="description" content="{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}" />
+        <meta name="description" content="{{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.city }}" />
         {% endif %}
+        {% endblock %}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         
         {# Favicon #}
@@ -30,25 +32,46 @@
         <link rel="shortcut icon" href="{{ settings.sld_project.SiteSettings.favicon.url }}" />
         {% endif %}
         
-        {# Open Graph / Facebook #}
+        {# Open Graph / Facebook - sovrascrivibile per articoli #}
+        {% block og_meta %}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
         <meta property="og:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}{% if current_site and current_site.site_name %} | {{ current_site.site_name }}{% endif %}" />
-        <meta property="og:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
+        <meta property="og:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
+        {% if settings.sld_project.SiteSettings.default_social_image %}
+        {% load wagtailimages_tags %}{% image settings.sld_project.SiteSettings.default_social_image fill-1200x630 as default_og %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ default_og.url }}" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        {% else %}
         <meta property="og:image" content="{{ logo_url }}" />
+        {% endif %}
         <meta property="og:locale" content="it_IT" />
         <meta property="og:site_name" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
+        {% endblock %}
         
-        {# Twitter Card #}
+        {# Twitter Card - sovrascrivibile per articoli #}
+        {% block twitter_meta %}
+        {% if settings.sld_project.SiteSettings.default_social_image %}
         <meta name="twitter:card" content="summary_large_image" />
+        {% load wagtailimages_tags %}{% image settings.sld_project.SiteSettings.default_social_image fill-1200x630 as default_tw %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ default_tw.url }}" />
+        {% else %}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:image" content="{{ logo_url }}" />
+        {% endif %}
         <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
         <meta name="twitter:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}" />
-        <meta name="twitter:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
-        <meta name="twitter:image" content="{{ logo_url }}" />
-        <meta name="twitter:site" content="{{ settings.sld_project.SiteSettings.x_url }}" />
+        <meta name="twitter:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
+        {% if settings.sld_project.SiteSettings.x_url %}<meta name="twitter:site" content="{{ settings.sld_project.SiteSettings.x_url }}" />{% endif %}
+        {% endblock %}
+        
+        {# Meta author - sovrascrivibile #}
+        {% block author_meta %}
+        <meta name="author" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
+        {% endblock %}
         
         {# Additional SEO meta tags #}
-        <meta name="author" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="{{ request.build_absolute_uri }}" />
 

@@ -30,6 +30,10 @@ class ServiceArea(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def get_page(self):
+        """Restituisce la ServicePage collegata a questa area."""
+        return self.pages.live().first()
 
 
 class ServicesIndexPage(Page):
@@ -72,3 +76,10 @@ class ServicePage(Page):
     
     class Meta:
         verbose_name = "Pagina Servizio"
+    
+    def get_context(self, request):
+        context = super().get_context(request)
+        if self.service_area:
+            from articles.models import get_articles_for_service_area
+            context['related_articles'] = get_articles_for_service_area(self.service_area, limit=3)
+        return context
