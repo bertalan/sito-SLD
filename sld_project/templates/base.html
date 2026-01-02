@@ -24,6 +24,12 @@
         {% endif %}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         
+        {# Favicon #}
+        {% if settings.sld_project.SiteSettings.favicon %}
+        <link rel="icon" href="{{ settings.sld_project.SiteSettings.favicon.url }}" />
+        <link rel="shortcut icon" href="{{ settings.sld_project.SiteSettings.favicon.url }}" />
+        {% endif %}
+        
         {# Open Graph / Facebook #}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />

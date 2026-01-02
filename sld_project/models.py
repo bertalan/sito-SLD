@@ -31,6 +31,15 @@ class SiteSettings(BaseSiteSetting):
         verbose_name="Logo",
         help_text="Logo dello studio (SVG, PNG o JPG)"
     )
+    favicon = models.ForeignKey(
+        get_document_model_string(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name="Favicon",
+        help_text="Icona del sito (ICO, PNG 32x32 o SVG)"
+    )
     lawyer_name = models.CharField(
         "Nome Avvocato", 
         max_length=200, 
@@ -294,6 +303,7 @@ class SiteSettings(BaseSiteSetting):
         MultiFieldPanel([
             FieldPanel('studio_name'),
             FieldPanel('logo'),
+            FieldPanel('favicon'),
             FieldPanel('lawyer_name'),
         ], heading="Identità Studio"),
         MultiFieldPanel([
