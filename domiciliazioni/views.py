@@ -112,14 +112,15 @@ def process_domiciliazione_form(request, page):
 
 def send_domiciliazione_notification(submission):
     """Invia email di notifica per nuova richiesta domiciliazione con allegato iCal."""
+    from .models import get_tribunale_choices, get_tipo_udienza_choices
     
     # Recupera impostazioni studio
     studio = _get_studio_settings()
     
-    tribunale_display = dict(submission.TRIBUNALE_CHOICES if hasattr(submission, 'TRIBUNALE_CHOICES') else []).get(
+    tribunale_display = dict(get_tribunale_choices()).get(
         submission.tribunale, submission.tribunale
     )
-    tipo_display = dict(submission.TIPO_UDIENZA_CHOICES if hasattr(submission, 'TIPO_UDIENZA_CHOICES') else []).get(
+    tipo_display = dict(get_tipo_udienza_choices()).get(
         submission.tipo_udienza, submission.tipo_udienza
     )
     

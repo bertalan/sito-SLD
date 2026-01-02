@@ -54,17 +54,21 @@ class DomiciliazioniPage(AbstractEmailForm):
                 return render(request, 'domiciliazioni/domiciliazioni_landing.html', {
                     'page': self,
                     'submission': submission,
+                    'tribunale_choices': get_tribunale_choices(),
+                    'tipo_udienza_choices': get_tipo_udienza_choices(),
                 })
         
         # GET: mostra il form
         return render(request, 'domiciliazioni/domiciliazioni_page.html', {
             'page': self,
             'self': self,
+            'tribunale_choices': get_tribunale_choices(),
+            'tipo_udienza_choices': get_tipo_udienza_choices(),
         })
 
 
-# Scelte per tipo udienza/servizio
-TIPO_UDIENZA_CHOICES = [
+# Scelte per tipo udienza/servizio - Fallback se SiteSettings non disponibile
+TIPO_UDIENZA_CHOICES_DEFAULT = [
     ('civile', 'Udienza Civile'),
     ('penale', 'Udienza Penale'),
     ('lavoro', 'Udienza Lavoro'),
@@ -77,14 +81,47 @@ TIPO_UDIENZA_CHOICES = [
     ('altro', 'Altro'),
 ]
 
-# Scelte per tribunale/ufficio
-TRIBUNALE_CHOICES = [
+# Scelte per tribunale/ufficio - Fallback se SiteSettings non disponibile
+TRIBUNALE_CHOICES_DEFAULT = [
     ('roma', 'Tribunale di Roma'),
     ('corte_appello', "Corte d'Appello di Roma"),
     ('gdp', 'Giudice di Pace di Roma'),
     ('tar', 'TAR Lazio'),
     ('unep', 'Ufficio UNEP di Roma'),
 ]
+
+
+def get_tribunale_choices():
+    """Ottiene le choices per tribunali da SiteSettings o usa il default."""
+    try:
+        from sld_project.models import SiteSettings
+        settings = SiteSettings.get_current()
+        if settings.pk:
+            choices = settings.get_tribunali_choices()
+            if choices:
+                return choices
+    except Exception:
+        pass
+    return TRIBUNALE_CHOICES_DEFAULT
+
+
+def get_tipo_udienza_choices():
+    """Ottiene le choices per tipi udienza da SiteSettings o usa il default."""
+    try:
+        from sld_project.models import SiteSettings
+        settings = SiteSettings.get_current()
+        if settings.pk:
+            choices = settings.get_tipi_udienza_choices()
+            if choices:
+                return choices
+    except Exception:
+        pass
+    return TIPO_UDIENZA_CHOICES_DEFAULT
+
+
+# Per compatibilità - usati ancora in alcuni punti
+TIPO_UDIENZA_CHOICES = TIPO_UDIENZA_CHOICES_DEFAULT
+TRIBUNALE_CHOICES = TRIBUNALE_CHOICES_DEFAULT
 
 
 class DomiciliazioniSubmission(ClusterableModel):
@@ -108,10 +145,10 @@ class DomiciliazioniSubmission(ClusterableModel):
     ordine_appartenenza = models.CharField("Ordine di appartenenza", max_length=100, blank=True)
     
     # Dati udienza
-    tribunale = models.CharField("Tribunale", max_length=100, choices=TRIBUNALE_CHOICES)
+    tribunale = models.CharField("Tribunale", max_length=100)
     sezione = models.CharField("Sezione", max_length=50, blank=True, help_text="Es: Sezione Civile, Sezione Lavoro")
     giudice = models.CharField("Giudice", max_length=100, blank=True)
-    tipo_udienza = models.CharField("Tipo udienza", max_length=100, choices=TIPO_UDIENZA_CHOICES, default='civile')
+    tipo_udienza = models.CharField("Tipo udienza", max_length=100, default='civile')
     
     # Dati causa
     numero_rg = models.CharField("Numero R.G.", max_length=50, default='', help_text="Numero di Ruolo Generale (es: 1234/2025)")

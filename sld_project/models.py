@@ -119,6 +119,23 @@ class SiteSettings(BaseSiteSetting):
     )
     
     # ═══════════════════════════════════════════════════════════════════════════
+    # DOMICILIAZIONI
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    domiciliazioni_tribunali = models.TextField(
+        "Tribunali / Uffici",
+        blank=True,
+        default="roma|Tribunale di Roma\ncorte_appello|Corte d'Appello di Roma\ngdp|Giudice di Pace di Roma\ntar|TAR Lazio\nunep|Ufficio UNEP di Roma",
+        help_text="Una voce per riga. Formato: codice|Etichetta visibile. Es: roma|Tribunale di Roma"
+    )
+    domiciliazioni_tipi_udienza = models.TextField(
+        "Tipi Udienza / Servizio",
+        blank=True,
+        default="civile|Udienza Civile\npenale|Udienza Penale\nlavoro|Udienza Lavoro\nfamiglia|Udienza Famiglia\nesecuzioni|Esecuzioni\nfallimentare|Fallimentare\nvolontaria|Volontaria Giurisdizione\nnotificazioni|Ufficio notificazioni\nesecuzione_protesti|Ufficio esecuzione e protesti\naltro|Altro",
+        help_text="Una voce per riga. Formato: codice|Etichetta visibile. Es: civile|Udienza Civile"
+    )
+    
+    # ═══════════════════════════════════════════════════════════════════════════
     # PAGAMENTI
     # ═══════════════════════════════════════════════════════════════════════════
     
@@ -287,6 +304,10 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('jitsi_room_prefix'),
         ], heading="Videochiamate"),
         MultiFieldPanel([
+            FieldPanel('domiciliazioni_tribunali'),
+            FieldPanel('domiciliazioni_tipi_udienza'),
+        ], heading="📋 Domiciliazioni", classname="collapsible"),
+        MultiFieldPanel([
             FieldPanel('payment_mode'),
             FieldPanel('booking_slot_duration'),
             FieldPanel('booking_price_cents'),
@@ -349,3 +370,24 @@ class SiteSettings(BaseSiteSetting):
             'maps_url': self.maps_url,
             'website': self.website,
         }
+
+    def _parse_choices(self, text):
+        """Parsa un campo testo in lista di tuple (codice, etichetta)."""
+        choices = []
+        if not text:
+            return choices
+        for line in text.strip().split('\n'):
+            line = line.strip()
+            if '|' in line:
+                parts = line.split('|', 1)
+                if len(parts) == 2:
+                    choices.append((parts[0].strip(), parts[1].strip()))
+        return choices
+
+    def get_tribunali_choices(self):
+        """Ritorna le choices per tribunali come lista di tuple."""
+        return self._parse_choices(self.domiciliazioni_tribunali)
+    
+    def get_tipi_udienza_choices(self):
+        """Ritorna le choices per tipi udienza come lista di tuple."""
+        return self._parse_choices(self.domiciliazioni_tipi_udienza)

@@ -122,11 +122,9 @@
                         <select name="tribunale" id="tribunale-select" required
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
                             <option value="">-- Seleziona --</option>
-                            <option value="roma">Tribunale di Roma</option>
-                            <option value="corte_appello">Corte d'Appello di Roma</option>
-                            <option value="gdp">Giudice di Pace di Roma</option>
-                            <option value="tar">TAR Lazio</option>
-                            <option value="unep">Ufficio UNEP di Roma</option>
+                            {% for code, label in tribunale_choices %}
+                            <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>
@@ -136,16 +134,9 @@
                         <select name="tipo_udienza" id="servizio-select" required
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
                             <option value="">Seleziona servizio...</option>
-                            <option value="civile">Udienza Civile</option>
-                            <option value="penale">Udienza Penale</option>
-                            <option value="lavoro">Udienza Lavoro</option>
-                            <option value="famiglia">Udienza Famiglia</option>
-                            <option value="esecuzioni">Esecuzioni</option>
-                            <option value="fallimentare">Fallimentare</option>
-                            <option value="volontaria">Volontaria Giurisdizione</option>
-                            <option value="notificazioni">Ufficio notificazioni</option>
-                            <option value="esecuzione_protesti">Ufficio esecuzione e protesti</option>
-                            <option value="altro">Altro</option>
+                            {% for code, label in tipo_udienza_choices %}
+                            <option value="{{ code }}">{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>
