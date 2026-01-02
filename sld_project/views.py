@@ -14,6 +14,7 @@ def _substitute_variables(content: str, settings: SiteSettings) -> str:
     - {{studio_name}}
     - {{lawyer_name}}
     - {{address}}
+    - {{city}}
     - {{email}}
     - {{email_pec}}
     - {{phone}}
@@ -25,6 +26,7 @@ def _substitute_variables(content: str, settings: SiteSettings) -> str:
         "{{studio_name}}": settings.studio_name or "Studio Legale",
         "{{lawyer_name}}": settings.lawyer_name or "",
         "{{address}}": settings.address or "",
+        "{{city}}": settings.city or "",
         "{{email}}": settings.email or "",
         "{{email_pec}}": settings.email_pec or "",
         "{{phone}}": settings.phone or "",

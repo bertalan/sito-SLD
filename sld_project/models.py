@@ -282,12 +282,12 @@ class SiteSettings(BaseSiteSetting):
     privacy_policy = models.TextField(
         "Privacy Policy",
         blank=True,
-        help_text="Testo completo della Privacy Policy. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{email}}, {{email_pec}}, {{phone}} verranno sostituite automaticamente."
+        help_text="Testo completo della Privacy Policy. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{city}}, {{email}}, {{email_pec}}, {{phone}} verranno sostituite automaticamente."
     )
     terms_conditions = models.TextField(
         "Termini e Condizioni",
         blank=True,
-        help_text="Testo completo dei Termini e Condizioni. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{email}}, {{email_pec}}, {{phone}}, {{website}} verranno sostituite automaticamente."
+        help_text="Testo completo dei Termini e Condizioni. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{city}}, {{email}}, {{email_pec}}, {{phone}} verranno sostituite automaticamente."
     )
     
     panels = [
