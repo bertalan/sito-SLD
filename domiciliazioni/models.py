@@ -7,6 +7,7 @@ from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
 from wagtail.snippets.models import register_snippet
+from sld_project.validators import validate_document_file
 
 
 class DomiciliazioniFormField(AbstractFormField):
@@ -212,7 +213,11 @@ class DomiciliazioniDocument(models.Model):
     """Documento allegato."""
     
     submission = ParentalKey(DomiciliazioniSubmission, on_delete=models.CASCADE, related_name='documents')
-    file = models.FileField("Documento", upload_to='domiciliazioni/%Y/%m/')
+    file = models.FileField(
+        "Documento", 
+        upload_to='domiciliazioni/%Y/%m/',
+        validators=[validate_document_file]
+    )
     original_filename = models.CharField("Nome file", max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     

@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
 
 from .models import DomiciliazioniSubmission, DomiciliazioniDocument, DomiciliazioniPage
 from .ical import generate_domiciliazione_ical, generate_domiciliazione_ical_filename
+from sld_project.validators import validate_document_file
 
 
 def _get_studio_settings():
@@ -91,9 +93,17 @@ def process_domiciliazione_form(request, page):
             note=data.get('note', ''),
         )
         
-        # Salva documenti allegati
+        # Salva documenti allegati (con validazione)
         files = request.FILES.getlist('documents')
         for f in files:
+            # Valida tipo e contenuto del file
+            try:
+                validate_document_file(f)
+            except ValidationError as e:
+                # Elimina la submission se la validazione fallisce
+                submission.delete()
+                raise ValidationError(f'File "{f.name}": {e.message}')
+            
             DomiciliazioniDocument.objects.create(
                 submission=submission,
                 file=f,

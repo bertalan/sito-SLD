@@ -17,6 +17,7 @@ paypalrestsdk>=1.13
 
 # Forms & uploads
 django-widget-tweaks>=1.5
+python-magic>=0.4  # File type validation
 
 # Production
 gunicorn>=23.0

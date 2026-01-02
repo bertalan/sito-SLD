@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from datetime import datetime, date, timedelta
 import json
 import logging
@@ -12,6 +13,7 @@ import logging
 from .models import Appointment, AvailabilityRule, BlockedDate, AppointmentAttachment
 from .email_service import send_booking_confirmation
 from .payment_service import payment_service
+from sld_project.validators import validate_attachment_file
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +75,13 @@ class CreateCheckoutSession(View):
                 total_size = sum(f.size for f in files)
                 if total_size > self.MAX_UPLOAD_SIZE:
                     return JsonResponse({'error': 'La dimensione totale degli allegati supera i 20MB'}, status=400)
+                
+                # Valida tipo e contenuto di ogni file
+                for f in files:
+                    try:
+                        validate_attachment_file(f)
+                    except ValidationError as e:
+                        return JsonResponse({'error': f'File "{f.name}": {e.message}'}, status=400)
             else:
                 data = json.loads(request.body)
                 files = []
@@ -236,14 +245,25 @@ class BookingCancelView(TemplateView):
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
-    """Webhook Stripe per conferma pagamento."""
-    # In demo mode, accetta tutto
-    if payment_service.is_demo:
-        return JsonResponse({'status': 'demo_mode'})
+    """
+    Webhook Stripe per conferma pagamento.
     
+    SICUREZZA:
+    - La firma viene SEMPRE verificata tramite STRIPE_WEBHOOK_SECRET
+    - In demo mode, il webhook è disabilitato (non ci sono pagamenti reali)
+    - @csrf_exempt è corretto qui perché Stripe non può inviare token CSRF
+    """
+    # In demo mode, non ci sono pagamenti reali, ignora il webhook
+    # ma logga comunque per debugging
+    if payment_service.is_demo:
+        logger.info("Stripe webhook received in demo mode - ignoring")
+        return JsonResponse({'status': 'demo_mode_ignored'})
+    
+    # VERIFICA FIRMA OBBLIGATORIA per tutti gli altri casi
     result = payment_service.verify_webhook(request, 'stripe')
     
     if not result.get('valid'):
+        logger.warning(f"Invalid Stripe webhook: {result.get('error')}")
         return JsonResponse({'error': result.get('error', 'Invalid webhook')}, status=400)
     
     event = result.get('event')

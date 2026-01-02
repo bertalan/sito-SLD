@@ -6,6 +6,7 @@ from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.snippets.models import register_snippet
+from sld_project.validators import validate_attachment_file
 
 
 class GoogleCalendarEvent(models.Model):
@@ -287,7 +288,11 @@ class AppointmentAttachment(models.Model):
         related_name='attachments',
         verbose_name="Appuntamento"
     )
-    file = models.FileField("File", upload_to=appointment_attachment_path)
+    file = models.FileField(
+        "File", 
+        upload_to=appointment_attachment_path,
+        validators=[validate_attachment_file]
+    )
     original_filename = models.CharField("Nome file originale", max_length=255)
     uploaded_at = models.DateTimeField("Caricato il", auto_now_add=True)
     
