@@ -116,6 +116,66 @@
         <style>
             ::selection { background-color: #e91e63; color: white; }
             
+            /* Typography plugin styles per contenuto rich text */
+            .prose {
+                color: #374151;
+                line-height: 1.75;
+            }
+            .prose p {
+                margin-top: 1.25em;
+                margin-bottom: 1.25em;
+            }
+            .prose p:empty {
+                min-height: 1em;
+            }
+            .prose p:first-child {
+                margin-top: 0;
+            }
+            .prose p:last-child {
+                margin-bottom: 0;
+            }
+            .prose h2 {
+                font-size: 1.5em;
+                font-weight: 700;
+                margin-top: 2em;
+                margin-bottom: 1em;
+                line-height: 1.33;
+                color: #0a0a0a;
+            }
+            .prose h3 {
+                font-size: 1.25em;
+                font-weight: 600;
+                margin-top: 1.6em;
+                margin-bottom: 0.6em;
+                line-height: 1.6;
+                color: #0a0a0a;
+            }
+            .prose h4 {
+                font-weight: 600;
+                margin-top: 1.5em;
+                margin-bottom: 0.5em;
+                line-height: 1.5;
+                color: #0a0a0a;
+            }
+            .prose a {
+                color: #e91e63;
+                text-decoration: underline;
+            }
+            .prose a:hover {
+                color: #be185d;
+            }
+            .prose strong {
+                font-weight: 600;
+                color: #0a0a0a;
+            }
+            .prose blockquote {
+                font-style: italic;
+                border-left: 4px solid #e91e63;
+                padding-left: 1em;
+                margin: 1.6em 0;
+                color: #6b7280;
+            }
+            
             /* Stili per elenchi puntati nel contenuto rich text */
             .prose ul {
                 list-style-type: disc;
