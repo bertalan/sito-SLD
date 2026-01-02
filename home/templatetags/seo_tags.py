@@ -32,7 +32,7 @@ def get_logo_url(context):
         if site:
             settings = SiteSettings.for_site(site)
             if settings.pk and settings.logo:
-                logo_url = settings.logo.get_rendition('original').url
+                logo_url = settings.logo.url
                 # Rendi URL assoluto
                 if logo_url.startswith('/'):
                     return f"{request.scheme}://{request.get_host()}{logo_url}"
@@ -56,7 +56,7 @@ def _get_studio_settings():
                 logo_url = None
                 if studio_settings.logo:
                     try:
-                        logo_url = studio_settings.logo.get_rendition('original').url
+                        logo_url = studio_settings.logo.url
                     except Exception:
                         pass
                 return {

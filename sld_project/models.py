@@ -4,7 +4,7 @@ Site-wide settings editable from Wagtail admin.
 from django.db import models
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
-from wagtail.images import get_image_model_string
+from wagtail.documents import get_document_model_string
 
 
 @register_setting(icon="cog")
@@ -23,13 +23,13 @@ class SiteSettings(BaseSiteSetting):
         help_text="Es: Studio Legale Rossi"
     )
     logo = models.ForeignKey(
-        get_image_model_string(),
+        get_document_model_string(),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='+',
         verbose_name="Logo",
-        help_text="Logo dello studio (preferibilmente SVG o PNG trasparente)"
+        help_text="Logo dello studio (SVG, PNG o JPG)"
     )
     lawyer_name = models.CharField(
         "Nome Avvocato", 

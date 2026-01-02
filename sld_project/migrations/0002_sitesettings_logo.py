@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailimages', '0026_delete_uploadedimage'),
+        ('wagtaildocs', '0012_uploadeddocument'),
         ('sld_project', '0001_initial'),
     ]
 
@@ -17,11 +17,11 @@ class Migration(migrations.Migration):
             name='logo',
             field=models.ForeignKey(
                 blank=True,
-                help_text='Logo dello studio (preferibilmente SVG o PNG trasparente)',
+                help_text='Logo dello studio (SVG, PNG o JPG)',
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name='+',
-                to='wagtailimages.image',
+                to='wagtaildocs.document',
                 verbose_name='Logo',
             ),
         ),

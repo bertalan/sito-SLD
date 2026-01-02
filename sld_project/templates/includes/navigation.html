@@ -1,11 +1,13 @@
-{% load wagtailcore_tags static wagtailsettings_tags wagtailimages_tags %}
+{% load wagtailcore_tags static wagtailsettings_tags %}
 {% get_settings %}
 <nav id="nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b bg-transparent border-transparent">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <!-- Logo -->
         <a href="/" class="flex items-end space-x-3 z-50">
             {% if settings.sld_project.SiteSettings.logo %}
-                {% image settings.sld_project.SiteSettings.logo original class="h-12 w-auto" %}
+                <img src="{{ settings.sld_project.SiteSettings.logo.url }}" 
+                     alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
+                     class="h-12 w-auto">
             {% else %}
                 <img src="{% static 'images/StudioLegale.svg' %}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
@@ -33,7 +35,9 @@
         <!-- Mobile Menu Overlay -->
         <div id="mobile-menu" class="fixed inset-0 bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden">
             {% if settings.sld_project.SiteSettings.logo %}
-                {% image settings.sld_project.SiteSettings.logo original class="h-16 w-auto mb-4" %}
+                <img src="{{ settings.sld_project.SiteSettings.logo.url }}" 
+                     alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
+                     class="h-16 w-auto mb-4">
             {% else %}
                 <img src="{% static 'images/StudioLegale.svg' %}" 
                      alt="Studio Legale" 
