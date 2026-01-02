@@ -46,9 +46,28 @@ class DomiciliazioniPage(AbstractEmailForm):
     
     def serve(self, request):
         from django.shortcuts import render, redirect
+        from django.http import HttpResponse
+        from django_ratelimit.core import is_ratelimited
         from .views import process_domiciliazione_form
+        from sld_project.ratelimit import RATE_LIMITS
         
         if request.method == 'POST':
+            # Rate limiting per protezione spam (5 richieste/minuto per IP)
+            if is_ratelimited(
+                request=request,
+                group='domiciliazioni',
+                key='ip',
+                rate=RATE_LIMITS['domiciliazioni'],
+                increment=True
+            ):
+                return HttpResponse(
+                    '<html><body><h1>Troppe richieste</h1>'
+                    '<p>Hai inviato troppe richieste. Riprova tra qualche minuto.</p>'
+                    '</body></html>',
+                    status=429,
+                    content_type='text/html'
+                )
+            
             submission = process_domiciliazione_form(request, self)
             if submission:
                 # Mostra pagina di ringraziamento

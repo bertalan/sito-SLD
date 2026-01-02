@@ -1,4 +1,5 @@
 from django.db import models
+from django.http import HttpResponse
 from modelcluster.fields import ParentalKey
 from wagtail.models import Page
 from wagtail.fields import RichTextField
@@ -34,6 +35,31 @@ class ContactPage(AbstractEmailForm):
     
     class Meta:
         verbose_name = "Pagina Contatti"
+    
+    def serve(self, request, *args, **kwargs):
+        """Override serve to add rate limiting for spam protection."""
+        from django_ratelimit.core import is_ratelimited
+        from sld_project.ratelimit import RATE_LIMITS
+        
+        if request.method == 'POST':
+            # Rate limiting: 5 messaggi/minuto per IP
+            if is_ratelimited(
+                request=request,
+                group='contact',
+                key='ip',
+                rate=RATE_LIMITS['contact'],
+                increment=True
+            ):
+                return HttpResponse(
+                    '<html><body><h1>Troppe richieste</h1>'
+                    '<p>Hai inviato troppi messaggi. Riprova tra qualche minuto.</p>'
+                    '</body></html>',
+                    status=429,
+                    content_type='text/html'
+                )
+        
+        # Delega al metodo serve originale di AbstractEmailForm
+        return super().serve(request, *args, **kwargs)
 
 
 @register_snippet

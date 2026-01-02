@@ -14,6 +14,7 @@ from .models import Appointment, AvailabilityRule, BlockedDate, AppointmentAttac
 from .email_service import send_booking_confirmation
 from .payment_service import payment_service
 from sld_project.validators import validate_attachment_file
+from sld_project.ratelimit import RateLimitMixin, RATE_LIMITS
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +61,11 @@ def get_available_slots(request, date):
         return JsonResponse({'error': 'Data non valida'}, status=400)
 
 
-class CreateCheckoutSession(View):
+class CreateCheckoutSession(RateLimitMixin, View):
+    """Creates a payment checkout session for booking appointments."""
     MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20MB
     PENDING_TIMEOUT_MINUTES = 30  # Timeout per appuntamenti pending
+    rate_limit = RATE_LIMITS['booking']  # Rate limit: 10/minute per IP
     
     def post(self, request):
         try:

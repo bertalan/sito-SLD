@@ -1,35 +1,38 @@
 # Wagtail CMS
-wagtail>=6.4,<7.0
+wagtail==6.4.1
 
 # Django
-Django>=5.2,<6.0
+Django==5.2.1
 
 # Database
-psycopg2-binary>=2.9
+psycopg2-binary==2.9.10
 
 # Environment
-dj-database-url>=3.0
-python-dotenv>=1.0
+dj-database-url==2.3.0
+python-dotenv==1.0.1
 
 # Payment gateways
-stripe>=14.0
-paypalrestsdk>=1.13
+stripe==14.1.0
+paypalrestsdk==1.13.3
 
 # Forms & uploads
-django-widget-tweaks>=1.5
-python-magic>=0.4  # File type validation
+django-widget-tweaks==1.5.0
+python-magic==0.4.27  # File type validation
+
+# Security
+django-ratelimit==4.1.0  # Rate limiting for forms
 
 # Production
-gunicorn>=23.0
-whitenoise>=6.6
+gunicorn==23.0.0
+whitenoise==6.8.2
 
 # Image processing
-Pillow>=11.0
+Pillow==11.1.0
 
 # Google Calendar
-icalendar>=6.0
-requests>=2.31
+icalendar==6.1.0
+requests==2.32.3
 
 # Testing
-pytest>=9.0
-pytest-django>=4.5
+pytest==8.3.4
+pytest-django==4.9.0

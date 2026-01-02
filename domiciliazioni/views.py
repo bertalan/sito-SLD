@@ -5,10 +5,13 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
 
 from .models import DomiciliazioniSubmission, DomiciliazioniDocument, DomiciliazioniPage
 from .ical import generate_domiciliazione_ical, generate_domiciliazione_ical_filename
 from sld_project.validators import validate_document_file
+from sld_project.ratelimit import RATE_LIMITS
 
 
 def _get_studio_settings():
