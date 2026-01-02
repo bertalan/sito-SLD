@@ -5,7 +5,8 @@ import os
 DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-2e19_40bu4$)(re90p+uta_wtsw(7(r%t*blg8e=hbwydawoml"
+# In development legge da .env, fallback a valore insecure solo per test locali
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-only-do-not-use-in-production')
 
 # SECURITY WARNING: define the correct hosts in production!
 ALLOWED_HOSTS = ["*"]
