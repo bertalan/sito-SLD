@@ -1,6 +1,11 @@
 # Studio Legale – SLD
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
+
+📚 **Documentazione**: [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) | [UPGRADE.md](UPGRADE.md) | [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
