@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags static wagtailsettings_tags %}
+{% load wagtailcore_tags static wagtailsettings_tags wagtailimages_tags %}
 {% get_settings %}
 
 {% block body_class %}template-homepage{% endblock %}
@@ -30,7 +30,11 @@
 
             <!-- Logo - colonna 4 -->
             <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
-                <img src="{% static 'images/StudioLegale.svg' %}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
+                {% if settings.sld_project.SiteSettings.logo %}
+                    {% image settings.sld_project.SiteSettings.logo original class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]" %}
+                {% else %}
+                    <img src="{% static 'images/StudioLegale.svg' %}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
+                {% endif %}
             </div>
         </div>
         

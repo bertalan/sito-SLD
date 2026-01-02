@@ -18,6 +18,31 @@ def b64encode(value):
     return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
 
 
+@register.simple_tag(takes_context=True)
+def get_logo_url(context):
+    """Ritorna l'URL del logo (da SiteSettings o fallback a statico)."""
+    request = context.get('request')
+    if not request:
+        return '/static/images/StudioLegale.svg'
+    
+    try:
+        from wagtail.models import Site
+        from sld_project.models import SiteSettings
+        site = Site.objects.filter(is_default_site=True).first()
+        if site:
+            settings = SiteSettings.for_site(site)
+            if settings.pk and settings.logo:
+                logo_url = settings.logo.get_rendition('original').url
+                # Rendi URL assoluto
+                if logo_url.startswith('/'):
+                    return f"{request.scheme}://{request.get_host()}{logo_url}"
+                return logo_url
+    except Exception:
+        pass
+    
+    return f"{request.scheme}://{request.get_host()}/static/images/StudioLegale.svg"
+
+
 def _get_studio_settings():
     """Recupera le impostazioni dello studio dal database."""
     try:
@@ -27,6 +52,13 @@ def _get_studio_settings():
         if site:
             studio_settings = SiteSettings.for_site(site)
             if studio_settings.pk:
+                # Ottieni URL logo se caricato
+                logo_url = None
+                if studio_settings.logo:
+                    try:
+                        logo_url = studio_settings.logo.get_rendition('original').url
+                    except Exception:
+                        pass
                 return {
                     'studio_name': studio_settings.studio_name,
                     'lawyer_name': studio_settings.lawyer_name,
@@ -40,6 +72,7 @@ def _get_studio_settings():
                     'facebook_url': studio_settings.facebook_url,
                     'twitter_handle': studio_settings.twitter_handle,
                     'linkedin_url': studio_settings.linkedin_url,
+                    'logo_url': logo_url,
                 }
     except Exception:
         pass
@@ -58,6 +91,7 @@ def _get_studio_settings():
         'facebook_url': '',
         'twitter_handle': '',
         'linkedin_url': '',
+        'logo_url': None,
     }
 
 
@@ -85,6 +119,7 @@ def schema_org_jsonld(context):
         same_as.append(studio['linkedin_url'])
     
     # Schema base - Organization + LegalService
+    logo_url = studio.get('logo_url') or f"{site_url}/static/images/StudioLegale.svg"
     schema_data = {
         "@context": "https://schema.org",
         "@graph": [
@@ -94,8 +129,8 @@ def schema_org_jsonld(context):
                 "name": studio['studio_name'],
                 "description": f"{studio['studio_name']} specializzato in diritto penale, famiglia e successioni, cittadinanza italiana e altre aree di pratica. Ufficio a {studio['city']}.",
                 "url": site_url,
-                "logo": f"{site_url}/static/images/StudioLegale.svg",
-                "image": f"{site_url}/static/images/StudioLegale.svg",
+                "logo": logo_url,
+                "image": logo_url,
                 "email": studio['email'],
                 "telephone": studio['phone'],
                 "priceRange": "€€",

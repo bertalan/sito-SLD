@@ -1,5 +1,6 @@
 {% load static wagtailcore_tags wagtailuserbar seo_tags wagtailsettings_tags %}
 {% get_settings %}
+{% get_logo_url as logo_url %}
 
 <!DOCTYPE html>
 <html lang="it">
@@ -28,7 +29,7 @@
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
         <meta property="og:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}{% if current_site and current_site.site_name %} | {{ current_site.site_name }}{% endif %}" />
         <meta property="og:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
-        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/StudioLegale.svg' %}" />
+        <meta property="og:image" content="{{ logo_url }}" />
         <meta property="og:locale" content="it_IT" />
         <meta property="og:site_name" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
         
@@ -37,7 +38,7 @@
         <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
         <meta name="twitter:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}" />
         <meta name="twitter:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
-        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/StudioLegale.svg' %}" />
+        <meta name="twitter:image" content="{{ logo_url }}" />
         <meta name="twitter:site" content="{{ settings.sld_project.SiteSettings.twitter_handle }}" />
         
         {# Additional SEO meta tags #}
