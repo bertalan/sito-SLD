@@ -1,9 +1,7 @@
 """
 Site-wide settings editable from Wagtail admin.
 """
-from decimal import Decimal, InvalidOperation
 from django.db import models
-from django.core.exceptions import ValidationError
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.documents import get_document_model_string
@@ -86,19 +84,17 @@ class SiteSettings(BaseSiteSetting):
         default="https://maps.apple.com/?daddr=41.9028,12.4964",
         help_text="Link Apple Maps o Google Maps"
     )
-    maps_lat = models.DecimalField(
+    maps_lat = models.CharField(
         "Latitudine", 
-        max_digits=10, 
-        decimal_places=6, 
-        default=41.902782,
-        help_text="Usa il punto come separatore decimale (es: 41.902782)"
+        max_length=20,
+        default="41.902782",
+        help_text="Es: 41.902782 (puoi usare sia punto che virgola)"
     )
-    maps_lng = models.DecimalField(
+    maps_lng = models.CharField(
         "Longitudine", 
-        max_digits=10, 
-        decimal_places=6, 
-        default=12.496366,
-        help_text="Usa il punto come separatore decimale (es: 12.496366)"
+        max_length=20,
+        default="12.496366",
+        help_text="Es: 12.496366 (puoi usare sia punto che virgola)"
     )
     
     # Web & Social
@@ -389,35 +385,28 @@ class SiteSettings(BaseSiteSetting):
         # Ritorna un'istanza vuota con i default
         return cls()
     
-    def clean(self):
-        """Valida e corregge i campi prima del salvataggio."""
-        super().clean()
-        errors = {}
-        
-        # Valida latitudine (-90 a 90)
-        if self.maps_lat is not None:
-            try:
-                lat = Decimal(str(self.maps_lat).replace(',', '.'))
-                if lat < -90 or lat > 90:
-                    errors['maps_lat'] = 'La latitudine deve essere tra -90 e 90'
-                else:
-                    self.maps_lat = lat
-            except (InvalidOperation, ValueError):
-                errors['maps_lat'] = 'Formato non valido. Usa il punto come separatore decimale (es: 41.902782)'
-        
-        # Valida longitudine (-180 a 180)
-        if self.maps_lng is not None:
-            try:
-                lng = Decimal(str(self.maps_lng).replace(',', '.'))
-                if lng < -180 or lng > 180:
-                    errors['maps_lng'] = 'La longitudine deve essere tra -180 e 180'
-                else:
-                    self.maps_lng = lng
-            except (InvalidOperation, ValueError):
-                errors['maps_lng'] = 'Formato non valido. Usa il punto come separatore decimale (es: 12.496366)'
-        
-        if errors:
-            raise ValidationError(errors)
+    def save(self, *args, **kwargs):
+        """Normalizza le coordinate prima del salvataggio."""
+        # Converti virgola in punto per le coordinate
+        if self.maps_lat:
+            self.maps_lat = str(self.maps_lat).replace(',', '.').strip()
+        if self.maps_lng:
+            self.maps_lng = str(self.maps_lng).replace(',', '.').strip()
+        super().save(*args, **kwargs)
+    
+    def get_maps_lat_float(self):
+        """Ritorna la latitudine come float."""
+        try:
+            return float(str(self.maps_lat).replace(',', '.'))
+        except (ValueError, TypeError):
+            return 41.902782
+    
+    def get_maps_lng_float(self):
+        """Ritorna la longitudine come float."""
+        try:
+            return float(str(self.maps_lng).replace(',', '.'))
+        except (ValueError, TypeError):
+            return 12.496366
     
     def get_contact_dict(self):
         """Ritorna un dizionario con tutti i dati di contatto."""
