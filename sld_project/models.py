@@ -199,18 +199,9 @@ class SiteSettings(BaseSiteSetting):
         blank=True,
         help_text="ℹ️ Trova in: Stripe Dashboard → Developers → API Keys → Publishable key (pk_test_... o pk_live_...)"
     )
-    stripe_secret_key = models.CharField(
-        "Stripe Secret Key",
-        max_length=200,
-        blank=True,
-        help_text="ℹ️ Trova in: Stripe Dashboard → Developers → API Keys → Secret key (sk_test_... o sk_live_...). MAI condividere!"
-    )
-    stripe_webhook_secret = models.CharField(
-        "Stripe Webhook Secret",
-        max_length=200,
-        blank=True,
-        help_text="ℹ️ Trova in: Stripe Dashboard → Developers → Webhooks → Signing secret (whsec_...). Serve per confermare pagamenti."
-    )
+    # NOTA: stripe_secret_key e stripe_webhook_secret sono stati rimossi per sicurezza.
+    # Devono essere configurati SOLO nel file .env del server.
+    # Vedi: STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET
     
     # PayPal
     paypal_client_id = models.CharField(
@@ -219,12 +210,9 @@ class SiteSettings(BaseSiteSetting):
         blank=True,
         help_text="ℹ️ Trova in: PayPal Developer → My Apps & Credentials → App → Client ID"
     )
-    paypal_client_secret = models.CharField(
-        "PayPal Client Secret",
-        max_length=200,
-        blank=True,
-        help_text="ℹ️ Trova in: PayPal Developer → My Apps & Credentials → App → Secret. MAI condividere!"
-    )
+    # NOTA: paypal_client_secret è stato rimosso per sicurezza.
+    # Deve essere configurato SOLO nel file .env del server.
+    # Vedi: PAYPAL_CLIENT_SECRET
     
     # Booking
     booking_slot_duration = models.PositiveIntegerField(
@@ -303,11 +291,8 @@ class SiteSettings(BaseSiteSetting):
     # GOOGLE CALENDAR
     # ═══════════════════════════════════════════════════════════════════════════
     
-    google_calendar_ical_url = models.URLField(
-        "Google Calendar iCal URL",
-        blank=True,
-        help_text="ℹ️ Trova in: Google Calendar → Impostazioni → Integra calendario → Indirizzo segreto in formato iCal"
-    )
+    # NOTA: google_calendar_ical_url è stato spostato in .env per sicurezza
+    # (contiene un token segreto). Vedi: GOOGLE_CALENDAR_ICAL_URL
     google_calendar_cache_ttl = models.PositiveIntegerField(
         "Cache Google Calendar (secondi)",
         default=600,
@@ -371,12 +356,9 @@ class SiteSettings(BaseSiteSetting):
         ], heading="💳 Prenotazioni", classname="collapsible"),
         MultiFieldPanel([
             FieldPanel('stripe_public_key'),
-            FieldPanel('stripe_secret_key'),
-            FieldPanel('stripe_webhook_secret'),
         ], heading="💳 Stripe", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel('paypal_client_id'),
-            FieldPanel('paypal_client_secret'),
         ], heading="💳 PayPal", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel('email_host'),
@@ -392,7 +374,6 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('matomo_site_id'),
         ], heading="📊 Analytics", classname="collapsible collapsed"),
         MultiFieldPanel([
-            FieldPanel('google_calendar_ical_url'),
             FieldPanel('google_calendar_cache_ttl'),
         ], heading="📅 Google Calendar", classname="collapsible collapsed"),
         MultiFieldPanel([
@@ -400,6 +381,34 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('terms_conditions'),
         ], heading="📄 Pagine Legali", classname="collapsible collapsed"),
     ]
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PROPRIETÀ PER VERIFICARE STATO CONFIGURAZIONE SEGRETI (da .env)
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @property
+    def stripe_secret_configured(self):
+        """Ritorna True se STRIPE_SECRET_KEY è configurata in .env"""
+        import os
+        return bool(os.environ.get('STRIPE_SECRET_KEY', ''))
+    
+    @property
+    def stripe_webhook_configured(self):
+        """Ritorna True se STRIPE_WEBHOOK_SECRET è configurata in .env"""
+        import os
+        return bool(os.environ.get('STRIPE_WEBHOOK_SECRET', ''))
+    
+    @property
+    def paypal_secret_configured(self):
+        """Ritorna True se PAYPAL_CLIENT_SECRET è configurata in .env"""
+        import os
+        return bool(os.environ.get('PAYPAL_CLIENT_SECRET', ''))
+    
+    @property
+    def google_calendar_configured(self):
+        """Ritorna True se GOOGLE_CALENDAR_ICAL_URL è configurata in .env"""
+        import os
+        return bool(os.environ.get('GOOGLE_CALENDAR_ICAL_URL', ''))
     
     @classmethod
     def get_current(cls):
