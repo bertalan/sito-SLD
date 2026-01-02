@@ -24,6 +24,13 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# ALLOWED_HOSTS - deve essere configurato in .env per produzione
+# In dev.py viene sovrascritto con ["*"]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else []
+
+# SECRET_KEY - deve essere configurato in .env
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+
 
 # Application definition
 
