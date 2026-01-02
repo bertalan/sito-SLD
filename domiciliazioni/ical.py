@@ -7,11 +7,36 @@ import hashlib
 
 # Mapping tribunali per indirizzo
 TRIBUNALI_INDIRIZZI = {
-    'lecce': 'Tribunale di Lecce, Viale Michele De Pietro, 73100 Lecce LE',
-    'brindisi': 'Tribunale di Brindisi, Via Nazario Sauro, 72100 Brindisi BR',
-    'taranto': 'Tribunale di Taranto, Viale Virgilio, 74121 Taranto TA',
-    'bari': 'Tribunale di Bari, Piazza Enrico De Nicola, 70122 Bari BA',
+    'roma': 'Tribunale di Roma, Viale Giulio Cesare 52, 00192 Roma RM',
+    'corte_appello': "Corte d'Appello di Roma, Piazza Cavour, 00193 Roma RM",
+    'gdp': 'Giudice di Pace di Roma, Viale Giulio Cesare 78, 00192 Roma RM',
+    'tar': 'TAR Lazio, Via Flaminia 189, 00196 Roma RM',
+    'unep': 'Ufficio UNEP di Roma, Viale Giulio Cesare 52, 00192 Roma RM',
 }
+
+
+def _get_studio_settings():
+    """Recupera le impostazioni studio da SiteSettings o fallback su settings.py."""
+    try:
+        from sld_project.models import SiteSettings
+        site_settings = SiteSettings.get_current()
+        return {
+            'name': site_settings.lawyer_name or getattr(settings, 'STUDIO_NAME', 'Avv. Mario Rossi'),
+            'studio_name': site_settings.studio_name or "Studio Legale",
+            'phone': site_settings.phone or getattr(settings, 'STUDIO_PHONE', '+39 06 12345678'),
+            'mobile_phone': site_settings.mobile_phone or '',
+            'email': site_settings.email or getattr(settings, 'STUDIO_EMAIL', 'info@example.com'),
+            'website': site_settings.website or getattr(settings, 'STUDIO_WEBSITE', 'www.example.com'),
+        }
+    except Exception:
+        return {
+            'name': getattr(settings, 'STUDIO_NAME', 'Avv. Mario Rossi'),
+            'studio_name': "Studio Legale",
+            'phone': getattr(settings, 'STUDIO_PHONE', '+39 06 12345678'),
+            'mobile_phone': '',
+            'email': getattr(settings, 'STUDIO_EMAIL', 'info@example.com'),
+            'website': getattr(settings, 'STUDIO_WEBSITE', 'www.example.com'),
+        }
 
 
 def generate_domiciliazione_ical(submission):
@@ -61,6 +86,9 @@ def generate_domiciliazione_ical(submission):
         'altro': 'Altro',
     }.get(submission.tipo_udienza, submission.tipo_udienza)
     
+    # Recupera impostazioni studio
+    studio = _get_studio_settings()
+    
     # Descrizione dettagliata
     description = f"""DOMICILIAZIONE - {tribunale_display}
 
@@ -82,9 +110,9 @@ NOTE:
 {submission.note or 'Nessuna nota'}
 
 ---
-Studio Legale
-{getattr(settings, 'STUDIO_PHONE', '+39 320 7044664')}
-{getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}"""
+{studio['studio_name']}
+{studio['phone']}
+{studio['email']}"""
     
     # Escape caratteri speciali per iCal
     def escape_ical(text):
@@ -98,18 +126,18 @@ Studio Legale
     
     ical_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Studio Legale//Domiciliazioni//IT
+PRODID:-//{studio['studio_name']}//Domiciliazioni//IT
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:{uid}@example.com
+UID:{uid}@{studio['website'].replace('www.', '')}
 DTSTAMP:{dtstamp}
 DTSTART:{format_datetime(start_dt)}
 DTEND:{format_datetime(end_dt)}
 SUMMARY:{escape_ical(summary)}
 LOCATION:{escape_ical(location)}
 DESCRIPTION:{escape_ical(description)}
-ORGANIZER;CN=Studio Legale:mailto:{getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}
+ORGANIZER;CN={studio['studio_name']}:mailto:{studio['email']}
 ATTENDEE;CN={escape_ical(submission.nome_avvocato)};RSVP=TRUE:mailto:{submission.email}
 STATUS:CONFIRMED
 TRANSP:OPAQUE

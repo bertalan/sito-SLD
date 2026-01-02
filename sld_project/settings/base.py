@@ -35,10 +35,12 @@ INSTALLED_APPS = [
     "booking",
     "domiciliazioni",
     "contact",
+    "sld_project",  # SiteSettings model
     # Wagtail
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.sitemaps",
+    "wagtail.contrib.settings",  # Site-wide settings
     "django.contrib.sitemaps",
     "wagtail.embeds",
     "wagtail.sites",
@@ -85,6 +87,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "wagtail.contrib.settings.context_processors.settings",
                 "sld_project.context_processors.global_settings",
             ],
         },

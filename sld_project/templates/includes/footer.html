@@ -1,17 +1,20 @@
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailsettings_tags %}
+{% get_settings %}
 <footer id="contact" class="bg-brand-dark pt-24 pb-12 border-t border-brand-gray/20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
             <div>
                 <h2 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-gray mb-8">
-                    STUDIO<br /> LEGALE<span class="text-brand-accent">,</span>
+                    {{ settings.sld_project.SiteSettings.studio_name|default:"STUDIO LEGALE"|upper }}<span class="text-brand-accent">,</span>
                 </h2>
-                <a href="#" data-email="aW5mb0BleGFtcGxlLmNvbQ==" data-show-email class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
-                    Email Studio Legale
+                <a href="mailto:{{ settings.sld_project.SiteSettings.email }}" class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
+                    {{ settings.sld_project.SiteSettings.email|default:"info@example.com" }}
                 </a>
                 <div class="mt-8 space-y-2 text-brand-gray">
-                    <!-- <p><i data-lucide="phone" class="inline w-4 h-4 mr-2"></i> +39 0832 1832129</p> -->
-                    <p><i data-lucide="smartphone" class="inline w-4 h-4 mr-2"></i> +39 320 7044664</p>
+                    <p><i data-lucide="phone" class="inline w-4 h-4 mr-2"></i> {{ settings.sld_project.SiteSettings.phone|default:"+39 06 12345678" }}</p>
+                    {% if settings.sld_project.SiteSettings.mobile_phone %}
+                    <p><i data-lucide="smartphone" class="inline w-4 h-4 mr-2"></i> {{ settings.sld_project.SiteSettings.mobile_phone }}</p>
+                    {% endif %}
                 </div>
             </div>
             
@@ -19,13 +22,12 @@
                 <div class="space-y-6 max-w-md ml-auto w-full">
                     <h3 class="text-white font-bold uppercase tracking-widest text-sm">Sede</h3>
                     <div class="space-y-4">
-                        <a target="_blank" href="https://maps.apple.com/?q=40.35333,18.17833"
-                           class="block border-l-2 border-brand-accent pl-4 hover:border-white transition-colors group"
-                           onclick="if(/Android/i.test(navigator.userAgent)){window.location.href='geo:40.35333,18.17833?q=Piazza+Mazzini+72+Lecce';return false;}">
-                            <p class="text-white font-medium group-hover:text-brand-accent transition-colors">Lecce</p>
+                        <a target="_blank" href="{{ settings.sld_project.SiteSettings.maps_url }}"
+                           class="block border-l-2 border-brand-accent pl-4 hover:border-white transition-colors group">
+                            <p class="text-white font-medium group-hover:text-brand-accent transition-colors">{{ settings.sld_project.SiteSettings.city|default:"Roma" }}</p>
                             <p class="text-brand-gray text-sm flex items-center">
                                 <i data-lucide="map-pin" class="inline w-3 h-3 mr-1"></i>
-                                Piazza Mazzini, 72 - 73100
+                                {{ settings.sld_project.SiteSettings.address|default:"Via Roma, 1" }}
                             </p>
                         </a>
                     </div>
@@ -35,22 +37,28 @@
 
         <div class="flex flex-col md:flex-row justify-between items-center text-xs text-brand-gray uppercase tracking-widest pt-12 border-t border-brand-gray/10">
             <div class="mb-4 md:mb-0 flex flex-col md:flex-row md:items-center md:space-x-6">
-                <span>&copy; {{ "now"|date:"Y" }} Studio Legale. Tutti i diritti riservati.</span>
+                <span>&copy; {{ "now"|date:"Y" }} {{ settings.sld_project.SiteSettings.studio_name|default:"Studio Legale" }}. Tutti i diritti riservati.</span>
                 <div class="flex space-x-4 mt-2 md:mt-0">
                     <a href="/termini/" class="hover:text-brand-accent transition-colors">Condizioni Generali</a>
                     <a href="/privacy/" class="hover:text-brand-accent transition-colors">Privacy Policy</a>
                 </div>
             </div>
             <div class="flex space-x-6">
-                <a href="https://www.facebook.com/studiolegaledemo/" target="_blank" class="hover:text-brand-accent transition-colors">
+                {% if settings.sld_project.SiteSettings.facebook_url %}
+                <a href="{{ settings.sld_project.SiteSettings.facebook_url }}" target="_blank" class="hover:text-brand-accent transition-colors">
                     <i data-lucide="facebook" class="w-4 h-4"></i>
                 </a>
-                <a href="https://twitter.com/avv_dr" target="_blank" class="hover:text-brand-accent transition-colors">
+                {% endif %}
+                {% if settings.sld_project.SiteSettings.twitter_handle %}
+                <a href="https://twitter.com/{{ settings.sld_project.SiteSettings.twitter_handle }}" target="_blank" class="hover:text-brand-accent transition-colors">
                     <i data-lucide="twitter" class="w-4 h-4"></i>
                 </a>
-                <a href="#" class="hover:text-brand-accent transition-colors">
+                {% endif %}
+                {% if settings.sld_project.SiteSettings.linkedin_url %}
+                <a href="{{ settings.sld_project.SiteSettings.linkedin_url }}" target="_blank" class="hover:text-brand-accent transition-colors">
                     <i data-lucide="linkedin" class="w-4 h-4"></i>
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>

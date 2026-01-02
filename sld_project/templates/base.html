@@ -1,4 +1,5 @@
-{% load static wagtailcore_tags wagtailuserbar seo_tags %}
+{% load static wagtailcore_tags wagtailuserbar seo_tags wagtailsettings_tags %}
+{% get_settings %}
 
 <!DOCTYPE html>
 <html lang="it">
@@ -18,7 +19,7 @@
         {% if page.search_description %}
         <meta name="description" content="{{ page.search_description }}" />
         {% else %}
-        <meta name="description" content="Studio Legale Avv. Mario Rossi - Lecce" />
+        <meta name="description" content="{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}" />
         {% endif %}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         
@@ -26,21 +27,21 @@
         <meta property="og:type" content="website" />
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
         <meta property="og:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}{% if current_site and current_site.site_name %} | {{ current_site.site_name }}{% endif %}" />
-        <meta property="og:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}Studio Legale Avv. Mario Rossi - Lecce{% endif %}" />
+        <meta property="og:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/dr_Logo.svg' %}" />
         <meta property="og:locale" content="it_IT" />
-        <meta property="og:site_name" content="Studio Legale" />
+        <meta property="og:site_name" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
         
         {# Twitter Card #}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
         <meta name="twitter:title" content="{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}" />
-        <meta name="twitter:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}Studio Legale Avv. Mario Rossi - Lecce{% endif %}" />
+        <meta name="twitter:description" content="{% if page.search_description %}{{ page.search_description }}{% else %}{{ settings.sld_project.SiteSettings.studio_name }} {{ settings.sld_project.SiteSettings.lawyer_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}" />
         <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/dr_Logo.svg' %}" />
-        <meta name="twitter:site" content="@avv_dr" />
+        <meta name="twitter:site" content="{{ settings.sld_project.SiteSettings.twitter_handle }}" />
         
         {# Additional SEO meta tags #}
-        <meta name="author" content="Studio Legale" />
+        <meta name="author" content="{{ settings.sld_project.SiteSettings.studio_name }}" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="{{ request.build_absolute_uri }}" />
 

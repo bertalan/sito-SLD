@@ -79,8 +79,11 @@ TIPO_UDIENZA_CHOICES = [
 
 # Scelte per tribunale/ufficio
 TRIBUNALE_CHOICES = [
-    ('lecce', 'Tribunale di Lecce'),
-    ('unep', 'Ufficio UNEP di Lecce'),
+    ('roma', 'Tribunale di Roma'),
+    ('corte_appello', "Corte d'Appello di Roma"),
+    ('gdp', 'Giudice di Pace di Roma'),
+    ('tar', 'TAR Lazio'),
+    ('unep', 'Ufficio UNEP di Roma'),
 ]
 
 

@@ -9,6 +9,36 @@ from .ical import generate_ical, generate_ical_filename
 
 logger = logging.getLogger(__name__)
 
+
+def _get_studio_settings():
+    """Recupera le impostazioni studio da SiteSettings o fallback su settings.py."""
+    try:
+        from sld_project.models import SiteSettings
+        site_settings = SiteSettings.get_current()
+        return {
+            'studio_name': site_settings.lawyer_name or settings.STUDIO_NAME,
+            'studio_address': site_settings.address or settings.STUDIO_ADDRESS,
+            'studio_phone': site_settings.phone or settings.STUDIO_PHONE,
+            'studio_mobile': site_settings.mobile_phone or '',
+            'studio_email': site_settings.email or settings.STUDIO_EMAIL,
+            'studio_pec': site_settings.email_pec or settings.STUDIO_PEC,
+            'studio_website': site_settings.website or settings.STUDIO_WEBSITE,
+            'studio_maps_url': site_settings.maps_url or settings.STUDIO_MAPS_URL,
+        }
+    except Exception:
+        # Fallback su settings.py
+        return {
+            'studio_name': settings.STUDIO_NAME,
+            'studio_address': settings.STUDIO_ADDRESS,
+            'studio_phone': settings.STUDIO_PHONE,
+            'studio_mobile': '',
+            'studio_email': settings.STUDIO_EMAIL,
+            'studio_pec': settings.STUDIO_PEC,
+            'studio_website': settings.STUDIO_WEBSITE,
+            'studio_maps_url': settings.STUDIO_MAPS_URL,
+        }
+
+
 # Traduzioni italiane per giorni e mesi
 GIORNI_IT = {
     'Monday': 'Lunedì',
@@ -56,16 +86,11 @@ def send_booking_confirmation(appointment):
     ical_content = generate_ical(appointment)
     ical_filename = generate_ical_filename(appointment)
     
-    # Prepara i dati per i template (usa costanti da settings)
+    # Prepara i dati per i template (usa SiteSettings con fallback su settings.py)
+    studio = _get_studio_settings()
     context = {
         'appointment': appointment,
-        'studio_name': settings.STUDIO_NAME,
-        'studio_address': settings.STUDIO_ADDRESS,
-        'studio_phone': settings.STUDIO_PHONE,
-        'studio_email': settings.STUDIO_EMAIL,
-        'studio_pec': settings.STUDIO_PEC,
-        'studio_website': settings.STUDIO_WEBSITE,
-        'studio_maps_url': settings.STUDIO_MAPS_URL,
+        **studio,
     }
     
     results = {'client': False, 'studio': False, 'errors': []}

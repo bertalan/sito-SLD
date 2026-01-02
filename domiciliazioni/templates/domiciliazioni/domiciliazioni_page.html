@@ -32,7 +32,7 @@
                     </li>
                     {% empty %}
                     <li class="flex items-center text-brand-gray">
-                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Lecce
+                        <i data-lucide="check" class="w-4 h-4 text-brand-accent mr-2"></i>Tribunale di Roma
                     </li>
                     {% endfor %}
                 </ul>
@@ -48,7 +48,7 @@
                 {% else %}
                 <p class="text-brand-gray">
                     Il servizio di domiciliazione legale consente ai colleghi avvocati di essere rappresentati 
-                    nelle udienze presso il Tribunale di Lecce, con la garanzia di 
+                    nelle udienze presso il Tribunale di Roma, con la garanzia di 
                     un'assistenza professionale e puntuale.
                 </p>
                 {% endif %}
@@ -122,8 +122,11 @@
                         <select name="tribunale" id="tribunale-select" required
                             class="w-full bg-white border border-brand-gray/30 px-4 py-3 text-brand-black focus:outline-none focus:border-brand-accent transition-colors">
                             <option value="">-- Seleziona --</option>
-                            <option value="lecce">Tribunale di Lecce</option>
-                            <option value="unep">Ufficio UNEP di Lecce</option>
+                            <option value="roma">Tribunale di Roma</option>
+                            <option value="corte_appello">Corte d'Appello di Roma</option>
+                            <option value="gdp">Giudice di Pace di Roma</option>
+                            <option value="tar">TAR Lazio</option>
+                            <option value="unep">Ufficio UNEP di Roma</option>
                         </select>
                     </div>
                     <div>
@@ -302,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataRequired = document.querySelector('.data-required');
     
     function updateRequiredFields() {
-        const isTribunale = tribunaleSelect.value === 'lecce';
+        const isTribunale = ['roma', 'corte_appello', 'gdp', 'tar'].includes(tribunaleSelect.value);
         
         if (isTribunale) {
             numeroRgInput.setAttribute('required', 'required');

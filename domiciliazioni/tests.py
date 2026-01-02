@@ -18,8 +18,8 @@ class DomiciliazioniDocumentModelTest(TestCase):
             nome_avvocato="Avv. Mario Rossi",
             email="mario.rossi@example.com",
             telefono="+39 333 1234567",
-            ordine_appartenenza="Ordine Avvocati Lecce",
-            tribunale="lecce",
+            ordine_appartenenza="Ordine Avvocati Roma",
+            tribunale="roma",
             tipo_udienza="civile",
             numero_rg="1234/2026",
             parti_causa="Rossi c/ Bianchi",
@@ -139,14 +139,14 @@ class DomiciliazioniSubmissionModelTest(TestCase):
         submission = DomiciliazioniSubmission.objects.create(
             nome_avvocato="Avv. Test",
             email="test@example.com",
-            tribunale="lecce",
+            tribunale="roma",
             tipo_udienza="civile",
             numero_rg="1234/2026",
             data_udienza=date(2026, 2, 15),
             attivita_richieste="Mera comparizione"
         )
         
-        self.assertEqual(submission.tribunale, "lecce")
+        self.assertEqual(submission.tribunale, "roma")
         self.assertEqual(submission.status, "pending")
     
     def test_create_submission_unep(self):
@@ -169,7 +169,7 @@ class DomiciliazioniSubmissionModelTest(TestCase):
         submission = DomiciliazioniSubmission.objects.create(
             nome_avvocato="Avv. Test",
             email="test@example.com",
-            tribunale="lecce",
+            tribunale="roma",
             tipo_udienza="civile",
             numero_rg="1234/2026",
             data_udienza=date(2026, 2, 15),
@@ -186,7 +186,7 @@ class DomiciliazioniSubmissionModelTest(TestCase):
         submission = DomiciliazioniSubmission.objects.create(
             nome_avvocato="Avv. Test",
             email="test@example.com",
-            tribunale="lecce",
+            tribunale="roma",
             tipo_udienza="civile",
             numero_rg="1234/2026",
             data_udienza=date(2026, 2, 15),
@@ -236,7 +236,7 @@ class DomiciliazioniFormSubmissionTest(TestCase):
         submission = DomiciliazioniSubmission.objects.create(
             nome_avvocato="Avv. Test Form",
             email="test.form@example.com",
-            tribunale="lecce",
+            tribunale="roma",
             tipo_udienza="civile",
             numero_rg="9999/2026",
             data_udienza=date(2026, 3, 20),

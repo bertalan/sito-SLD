@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailsettings_tags seo_tags %}
+{% get_settings %}
 
 {% block content %}
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
@@ -79,7 +80,7 @@
         <h2 class="text-2xl font-bold text-brand-black uppercase tracking-wider mb-6 mt-12">5. Diritto di Recesso e Rimborsi</h2>
         <p class="text-brand-gray mb-6">
             Il Cliente può richiedere la cancellazione o il rinvio dell'appuntamento <strong>fino a 24 ore prima</strong> dell'orario previsto, 
-            contattando lo Studio via email all'indirizzo <a href="#" data-email="aW5mb0BleGFtcGxlLmNvbQ==" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a>.
+            contattando lo Studio via email all'indirizzo <a href="#" data-email="{{ settings.sld_project.SiteSettings.email|b64encode }}" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a>.
         </p>
         <p class="text-brand-gray mb-6">
             In caso di cancellazione entro i termini indicati, il Cliente potrà scegliere tra:
@@ -133,12 +134,12 @@
             Per qualsiasi informazione o chiarimento sulle presenti Condizioni, è possibile contattare lo Studio:
         </p>
         <div class="bg-brand-silver p-6 border border-brand-gray/20 text-brand-gray">
-            <p><strong>Studio Legale</strong></p>
-            <p>Avv. Mario Rossi</p>
-            <p>Piazza G. Mazzini, 72 - 73100 Lecce</p>
-            <p>Email: <a href="#" data-email="aW5mb0BleGFtcGxlLmNvbQ==" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a></p>
-            <p>PEC: <a href="#" data-email="YXZ2b2NhdG9AcGVjLml0" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a></p>
-            <p>Tel: +39 320 7044664</p>
+            <p><strong>{{ settings.sld_project.SiteSettings.studio_name|default:"Studio Legale" }}</strong></p>
+            <p>{{ settings.sld_project.SiteSettings.lawyer_name|default:"Avv. Mario Rossi" }}</p>
+            <p>{{ settings.sld_project.SiteSettings.address|default:"Via Roma, 1 - 00100 Roma" }}</p>
+            <p>Email: <a href="#" data-email="{{ settings.sld_project.SiteSettings.email|b64encode }}" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a></p>
+            <p>PEC: <a href="#" data-email="{{ settings.sld_project.SiteSettings.email_pec|b64encode }}" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a></p>
+            <p>Tel: {{ settings.sld_project.SiteSettings.phone|default:"+39 06 12345678" }}</p>
         </div>
 
     </div>

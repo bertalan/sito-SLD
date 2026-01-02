@@ -1,13 +1,14 @@
-{% load wagtailcore_tags static %}
+{% load wagtailcore_tags static wagtailsettings_tags %}
+{% get_settings %}
 <nav id="nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b bg-transparent border-transparent">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <!-- Logo -->
         <a href="/" class="flex items-end space-x-3 z-50">
             <img src="{% static 'images/dr_Logo.svg' %}" 
-                 alt="Studio Legale" 
+                 alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
                  class="h-12 w-auto">
             <span class="text-xl font-bold tracking-tighter text-brand-black hidden sm:inline -mb-[5px]">
-                Studio Legale
+                {{ settings.sld_project.SiteSettings.studio_name|default:"Studio Legale" }}
             </span>
         </a>
 

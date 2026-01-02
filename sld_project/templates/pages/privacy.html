@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailsettings_tags seo_tags %}
+{% get_settings %}
 
 {% block content %}
 <section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
@@ -17,14 +18,14 @@
         
         <h2 class="text-2xl font-bold text-brand-black uppercase tracking-wider mb-6">1. Titolare del Trattamento</h2>
         <p class="text-brand-gray mb-6">
-            Il Titolare del trattamento dei dati personali è lo <strong>Studio Legale</strong>, 
-            nella persona dell'Avv. Mario Rossi, con sede in Piazza G. Mazzini, 72 - 73100 Lecce.
+            Il Titolare del trattamento dei dati personali è lo <strong>{{ settings.sld_project.SiteSettings.studio_name|default:"Studio Legale" }}</strong>, 
+            nella persona del {{ settings.sld_project.SiteSettings.lawyer_name|default:"Avv. Mario Rossi" }}, con sede in {{ settings.sld_project.SiteSettings.address|default:"Via Roma, 1 - 00100 Roma" }}.
         </p>
         <div class="bg-brand-silver p-6 border border-brand-gray/20 text-brand-gray mb-6">
             <p><strong>Contatti del Titolare:</strong></p>
-            <p>Email: <a href="#" data-email="aW5mb0BleGFtcGxlLmNvbQ==" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a></p>
-            <p>PEC: <a href="#" data-email="YXZ2b2NhdG9AcGVjLml0" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a></p>
-            <p>Tel: +39 320 7044664</p>
+            <p>Email: <a href="#" data-email="{{ settings.sld_project.SiteSettings.email|b64encode }}" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a></p>
+            <p>PEC: <a href="#" data-email="{{ settings.sld_project.SiteSettings.email_pec|b64encode }}" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a></p>
+            <p>Tel: {{ settings.sld_project.SiteSettings.phone|default:"+39 06 12345678" }}</p>
         </div>
 
         <h2 class="text-2xl font-bold text-brand-black uppercase tracking-wider mb-6 mt-12">2. Tipologie di Dati Raccolti</h2>
@@ -131,8 +132,8 @@
         </ul>
         <p class="text-brand-gray mb-6">
             Per esercitare i propri diritti, l'interessato può contattare il Titolare del trattamento 
-            all'indirizzo email <a href="#" data-email="aW5mb0BleGFtcGxlLmNvbQ==" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a> 
-            o via PEC <a href="#" data-email="YXZ2b2NhdG9AcGVjLml0" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a>.
+            all'indirizzo email <a href="#" data-email="{{ settings.sld_project.SiteSettings.email|b64encode }}" data-show-email class="text-brand-accent hover:underline">Email Studio Legale</a> 
+            o via PEC <a href="#" data-email="{{ settings.sld_project.SiteSettings.email_pec|b64encode }}" data-show-email class="text-brand-accent hover:underline">Posta Elettronica Certificata</a>.
         </p>
 
         <h2 class="text-2xl font-bold text-brand-black uppercase tracking-wider mb-6 mt-12">9. Reclamo all'Autorità di Controllo</h2>

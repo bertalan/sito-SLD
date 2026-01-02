@@ -6,11 +6,41 @@ from django.conf import settings
 import hashlib
 
 
+def _get_studio_settings():
+    """Recupera le impostazioni studio da SiteSettings o fallback su settings.py."""
+    try:
+        from sld_project.models import SiteSettings
+        site_settings = SiteSettings.get_current()
+        return {
+            'name': site_settings.lawyer_name or settings.STUDIO_NAME,
+            'studio_name': site_settings.studio_name or "Studio Legale",
+            'address': site_settings.address or settings.STUDIO_ADDRESS,
+            'phone': site_settings.phone or settings.STUDIO_PHONE,
+            'mobile_phone': site_settings.mobile_phone or '',
+            'email': site_settings.email or settings.STUDIO_EMAIL,
+            'website': site_settings.website or settings.STUDIO_WEBSITE,
+            'maps_url': site_settings.maps_url or settings.STUDIO_MAPS_URL,
+        }
+    except Exception:
+        return {
+            'name': settings.STUDIO_NAME,
+            'studio_name': "Studio Legale",
+            'address': settings.STUDIO_ADDRESS,
+            'phone': settings.STUDIO_PHONE,
+            'mobile_phone': '',
+            'email': settings.STUDIO_EMAIL,
+            'website': settings.STUDIO_WEBSITE,
+            'maps_url': settings.STUDIO_MAPS_URL,
+        }
+
+
 def generate_ical(appointment):
     """
     Genera un file iCal (.ics) per l'appuntamento.
     Include reminder 1h prima e tutti i dettagli necessari.
     """
+    studio = _get_studio_settings()
+    
     # Combina data e ora, usa la durata dinamica dell'appuntamento
     start_dt = datetime.combine(appointment.date, appointment.time)
     end_dt = start_dt + timedelta(minutes=appointment.duration_minutes)
@@ -25,7 +55,7 @@ def generate_ical(appointment):
     # Location e descrizione basate sul tipo di consulenza
     if appointment.consultation_type == 'video':
         location = f"Videochiamata Jitsi: {appointment.jitsi_url}"
-        description = f"""Consulenza legale in videochiamata con {settings.STUDIO_NAME}.
+        description = f"""Consulenza legale in videochiamata con {studio['name']}.
 
 Link per la videochiamata:
 {appointment.jitsi_url}
@@ -33,21 +63,21 @@ Link per la videochiamata:
 Clicca sul link qualche minuto prima dell'orario previsto.
 
 Per informazioni:
-Mobile: {settings.STUDIO_PHONE}
-Email: {settings.STUDIO_EMAIL}"""
+Mobile: {studio['phone']}
+Email: {studio['email']}"""
     else:
-        location = f"Studio Legale - {settings.STUDIO_ADDRESS}"
-        description = f"""Consulenza legale in presenza con {settings.STUDIO_NAME}.
+        location = f"{studio['studio_name']} - {studio['address']}"
+        description = f"""Consulenza legale in presenza con {studio['name']}.
 
 Indirizzo:
-{settings.STUDIO_ADDRESS}
+{studio['address']}
 
 Come raggiungerci:
-{settings.STUDIO_MAPS_URL}
+{studio['maps_url']}
 
 Per informazioni:
-Mobile: {settings.STUDIO_PHONE}
-Email: {settings.STUDIO_EMAIL}"""
+Mobile: {studio['phone']}
+Email: {studio['email']}"""
     
     # Note cliente se presenti
     notes_text = ""
@@ -63,18 +93,18 @@ Email: {settings.STUDIO_EMAIL}"""
     
     ical_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Studio Legale//Prenotazioni//IT
+PRODID:-//{studio['studio_name']}//Prenotazioni//IT
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:{uid}@example.com
+UID:{uid}@{studio['website'].replace('www.', '')}
 DTSTAMP:{dtstamp}
 DTSTART:{format_datetime(start_dt)}
 DTEND:{format_datetime(end_dt)}
-SUMMARY:Consulenza legale - Studio Legale
+SUMMARY:Consulenza legale - {studio['studio_name']}
 LOCATION:{escape_ical(location)}
 DESCRIPTION:{escape_ical(description + notes_text)}
-ORGANIZER;CN=Studio Legale:mailto:info@example.com
+ORGANIZER;CN={studio['studio_name']}:mailto:{studio['email']}
 ATTENDEE;CN={escape_ical(appointment.first_name)} {escape_ical(appointment.last_name)};RSVP=TRUE:mailto:{appointment.email}
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -87,7 +117,7 @@ BEGIN:VALARM
 TRIGGER:-PT1H
 ACTION:EMAIL
 SUMMARY:Promemoria: Consulenza legale tra 1 ora
-DESCRIPTION:La tua consulenza con lo Studio Legale inizierà tra 1 ora.
+DESCRIPTION:La tua consulenza con {studio['studio_name']} inizierà tra 1 ora.
 ATTENDEE:mailto:{appointment.email}
 END:VALARM
 END:VEVENT

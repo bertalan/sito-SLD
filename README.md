@@ -2,6 +2,41 @@
 
 Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
 
+---
+
+## ⚡ Quick Start - Prima Installazione
+
+```bash
+# 1. Clona e configura
+git clone https://github.com/bertalan/sito-SLD.git
+cd sito-SLD
+cp .env.example .env
+
+# 2. Avvia Docker
+docker compose up --build -d
+
+# 3. Migrazioni e dati demo
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py setup_demo_data
+
+# 4. Accedi
+# Sito: http://localhost:8000
+# Admin: http://localhost:8000/admin/
+```
+
+Il comando `setup_demo_data` crea:
+- ✅ **SiteSettings** con dati studio configurabili
+- ✅ **HomePage** con testi hero
+- ✅ **8 Aree di pratica** (Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
+- ✅ **Pagina Contatti** con form
+- ✅ **Pagina Domiciliazioni** per colleghi avvocati
+- ✅ **Regole disponibilità** (Lun-Ven 9-13, 15-18)
+
+👉 **Personalizza i dati** da: Admin → Impostazioni → Impostazioni Studio
+
+---
+
 ## Funzionalità principali
 
 ### 🗓️ Sistema di Prenotazione
@@ -127,80 +162,39 @@ Il progetto segue il metodo TDD (Test Driven Development):
 
 ## Configurazione
 
-### Variabili d'ambiente (.env)
+### Variabili d'ambiente (.env) - Solo configurazione server
 
 ```env
+# Django
+DEBUG=False
+SECRET_KEY=your-secret-key
+ALLOWED_HOSTS=localhost,127.0.0.1
+
 # Database
 DATABASE_URL=postgres://user:pass@host:5432/dbname
-
-# Stripe
-STRIPE_PUBLIC_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# PayPal
-PAYPAL_CLIENT_ID=...
-PAYPAL_CLIENT_SECRET=...
-PAYPAL_MODE=sandbox
-
-# Studio (opzionale, hanno default)
-STUDIO_NAME=Avv. 
-STUDIO_ADDRESS=
-STUDIO_PHONE=
-STUDIO_EMAIL=
-STUDIO_PEC=
-STUDIO_WEBSITE=
-STUDIO_MAPS_URL=https://maps.google.com/...
-
-# Email
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=...
-EMAIL_HOST_PASSWORD=...
-
-# Analytics (scegli uno o entrambi)
-GA4_MEASUREMENT_ID=G-XXXXXXXXXX
-MATOMO_URL=https://matomo.example.com
-MATOMO_SITE_ID=1
+POSTGRES_PASSWORD=your-db-password
 ```
 
-## Avvio rapido
+### SiteSettings (Admin Wagtail) - Tutte le altre configurazioni
 
-1. Clona la repo:
-   ```sh
-   git clone https://github.com/bertalan/sito-SLD.git
-   cd sito-SLD
-   ```
+Vai su: **Admin → Impostazioni → Impostazioni Studio**
 
-2. Copia e configura `.env`:
-   ```sh
-   cp .env.example .env
-   # Modifica con le tue chiavi
-   ```
+| Sezione | Configurazioni |
+|---------|----------------|
+| 📋 Identità Studio | Nome studio, avvocato |
+| 📞 Contatti | Email, PEC, telefono, cellulare |
+| 📍 Sede | Indirizzo, città, coordinate mappa |
+| 🌐 Web & Social | Sito, Facebook, Twitter, LinkedIn |
+| 💳 Prenotazioni | Modalità pagamento, durata slot, prezzo |
+| 💳 Stripe | Chiavi API pubbliche e segrete |
+| 💳 PayPal | Client ID e Secret |
+| 📧 Email SMTP | Server, porta, credenziali |
+| 📊 Analytics | Google Analytics 4, Matomo |
+| 📅 Google Calendar | URL iCal per sincronizzazione |
+| 📹 Videochiamate | Prefisso stanze Jitsi |
 
-3. Avvia Docker:
-   ```sh
-   docker compose up --build
-   ```
+> ℹ️ Ogni campo ha un **help text** con istruzioni su dove trovare i valori necessari.
 
-4. Applica migrazioni e crea superuser:
-   ```sh
-   docker compose exec web python manage.py migrate
-   docker compose exec web python manage.py createsuperuser
-   ```
-
-5. (Opzionale) Crea dati di esempio:
-   ```sh
-   docker compose exec web python manage.py setup_demo_data
-   ```
-   Questo comando crea:
-   - HomePage con testi di esempio
-   - 8 aree di pratica (Diritto Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
-   - Pagina indice "Aree di Pratica"
-
-6. Accedi:
-   - Sito: [http://localhost:8000](http://localhost:8000)
-   - Admin: [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
 ## Struttura progetto
 
@@ -237,12 +231,12 @@ docker compose exec web python manage.py collectstatic --noinput
 gunicorn sld_project.wsgi:application -c gunicorn.conf.py
 ```
 
-## Licenze
+### Licenze
 
-### Codice sorgente
-Il codice di questo progetto è **proprietario** e riservato a Studio Legale.
+#### Codice sorgente
+Il codice di questo progetto è rilasciato come template riutilizzabile per studi legali.
 
-### Dipendenze open source
+#### Dipendenze open source
 
 | Pacchetto | Licenza |
 |-----------|---------|
@@ -261,9 +255,11 @@ Il codice di questo progetto è **proprietario** e riservato a Studio Legale.
 | Pillow | HPND |
 | pytest | MIT |
 
-### Font e risorse
-- Logo: design proprietario Studio Legale
+#### Font e risorse
+- Logo: SVG personalizzabile in `sld_project/static/images/dr_Logo.svg`
 
 ---
 
-Sviluppato con ❤️ e Copilot per la trasformazione digitale dello studio legale.
+📄 **Per la personalizzazione avanzata**, consulta [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md)
+
+Sviluppato con ❤️ e Copilot

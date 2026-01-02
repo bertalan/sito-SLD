@@ -32,6 +32,9 @@ class Command(BaseCommand):
         
         self.stdout.write('Creazione dati di esempio per Studio Legale...')
         
+        # 0. Crea SiteSettings
+        self._setup_site_settings()
+        
         # 1. Crea/aggiorna HomePage
         self._setup_homepage()
         
@@ -41,12 +44,17 @@ class Command(BaseCommand):
         # 3. Crea la pagina indice servizi
         self._setup_services_page()
         
+        # 4. Crea pagine aggiuntive
+        self._setup_contact_page()
+        self._setup_domiciliazioni_page()
+        self._setup_booking_page()
+        
         self.stdout.write(self.style.SUCCESS('✓ Dati di esempio creati con successo!'))
         self.stdout.write('')
         self.stdout.write('Prossimi passi:')
         self.stdout.write('  1. Accedi a /admin/ per personalizzare i contenuti')
-        self.stdout.write('  2. Modifica i testi della HomePage')
-        self.stdout.write('  3. Aggiungi le pagine dei servizi')
+        self.stdout.write('  2. Vai su Impostazioni > Impostazioni Studio per configurare i dati')
+        self.stdout.write('  3. Modifica i testi della HomePage')
 
     def _setup_homepage(self):
         """Crea o aggiorna la HomePage."""
@@ -71,13 +79,15 @@ class Command(BaseCommand):
             homepage = HomePage(
                 title="Home",
                 slug="home",
-                hero_line1="Studio Legale",
-                hero_line2="Avv. Mario Rossi",
-                hero_location="Roma",
-                hero_cta_text="Prenota una consulenza",
-                hero_cta_link="/prenota/",
-                about_title="Chi Siamo",
-                about_text="""<p>Lo Studio Legale Rossi offre assistenza legale qualificata 
+                hero_line1="ASSISTENZA LEGALE",
+                hero_line2="PER UNA TUTELA",
+                hero_line3="DI ELEVATA EFFICACIA",
+                hero_line4="E COMPETENZA",
+                hero_subtitle="AVVOCATO",
+                hero_accent="GIUSTIZIA.",
+                hero_location="• Roma",
+                about_title="LO STUDIO",
+                about_text="""<p>Lo Studio Legale offre assistenza legale qualificata 
                 in molteplici aree del diritto, con particolare attenzione alle esigenze 
                 del cliente e alla risoluzione efficace delle controversie.</p>
                 <p>Con oltre 20 anni di esperienza, garantiamo professionalità, 
@@ -198,3 +208,105 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('  ✓ Pagina Aree di Pratica creata'))
         else:
             self.stdout.write('  - Pagina Aree di Pratica già esistente, saltata')
+
+    def _setup_site_settings(self):
+        """Crea le impostazioni dello studio."""
+        from sld_project.models import SiteSettings
+        from wagtail.models import Site
+        
+        site = Site.objects.filter(is_default_site=True).first()
+        if not site:
+            # Se non c'è un site, verrà creato dopo con la homepage
+            self.stdout.write('  - Site non ancora creato, SiteSettings verrà configurato dopo')
+            return
+        
+        settings, created = SiteSettings.objects.get_or_create(site=site)
+        if created:
+            settings.studio_name = "Studio Legale"
+            settings.lawyer_name = "Avv. Mario Rossi"
+            settings.email = "info@example.com"
+            settings.email_pec = "avvocato@pec.it"
+            settings.phone = "+39 06 12345678"
+            settings.address = "Via Roma, 1 - 00100 Roma"
+            settings.city = "Roma"
+            settings.maps_lat = 41.902782
+            settings.maps_lng = 12.496366
+            settings.maps_url = "https://maps.apple.com/?daddr=41.9028,12.4964"
+            settings.website = "www.example.com"
+            settings.jitsi_room_prefix = "StudioLegale"
+            settings.save()
+            self.stdout.write(self.style.SUCCESS('  ✓ Impostazioni Studio create'))
+        else:
+            self.stdout.write('  - Impostazioni Studio già esistenti, saltate')
+
+    def _setup_contact_page(self):
+        """Crea la pagina contatti."""
+        from home.models import HomePage
+        from contact.models import ContactPage
+        
+        home = HomePage.objects.filter(slug='home').first()
+        if not home:
+            return
+        
+        if not ContactPage.objects.filter(slug='contatti').exists():
+            contact_page = ContactPage(
+                title="Contatti",
+                slug="contatti",
+                intro="<p>Contattaci per una consulenza o per maggiori informazioni sui nostri servizi.</p>",
+                thank_you_text="<p>Grazie per averci contattato! Ti risponderemo al più presto.</p>",
+            )
+            home.add_child(instance=contact_page)
+            self.stdout.write(self.style.SUCCESS('  ✓ Pagina Contatti creata'))
+        else:
+            self.stdout.write('  - Pagina Contatti già esistente, saltata')
+
+    def _setup_domiciliazioni_page(self):
+        """Crea la pagina domiciliazioni."""
+        from home.models import HomePage
+        from domiciliazioni.models import DomiciliazioniPage
+        
+        home = HomePage.objects.filter(slug='home').first()
+        if not home:
+            return
+        
+        if not DomiciliazioniPage.objects.filter(slug='domiciliazioni').exists():
+            page = DomiciliazioniPage(
+                title='Domiciliazioni',
+                slug='domiciliazioni',
+                intro='<p>Servizio di domiciliazione legale per colleghi avvocati presso i Tribunali di Roma.</p>',
+                service_description='<p>Offriamo un servizio professionale di domiciliazione legale per udienze civili, penali, del lavoro e amministrative presso il Tribunale di Roma, la Corte d\'Appello, il Giudice di Pace, il TAR Lazio e l\'ufficio UNEP.</p>',
+                thank_you_text='<p>Grazie per la richiesta di domiciliazione. La contatteremo al più presto per confermare la disponibilità.</p>',
+                tribunali='Tribunale di Roma\nCorte d\'Appello di Roma\nGiudice di Pace di Roma\nTAR Lazio\nUfficio UNEP di Roma',
+                to_address='info@example.com',
+                from_address='noreply@example.com',
+                subject='Nuova richiesta domiciliazione',
+            )
+            home.add_child(instance=page)
+            page.save_revision().publish()
+            self.stdout.write(self.style.SUCCESS('  ✓ Pagina Domiciliazioni creata'))
+        else:
+            self.stdout.write('  - Pagina Domiciliazioni già esistente, saltata')
+
+    def _setup_booking_page(self):
+        """Crea le regole di disponibilità per le prenotazioni."""
+        from booking.models import AvailabilityRule
+        from datetime import time
+        
+        # Crea regole di disponibilità default (Lun-Ven 9-13, 15-18)
+        if not AvailabilityRule.objects.exists():
+            for day in range(5):  # 0=Lunedì, 4=Venerdì
+                AvailabilityRule.objects.create(
+                    weekday=day,
+                    start_time=time(9, 0),
+                    end_time=time(13, 0),
+                    is_active=True
+                )
+                AvailabilityRule.objects.create(
+                    weekday=day,
+                    start_time=time(15, 0),
+                    end_time=time(18, 0),
+                    is_active=True
+                )
+            self.stdout.write(self.style.SUCCESS('  ✓ Regole disponibilità create (Lun-Ven 9-13, 15-18)'))
+        else:
+            self.stdout.write('  - Regole disponibilità già esistenti, saltate')

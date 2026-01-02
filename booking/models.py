@@ -178,7 +178,19 @@ class Appointment(ClusterableModel):
     def jitsi_url(self):
         """Restituisce l'URL Jitsi per la videochiamata."""
         if self.consultation_type == 'video' and self.videocall_code:
-            return f"https://meet.jit.si/StudioLegale-{self.videocall_code}"
+            # Prova a recuperare il prefisso da SiteSettings
+            prefix = "StudioLegale"
+            try:
+                from wagtail.models import Site
+                from sld_project.models import SiteSettings
+                site = Site.objects.filter(is_default_site=True).first()
+                if site:
+                    site_settings = SiteSettings.for_site(site)
+                    if site_settings and site_settings.jitsi_room_prefix:
+                        prefix = site_settings.jitsi_room_prefix
+            except Exception:
+                pass
+            return f"https://meet.jit.si/{prefix}-{self.videocall_code}"
         return None
     
     @property

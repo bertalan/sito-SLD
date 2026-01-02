@@ -131,10 +131,6 @@ class WagtailPagesTest(TestCase):
             title="Contatti",
             slug="contatti",
             intro="Contattaci",
-            address_lecce="Piazza Mazzini, 72",
-            #address_martina="Via Salvatore Quasimodo, 12",
-            phone="+39 320 7044664",
-            email="test@example.com"
         )
         self.home.add_child(instance=contact_page)
         

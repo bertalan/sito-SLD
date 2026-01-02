@@ -18,38 +18,13 @@ class ContactPage(AbstractEmailForm):
     intro = RichTextField("Introduzione", blank=True)
     thank_you_text = RichTextField("Testo ringraziamento", blank=True)
     
-    # Info studio
-    address_lecce = models.CharField("Indirizzo Lecce", max_length=200, blank=True)
-    # address_martina = models.CharField("Indirizzo Martina Franca", max_length=200, blank=True)
-    phone = models.CharField("Telefono", max_length=50, blank=True)
-    mobile = models.CharField("Cellulare", max_length=50, blank=True)
-    email = models.EmailField("Email", blank=True)
-    pec = models.EmailField("PEC", blank=True)
-    
-    # Coordinate mappa OpenStreetMap
-    lecce_lat = models.FloatField("Latitudine Lecce", default=40.3516)
-    lecce_lng = models.FloatField("Longitudine Lecce", default=18.1718)
-    # martina_lat = models.FloatField("Latitudine Martina Franca", default=40.7051)
-    # martina_lng = models.FloatField("Longitudine Martina Franca", default=17.3361)
+    # Info studio - ora gestite da SiteSettings
+    # I campi seguenti sono deprecati e verranno rimossi in una migrazione futura
     
     content_panels = AbstractEmailForm.content_panels + [
         FieldPanel('intro'),
         InlinePanel('form_fields', label="Campi del form"),
         FieldPanel('thank_you_text'),
-        MultiFieldPanel([
-            FieldPanel('address_lecce'),
-            #FieldPanel('address_martina'),
-            FieldPanel('phone'),
-            FieldPanel('mobile'),
-            FieldPanel('email'),
-            FieldPanel('pec'),
-        ], heading="Contatti"),
-        MultiFieldPanel([
-            FieldPanel('lecce_lat'),
-            FieldPanel('lecce_lng'),
-            #FieldPanel('martina_lat'),
-            #FieldPanel('martina_lng'),
-        ], heading="Coordinate mappa"),
         MultiFieldPanel([
             FieldPanel('to_address'),
             FieldPanel('from_address'),

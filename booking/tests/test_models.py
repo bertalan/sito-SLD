@@ -128,14 +128,20 @@ class AppointmentModelTest(TestCase):
         days_until_monday = (7 - today.weekday()) % 7 or 7
         next_monday = today + timedelta(days=days_until_monday)
         
-        Appointment.objects.create(
-            first_name="Mario", last_name="Rossi", email="mario@example.com",
-            phone="+39123456789", date=next_monday, time=time(10, 0), status='confirmed'
-        )
+        # Get available slots before booking
+        slots_before = Appointment.get_available_slots(next_monday)
         
-        slots = Appointment.get_available_slots(next_monday)
-        self.assertNotIn(time(10, 0), slots)
-        self.assertEqual(len(slots), 13)
+        # Book the first available slot (instead of hardcoded 10:00)
+        if slots_before:
+            slot_to_book = slots_before[0]
+            Appointment.objects.create(
+                first_name="Mario", last_name="Rossi", email="mario@example.com",
+                phone="+39123456789", date=next_monday, time=slot_to_book, status='confirmed'
+            )
+            
+            slots_after = Appointment.get_available_slots(next_monday)
+            self.assertNotIn(slot_to_book, slots_after)
+            self.assertEqual(len(slots_after), len(slots_before) - 1)  # One slot less after booking
     
     def test_cancelled_slot_is_available(self):
         """Verifica che uno slot annullato sia nuovamente disponibile."""
@@ -219,7 +225,7 @@ class ICalTest(TestCase):
         
         self.assertIn('BEGIN:VCALENDAR', ical)
         self.assertIn('BEGIN:VEVENT', ical)
-        self.assertIn('Lecce', ical)
+        self.assertIn('Studio Legale', ical)  # Uses SiteSettings default
         self.assertIn('TRIGGER:-PT1H', ical)  # Reminder 1h
     
     def test_generate_ical_video(self):

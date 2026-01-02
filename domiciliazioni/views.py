@@ -8,6 +8,35 @@ from datetime import datetime
 from .models import DomiciliazioniSubmission, DomiciliazioniDocument, DomiciliazioniPage
 from .ical import generate_domiciliazione_ical, generate_domiciliazione_ical_filename
 
+
+def _get_studio_settings():
+    """Recupera le impostazioni studio da SiteSettings o fallback su settings.py."""
+    try:
+        from sld_project.models import SiteSettings
+        site_settings = SiteSettings.get_current()
+        return {
+            'name': site_settings.lawyer_name or getattr(settings, 'STUDIO_NAME', 'Avv. Mario Rossi'),
+            'studio_name': site_settings.studio_name or "Studio Legale",
+            'address': site_settings.address or getattr(settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma'),
+            'phone': site_settings.phone or getattr(settings, 'STUDIO_PHONE', '+39 06 12345678'),
+            'mobile_phone': site_settings.mobile_phone or '',
+            'email': site_settings.email or getattr(settings, 'STUDIO_EMAIL', 'info@example.com'),
+            'email_pec': site_settings.email_pec or getattr(settings, 'STUDIO_PEC', 'avvocato@pec.it'),
+            'website': site_settings.website or getattr(settings, 'STUDIO_WEBSITE', 'www.example.com'),
+        }
+    except Exception:
+        return {
+            'name': getattr(settings, 'STUDIO_NAME', 'Avv. Mario Rossi'),
+            'studio_name': "Studio Legale",
+            'address': getattr(settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma'),
+            'phone': getattr(settings, 'STUDIO_PHONE', '+39 06 12345678'),
+            'mobile_phone': '',
+            'email': getattr(settings, 'STUDIO_EMAIL', 'info@example.com'),
+            'email_pec': getattr(settings, 'STUDIO_PEC', 'avvocato@pec.it'),
+            'website': getattr(settings, 'STUDIO_WEBSITE', 'www.example.com'),
+        }
+
+
 # Traduzioni italiane per giorni e mesi
 GIORNI_IT = {
     'Monday': 'Lunedì', 'Tuesday': 'Martedì', 'Wednesday': 'Mercoledì',
@@ -84,6 +113,9 @@ def process_domiciliazione_form(request, page):
 def send_domiciliazione_notification(submission):
     """Invia email di notifica per nuova richiesta domiciliazione con allegato iCal."""
     
+    # Recupera impostazioni studio
+    studio = _get_studio_settings()
+    
     tribunale_display = dict(submission.TRIBUNALE_CHOICES if hasattr(submission, 'TRIBUNALE_CHOICES') else []).get(
         submission.tribunale, submission.tribunale
     )
@@ -136,8 +168,8 @@ File calendario (.ics) allegato.
         email = EmailMultiAlternatives(
             subject=subject,
             body=body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@example.com'),
-            to=[getattr(settings, 'STUDIO_EMAIL', 'info@example.com')],
+            from_email=studio['email'],
+            to=[studio['email']],
             reply_to=[submission.email],
         )
         # Allega il file iCal
@@ -173,21 +205,20 @@ In allegato si trova il file calendario (.ics) da aggiungere al proprio calendar
 Sarà inviato un promemoria automatico il giorno prima e 2 ore prima dell'udienza.
 
 Cordiali saluti,
-RD
 -- 
-{getattr(settings, 'STUDIO_NAME', "Avv. Mario Rossi")}
-{getattr(settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma')}
-Email: {getattr(settings, 'STUDIO_EMAIL', 'info@example.com')}
-PEC: {getattr(settings, 'STUDIO_PEC', 'avvocato@pec.it')}
-Mobile: {getattr(settings, 'STUDIO_PHONE', '+39 320 7044664')}
-Web: {getattr(settings, 'STUDIO_WEBSITE', 'www.example.com')}
+{studio['name']}
+{studio['address']}
+Email: {studio['email']}
+PEC: {studio['email_pec']}
+Mobile: {studio['phone']}
+Web: {studio['website']}
 """
     
     try:
         confirm_email = EmailMultiAlternatives(
             subject=confirm_subject,
             body=confirm_body,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@example.com'),
+            from_email=studio['email'],
             to=[submission.email],
         )
         # Allega il file iCal

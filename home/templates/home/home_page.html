@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags static %}
+{% load wagtailcore_tags static wagtailsettings_tags %}
+{% get_settings %}
 
 {% block body_class %}template-homepage{% endblock %}
 
@@ -29,7 +30,7 @@
 
             <!-- Logo - colonna 4 -->
             <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
-                <img src="{% static 'images/dr_Logo.svg' %}" alt="Studio Legale" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
+                <img src="{% static 'images/dr_Logo.svg' %}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
             </div>
         </div>
         
@@ -39,7 +40,7 @@
         
         <!-- Info avvocato - sotto la linea -->
         <div class="flex justify-end text-sm text-brand-black uppercase tracking-widest mt-4 lg:max-w-md lg:ml-auto">
-            <span>Avv. Mario Rossi • Lecce</span>
+            <span>{{ settings.sld_project.SiteSettings.lawyer_name }} • {{ settings.sld_project.SiteSettings.city }}</span>
         </div>
     </div>
 </section>
