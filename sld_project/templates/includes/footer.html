@@ -7,8 +7,8 @@
                 <h2 class="text-5xl md:text-7xl font-bold tracking-tighter mb-8">
                     {% render_footer_studio_name %}
                 </h2>
-                <a href="mailto:{{ settings.sld_project.SiteSettings.email }}" class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
-                    {{ settings.sld_project.SiteSettings.email|default:"info@example.com" }}
+                <a href="#" data-email="{{ settings.sld_project.SiteSettings.email|b64encode }}" data-show-email class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
+                    Scrivi allo Studio
                 </a>
                 <div class="mt-8 space-y-2 text-brand-gray">
                     <p><i data-lucide="phone" class="inline w-4 h-4 mr-2"></i> {{ settings.sld_project.SiteSettings.phone|default:"+39 06 12345678" }}</p>
