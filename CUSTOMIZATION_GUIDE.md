@@ -32,7 +32,7 @@ address, city, maps_lat, maps_lng, maps_url
 
 ### 🌐 Web & Social
 ```python
-website, facebook_url, twitter_handle, linkedin_url
+website, facebook_url, x_url, linkedin_url
 ```
 
 ### 📹 Videochiamate

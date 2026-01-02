@@ -108,11 +108,10 @@ class SiteSettings(BaseSiteSetting):
         blank=True,
         help_text="URL completo della pagina Facebook"
     )
-    twitter_handle = models.CharField(
-        "Twitter/X", 
-        max_length=50, 
+    x_url = models.URLField(
+        "X (ex Twitter)", 
         blank=True,
-        help_text="Es: @avvocato"
+        help_text="URL completo del profilo X (es: https://x.com/nomeutente)"
     )
     linkedin_url = models.URLField(
         "LinkedIn", 
@@ -322,7 +321,7 @@ class SiteSettings(BaseSiteSetting):
         MultiFieldPanel([
             FieldPanel('website'),
             FieldPanel('facebook_url'),
-            FieldPanel('twitter_handle'),
+            FieldPanel('x_url'),
             FieldPanel('linkedin_url'),
         ], heading="Web & Social"),
         MultiFieldPanel([

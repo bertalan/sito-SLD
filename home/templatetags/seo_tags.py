@@ -126,7 +126,7 @@ def _get_studio_settings():
                     'maps_lat': float(studio_settings.maps_lat),
                     'maps_lng': float(studio_settings.maps_lng),
                     'facebook_url': studio_settings.facebook_url,
-                    'twitter_handle': studio_settings.twitter_handle,
+                    'x_url': studio_settings.x_url,
                     'linkedin_url': studio_settings.linkedin_url,
                     'logo_url': logo_url,
                 }
@@ -145,7 +145,7 @@ def _get_studio_settings():
         'maps_lat': 41.902782,
         'maps_lng': 12.496366,
         'facebook_url': '',
-        'twitter_handle': '',
+        'x_url': '',
         'linkedin_url': '',
         'logo_url': None,
     }
@@ -168,9 +168,8 @@ def schema_org_jsonld(context):
     same_as = []
     if studio.get('facebook_url'):
         same_as.append(studio['facebook_url'])
-    if studio.get('twitter_handle'):
-        handle = studio['twitter_handle'].lstrip('@')
-        same_as.append(f"https://twitter.com/{handle}")
+    if studio.get('x_url'):
+        same_as.append(studio['x_url'])
     if studio.get('linkedin_url'):
         same_as.append(studio['linkedin_url'])
     
