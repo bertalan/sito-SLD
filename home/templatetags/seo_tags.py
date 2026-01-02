@@ -1,6 +1,7 @@
 """
 Template tags per SEO e Schema.org JSON-LD.
 """
+import re
 from django import template
 from django.conf import settings as django_settings
 from django.utils.safestring import mark_safe
@@ -16,6 +17,61 @@ def b64encode(value):
     if not value:
         return ''
     return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
+
+
+@register.filter
+def format_accent_apostrophe(value, color_class="text-brand-accent"):
+    """
+    Formatta un testo colorando l'apostrofo con una classe CSS.
+    Es: "D'ONOFRIO" -> "D<span class='text-brand-accent'>'</span>ONOFRIO"
+    """
+    if not value:
+        return ''
+    # Cerca apostrofo (sia ' che ')
+    formatted = re.sub(
+        r"(['''])",
+        f'<span class="{color_class}">\\1</span>',
+        str(value)
+    )
+    return mark_safe(formatted)
+
+
+@register.simple_tag(takes_context=True)
+def render_footer_studio_name(context):
+    """
+    Renderizza il nome dello studio nel footer con formattazione speciale.
+    Usa i campi hero_txt_studio e hero_txt_accent dalla HomePage.
+    Output: <span class="text-brand-gray">STUDIO<br/>LEGALE</span><br/>
+            <span class="text-white">D</span><span class="text-brand-accent">'</span><span class="text-white">ONOFRIO</span>
+    """
+    try:
+        from home.models import HomePage
+        home = HomePage.objects.live().first()
+        if not home:
+            return mark_safe('STUDIO LEGALE')
+        
+        # Prendi i valori dai campi
+        txt_studio = home.hero_txt_studio or "STUDIO LEGALE"
+        txt_accent = home.hero_txt_accent or ""
+        
+        # Formatta STUDIO LEGALE (split per BR)
+        lines = txt_studio.upper().split()
+        studio_html = '<span class="text-brand-gray">' + '<br/>'.join(lines) + '</span>'
+        
+        # Formatta il cognome con apostrofo colorato
+        if txt_accent:
+            # Trova l'apostrofo e colora
+            accent_html = re.sub(
+                r"(['''])",
+                '</span><span class="text-brand-accent">\\1</span><span class="text-white">',
+                txt_accent.upper()
+            )
+            accent_html = f'<span class="text-white">{accent_html}</span>'
+            return mark_safe(f'{studio_html}<br/>{accent_html}')
+        
+        return mark_safe(studio_html)
+    except Exception:
+        return mark_safe('STUDIO LEGALE')
 
 
 @register.simple_tag(takes_context=True)

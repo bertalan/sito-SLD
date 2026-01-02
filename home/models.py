@@ -12,9 +12,9 @@ class HomePage(Page):
     hero_line2 = models.CharField("Riga 2 (nera)", max_length=100, default="PER UNA TUTELA")
     hero_line3 = models.CharField("Riga 3 (magenta)", max_length=100, default="DI ELEVATA EFFICACIA")
     hero_line4 = models.CharField("Riga 4 (magenta)", max_length=100, default="E COMPETENZA")
-    hero_subtitle = models.CharField("Sottotitolo", max_length=200, default="AVVOCATO")
-    hero_accent = models.CharField("Testo accent", max_length=100, default="GIUSTIZIA.")
-    hero_description = RichTextField("Descrizione", blank=True)
+    hero_txt_studio = models.CharField("Footer: STUDIO", max_length=200, default="STUDIO")
+    hero_txt_accent = models.CharField("Footer: Cognome (con apostrofo)", max_length=100, default="D'ONOFRIO")
+    hero_txt_legale = models.CharField("Footer: LEGALE", max_length=200, blank=True)
     hero_location = models.CharField("Location", max_length=100, default="• Lecce")
     
     # Servizi
@@ -37,9 +37,9 @@ class HomePage(Page):
             FieldPanel('hero_line2'),
             FieldPanel('hero_line3'),
             FieldPanel('hero_line4'),
-            FieldPanel('hero_subtitle'),
-            FieldPanel('hero_accent'),
-            FieldPanel('hero_description'),
+            FieldPanel('hero_txt_studio'),
+            FieldPanel('hero_txt_accent'),
+            FieldPanel('hero_txt_legale'),
             FieldPanel('hero_location'),
         ], heading="Hero"),
         MultiFieldPanel([

@@ -1,11 +1,11 @@
-{% load wagtailcore_tags wagtailsettings_tags %}
+{% load wagtailcore_tags wagtailsettings_tags seo_tags %}
 {% get_settings %}
 <footer id="contact" class="bg-brand-dark pt-24 pb-12 border-t border-brand-gray/20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
             <div>
-                <h2 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-gray mb-8">
-                    {{ settings.sld_project.SiteSettings.studio_name|default:"STUDIO LEGALE"|upper }}<span class="text-brand-accent">,</span>
+                <h2 class="text-5xl md:text-7xl font-bold tracking-tighter mb-8">
+                    {% render_footer_studio_name %}
                 </h2>
                 <a href="mailto:{{ settings.sld_project.SiteSettings.email }}" class="text-xl md:text-2xl text-brand-gray hover:text-brand-accent transition-colors border-b border-brand-gray/30 pb-1">
                     {{ settings.sld_project.SiteSettings.email|default:"info@example.com" }}
