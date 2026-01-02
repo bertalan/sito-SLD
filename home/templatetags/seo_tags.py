@@ -40,7 +40,7 @@ def format_accent_apostrophe(value, color_class="text-brand-accent"):
 def render_footer_studio_name(context):
     """
     Renderizza il nome dello studio nel footer con formattazione speciale.
-    Usa i campi hero_txt_studio e hero_txt_accent dalla HomePage.
+    Usa i campi hero_txt_studio, hero_txt_legale e hero_txt_accent dalla HomePage.
     Output: <span class="text-brand-gray">STUDIO<br/>LEGALE</span><br/>
             <span class="text-white">D</span><span class="text-brand-accent">'</span><span class="text-white">ONOFRIO</span>
     """
@@ -51,12 +51,12 @@ def render_footer_studio_name(context):
             return mark_safe('STUDIO LEGALE')
         
         # Prendi i valori dai campi
-        txt_studio = home.hero_txt_studio or "STUDIO LEGALE"
+        txt_studio = home.hero_txt_studio or "STUDIO"
+        txt_legale = home.hero_txt_legale or "LEGALE"
         txt_accent = home.hero_txt_accent or ""
         
-        # Formatta STUDIO LEGALE (split per BR)
-        lines = txt_studio.upper().split()
-        studio_html = '<span class="text-brand-gray">' + '<br/>'.join(lines) + '</span>'
+        # Formatta STUDIO e LEGALE come righe separate in grigio
+        studio_html = f'<span class="text-brand-gray">{txt_studio.upper()}<br/>{txt_legale.upper()}</span>'
         
         # Formatta il cognome con apostrofo colorato
         if txt_accent:
