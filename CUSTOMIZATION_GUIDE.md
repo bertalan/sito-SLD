@@ -141,7 +141,44 @@ Indirizzi in `domiciliazioni/ical.py` - TRIBUNALI_INDIRIZZI
 ```bash
 docker compose exec web python manage.py setup_demo_data --force
 ```
-Crea: SiteSettings, HomePage, ServiceAreas(8), ServicesIndexPage, ContactPage, DomiciliazioniPage, AvailabilityRules
+Crea:
+- SiteSettings con dati studio
+- HomePage con testi hero
+- 8 ServiceAreas (aree di pratica)
+- ServicesIndexPage, ContactPage, DomiciliazioniPage
+- AvailabilityRules (Lun-Ven 9-13, 15-18)
+- **2 Appuntamenti demo** (date relative: domani e dopodomani lavorativi)
+- **2 Domiciliazioni demo** (date relative: +3 e +5 giorni lavorativi)
+
+> ⚠️ Le date demo sono sempre nel futuro prossimo, calcolate rispetto alla data di installazione.
+
+## Festività Italiane
+
+Comando dedicato per bloccare le festività nel calendario prenotazioni:
+
+```bash
+# Festività per i prossimi 2 anni (default)
+docker compose exec web python manage.py setup_holidays
+
+# Per 5 anni
+docker compose exec web python manage.py setup_holidays --years 5
+
+# Escludi alcune festività
+docker compose exec web python manage.py setup_holidays --exclude pasquetta ferragosto
+
+# Solo alcune festività
+docker compose exec web python manage.py setup_holidays --include-only natale pasqua
+
+# Rimuovi e ricrea
+docker compose exec web python manage.py setup_holidays --clear --years 3
+
+# Lista festività disponibili
+docker compose exec web python manage.py setup_holidays --list
+```
+
+Festività supportate: `capodanno`, `epifania`, `pasqua`, `pasquetta`, `liberazione`, `lavoro`, `repubblica`, `ferragosto`, `ognissanti`, `immacolata`, `natale`, `stefano`
+
+> Pasqua e Pasquetta sono calcolate automaticamente (date mobili).
 
 ## Migrazioni
 

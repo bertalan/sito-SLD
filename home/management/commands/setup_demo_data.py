@@ -299,14 +299,138 @@ class Command(BaseCommand):
                     weekday=day,
                     start_time=time(9, 0),
                     end_time=time(13, 0),
-                    is_active=True
+                    is_active=True,
+                    name=f'Mattina {["Lun", "Mar", "Mer", "Gio", "Ven"][day]}'
                 )
                 AvailabilityRule.objects.create(
                     weekday=day,
                     start_time=time(15, 0),
                     end_time=time(18, 0),
-                    is_active=True
+                    is_active=True,
+                    name=f'Pomeriggio {["Lun", "Mar", "Mer", "Gio", "Ven"][day]}'
                 )
             self.stdout.write(self.style.SUCCESS('  ✓ Regole disponibilità create (Lun-Ven 9-13, 15-18)'))
         else:
             self.stdout.write('  - Regole disponibilità già esistenti, saltate')
+        
+        # Crea appuntamenti demo
+        self._setup_demo_appointments()
+        
+        # Crea domiciliazioni demo
+        self._setup_demo_domiciliazioni()
+
+    def _next_workday(self, from_date, days_ahead=1):
+        """Trova il prossimo giorno lavorativo (salta weekend)."""
+        from datetime import timedelta
+        result = from_date + timedelta(days=days_ahead)
+        while result.weekday() >= 5:  # Sabato=5, Domenica=6
+            result += timedelta(days=1)
+        return result
+
+    def _setup_demo_appointments(self):
+        """Crea appuntamenti demo con date relative."""
+        from booking.models import Appointment
+        from datetime import date, time
+        
+        # Salta se esistono già appuntamenti
+        if Appointment.objects.exists():
+            self.stdout.write('  - Appuntamenti demo già esistenti, saltati')
+            return
+        
+        today = date.today()
+        
+        # Appuntamento 1: domani (prossimo lun-ven) alle 10:00 - in presenza
+        app1_date = self._next_workday(today, 1)
+        Appointment.objects.create(
+            first_name='Marco',
+            last_name='Bianchi',
+            email='demo.civile@example.com',
+            phone='+39 333 1234567',
+            notes='Consulenza per contratto di locazione - DEMO',
+            consultation_type='in_person',
+            date=app1_date,
+            time=time(10, 0),
+            slot_count=1,
+            status='confirmed',
+            payment_method='stripe',
+            amount_paid=60.00,
+        )
+        
+        # Appuntamento 2: dopodomani (prossimo lun-ven) alle 15:30 - videochiamata
+        app2_date = self._next_workday(today, 2)
+        Appointment.objects.create(
+            first_name='Laura',
+            last_name='Verdi',
+            email='demo.penale@example.com',
+            phone='+39 339 7654321',
+            notes='Consulenza penale urgente - DEMO',
+            consultation_type='video',
+            date=app2_date,
+            time=time(15, 30),
+            slot_count=2,  # 1 ora
+            status='confirmed',
+            payment_method='paypal',
+            amount_paid=120.00,
+        )
+        
+        self.stdout.write(self.style.SUCCESS(f'  ✓ 2 appuntamenti demo creati ({app1_date}, {app2_date})'))
+
+    def _setup_demo_domiciliazioni(self):
+        """Crea domiciliazioni demo con date relative."""
+        from domiciliazioni.models import DomiciliazioniSubmission, DomiciliazioniPage
+        from datetime import date, time
+        
+        # Salta se esistono già
+        if DomiciliazioniSubmission.objects.exists():
+            self.stdout.write('  - Domiciliazioni demo già esistenti, saltate')
+            return
+        
+        # Trova la pagina domiciliazioni
+        page = DomiciliazioniPage.objects.first()
+        
+        today = date.today()
+        
+        # Domiciliazione 1: tra 3 giorni lavorativi - udienza civile
+        dom1_date = self._next_workday(today, 3)
+        DomiciliazioniSubmission.objects.create(
+            page=page,
+            nome_avvocato='Avv. Giuseppe Neri',
+            email='demo.domiciliazione1@example.com',
+            telefono='+39 06 5551234',
+            ordine_appartenenza='Ordine degli Avvocati di Milano',
+            tribunale='roma',
+            sezione='Sezione Civile',
+            giudice='Dott. Rossi',
+            tipo_udienza='civile',
+            numero_rg='1234/2026',
+            parti_causa='Rossi Mario c/ Verdi Luigi',
+            data_udienza=dom1_date,
+            ora_udienza=time(9, 30),
+            attivita_richieste='Mera comparizione e richiesta rinvio per trattative in corso',
+            note='Prima udienza - DEMO',
+            status='accepted',
+        )
+        
+        # Domiciliazione 2: tra 5 giorni lavorativi - TAR Lazio
+        dom2_date = self._next_workday(today, 5)
+        DomiciliazioniSubmission.objects.create(
+            page=page,
+            nome_avvocato='Avv. Maria Bianchi',
+            email='demo.domiciliazione2@example.com',
+            telefono='+39 02 5559876',
+            ordine_appartenenza='Ordine degli Avvocati di Napoli',
+            tribunale='tar',
+            sezione='Sezione I',
+            giudice='',
+            tipo_udienza='civile',
+            numero_rg='5678/2026',
+            parti_causa='Comune di Roma c/ Impresa Edile Srl',
+            data_udienza=dom2_date,
+            ora_udienza=time(11, 0),
+            attivita_richieste='Comparizione e discussione orale. Depositare memoria difensiva allegata.',
+            note='Ricorso appalto pubblico - DEMO',
+            status='pending',
+        )
+        
+        self.stdout.write(self.style.SUCCESS(f'  ✓ 2 domiciliazioni demo create ({dom1_date}, {dom2_date})'))
+

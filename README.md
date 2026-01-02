@@ -23,6 +23,8 @@ docker compose exec web python manage.py setup_demo_data
 # 4. Accedi
 # Sito: http://localhost:8000
 # Admin: http://localhost:8000/admin/
+# user: admin - password: admin
+# CAMBIA LA PASSWORD
 ```
 
 Il comando `setup_demo_data` crea:
@@ -32,6 +34,21 @@ Il comando `setup_demo_data` crea:
 - ✅ **Pagina Contatti** con form
 - ✅ **Pagina Domiciliazioni** per colleghi avvocati
 - ✅ **Regole disponibilità** (Lun-Ven 9-13, 15-18)
+- ✅ **2 Appuntamenti demo** (date relative: sempre nel futuro prossimo)
+- ✅ **2 Domiciliazioni demo** (date relative: sempre attuali)
+
+### 📅 Festività Italiane (opzionale)
+
+```bash
+# Genera festività per i prossimi 2 anni
+docker compose exec web python manage.py setup_holidays
+
+# Per 5 anni
+docker compose exec web python manage.py setup_holidays --years 5
+
+# Lista festività disponibili
+docker compose exec web python manage.py setup_holidays --list
+```
 
 👉 **Personalizza i dati** da: Admin → Impostazioni → Impostazioni Studio
 
