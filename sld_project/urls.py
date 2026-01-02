@@ -10,6 +10,7 @@ from wagtail.contrib.sitemaps.views import sitemap
 
 from search import views as search_views
 from django.views.generic import TemplateView
+from .views import privacy_view, terms_view
 
 
 def robots_txt(request):
@@ -37,8 +38,8 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("prenota/", include("booking.urls")),
-    path("termini/", TemplateView.as_view(template_name="pages/terms.html"), name="terms"),
-    path("privacy/", TemplateView.as_view(template_name="pages/privacy.html"), name="privacy"),
+    path("termini/", terms_view, name="terms"),
+    path("privacy/", privacy_view, name="privacy"),
     path("sitemap.xml", sitemap, name="sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),
 ]

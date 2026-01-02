@@ -275,6 +275,21 @@ class SiteSettings(BaseSiteSetting):
         help_text="Durata cache eventi calendario. Default: 600 = 10 minuti"
     )
     
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PAGINE LEGALI
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    privacy_policy = models.TextField(
+        "Privacy Policy",
+        blank=True,
+        help_text="Testo completo della Privacy Policy. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{email}}, {{email_pec}}, {{phone}} verranno sostituite automaticamente."
+    )
+    terms_conditions = models.TextField(
+        "Termini e Condizioni",
+        blank=True,
+        help_text="Testo completo dei Termini e Condizioni. Usa HTML per la formattazione. Le variabili {{studio_name}}, {{lawyer_name}}, {{address}}, {{email}}, {{email_pec}}, {{phone}}, {{website}} verranno sostituite automaticamente."
+    )
+    
     panels = [
         MultiFieldPanel([
             FieldPanel('studio_name'),
@@ -338,6 +353,10 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('google_calendar_ical_url'),
             FieldPanel('google_calendar_cache_ttl'),
         ], heading="📅 Google Calendar", classname="collapsible collapsed"),
+        MultiFieldPanel([
+            FieldPanel('privacy_policy'),
+            FieldPanel('terms_conditions'),
+        ], heading="📄 Pagine Legali", classname="collapsible collapsed"),
     ]
     
     @classmethod
