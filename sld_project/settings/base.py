@@ -199,6 +199,10 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip', 'svg', 'png', 'jpg', 'jpeg', 'gif', 'webp']
 
+# Serve documents directly from MEDIA_URL instead of through Django view
+# This provides better performance and works with nginx serving /media/
+WAGTAILDOCS_SERVE_METHOD = 'direct'
+
 # Payment Mode: demo | sandbox | live
 # - demo: Simula il pagamento (sempre successo, per test senza chiavi API)
 # - sandbox: Usa i dati di test Stripe/PayPal
