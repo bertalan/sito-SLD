@@ -1,9 +1,9 @@
 {% load wagtailcore_tags static wagtailsettings_tags %}
 {% get_settings %}
-<nav id="nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b bg-transparent border-transparent">
+<nav id="nav" class="fixed top-0 left-0 w-full z-[9998] transition-all duration-300 border-b bg-transparent border-transparent">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <!-- Logo -->
-        <a href="/" class="flex items-end space-x-3 z-50">
+        <a href="/" class="flex items-end space-x-3 z-[9998]">
             {% if settings.sld_project.SiteSettings.logo %}
                 <img src="{{ settings.sld_project.SiteSettings.logo.url }}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
@@ -28,7 +28,7 @@
         </div>
 
         <!-- Mobile Toggle -->
-        <button id="mobile-toggle" class="md:hidden text-brand-black z-50 focus:outline-none">
+        <button id="mobile-toggle" class="md:hidden text-brand-black z-[9998] focus:outline-none">
             <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
 
