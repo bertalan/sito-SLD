@@ -17,8 +17,11 @@ Configura da: Admin → Impostazioni → Impostazioni Studio
 
 ### 📋 Identità Studio
 ```python
-studio_name, lawyer_name
+studio_name, lawyer_name, logo, favicon
 ```
+
+> **logo**: documento SVG/PNG caricato in Wagtail Documents
+> **favicon**: documento ICO/PNG/SVG per l'icona del browser
 
 ### 📞 Contatti
 ```python
@@ -29,6 +32,8 @@ email, email_pec, phone, mobile_phone
 ```python
 address, city, maps_lat, maps_lng, maps_url
 ```
+
+> **maps_lat/maps_lng**: coordinate come testo, accettano sia punto che virgola (es: `41,9028` → salvato come `41.9028`)
 
 ### 🌐 Web & Social
 ```python
@@ -53,6 +58,14 @@ booking_slot_duration, booking_price_cents
 email_host, email_port, email_use_tls
 email_host_user, email_host_password, email_from_address
 ```
+
+### 📜 Pagine Legali
+```python
+privacy_policy, terms_conditions
+```
+
+> Contenuto HTML per Privacy e Condizioni Generali. Supporta variabili:
+> `{{studio_name}}`, `{{lawyer_name}}`, `{{address}}`, `{{city}}`, `{{email}}`, `{{email_pec}}`, `{{phone}}`
 
 ### 📊 Analytics
 ```python
@@ -197,7 +210,7 @@ docker compose exec web python manage.py makemigrations <app>
 | Nav | `sld_project/templates/includes/navigation.html` |
 | Hero | `home/templates/home/home_page.html` |
 | SEO | `home/templatetags/seo_tags.py` |
-| Privacy/Terms | `sld_project/templates/pages/privacy.html`, `terms.html` |
+| Privacy/Terms | SiteSettings → `privacy_policy`, `terms_conditions` (contenuto da DB) |
 | Colori | TailwindCSS: `brand-black`, `brand-white`, `brand-gray`, `brand-silver`, `brand-accent` |
 
 ## Icone

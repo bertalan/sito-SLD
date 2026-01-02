@@ -5,6 +5,28 @@ Tutte le modifiche significative a questo progetto sono documentate in questo fi
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.0.1] - 2026-01-02
+
+### 🐛 Bugfix
+- **Navbar z-index**: corretto posizionamento navbar sopra mappa Leaflet (z-index 9998)
+- **Email Footer protetta**: codifica Base64 anti-spam anche nel footer
+- **Coordinate**: accettano virgola come separatore decimale (auto-conversione)
+
+### 🔄 Modifiche
+- **twitter_handle → x_url**: rinominato campo, ora URLField (URL completo profilo X)
+- **Privacy/Terms in DB**: contenuto pagine legali ora editabile da SiteSettings
+- **Icona X nel footer**: aggiornata da Twitter a X con logo ufficiale
+
+### ✨ Nuovi Campi SiteSettings
+- `favicon`: icona sito configurabile da admin
+- `privacy_policy`: contenuto Privacy Policy (HTML con variabili)
+- `terms_conditions`: contenuto Condizioni Generali (HTML con variabili)
+
+### 📝 Variabili Pagine Legali
+Supportate: `{{studio_name}}`, `{{lawyer_name}}`, `{{address}}`, `{{city}}`, `{{email}}`, `{{email_pec}}`, `{{phone}}`
+
+---
+
 ## [1.0.0] - 2026-01-02
 
 ### ✨ Features
