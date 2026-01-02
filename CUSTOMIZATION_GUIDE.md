@@ -192,7 +192,7 @@ docker compose exec web python manage.py makemigrations <app>
 
 | Cosa | File |
 |------|------|
-| Logo | `sld_project/static/images/dr_Logo.svg` |
+| Logo | `sld_project/static/images/StudioLegale.svg` |
 | Footer | `sld_project/templates/includes/footer.html` |
 | Nav | `sld_project/templates/includes/navigation.html` |
 | Hero | `home/templates/home/home_page.html` |

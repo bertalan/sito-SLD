@@ -34,6 +34,7 @@ docker-compose.prod.yml
 # OS
 .DS_Store
 Thumbs.db
+deploy.zip
 
 # Docker
 *.log

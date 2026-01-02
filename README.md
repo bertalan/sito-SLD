@@ -278,7 +278,7 @@ Il codice di questo progetto è rilasciato come template riutilizzabile per stud
 | pytest | MIT |
 
 #### Font e risorse
-- Logo: SVG personalizzabile in `sld_project/static/images/dr_Logo.svg`
+- Logo: SVG personalizzabile in `sld_project/static/images/StudioLegale.svg`
 
 ---
 

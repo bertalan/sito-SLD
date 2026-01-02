@@ -1,5 +1,5 @@
 # Gunicorn configuration file for Studio Legale
-# https://docs.gunicorn.org/en/stable/settings.html
+# https://docs.gunicorn.org/en/stable/settings.html 
 
 import multiprocessing
 import os
