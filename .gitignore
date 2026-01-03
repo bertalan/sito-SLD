@@ -44,3 +44,5 @@ backup_*.sql
 *.sql.gz
 static/
 home/management/commands/import_legacy_articles.py
+logs/*.log
+logs/*.log

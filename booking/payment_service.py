@@ -199,21 +199,33 @@ class RealPayPalProvider(BasePaymentProvider):
     
     def _get_access_token(self):
         """Ottiene un access token OAuth2 da PayPal (con gestione scadenza)."""
+        import sys
+        
         # Se il token esiste e non è scaduto (con 60 secondi di margine), riusalo
         if self._access_token and self.time.time() < (self._token_expires_at - 60):
+            logger.debug(f"[PayPal] Riuso token esistente (scade: {self._token_expires_at})")
             return self._access_token
         
+        logger.info(f"[PayPal] Richiesta nuovo token OAuth2 a {self.base_url}")
+        print(f"[PayPal DEBUG] Richiesta token a {self.base_url}", file=sys.stderr, flush=True)
+        
         auth_url = f'{self.base_url}/v1/oauth2/token'
-        response = self.requests.post(
-            auth_url,
-            auth=(self.client_id, self.client_secret),
-            headers={'Content-Type': 'application/x-www-form-urlencoded'},
-            data={'grant_type': 'client_credentials'},
-            timeout=30
-        )
+        try:
+            response = self.requests.post(
+                auth_url,
+                auth=(self.client_id, self.client_secret),
+                headers={'Content-Type': 'application/x-www-form-urlencoded'},
+                data={'grant_type': 'client_credentials'},
+                timeout=30
+            )
+        except Exception as e:
+            logger.error(f"[PayPal] Errore richiesta token: {e}")
+            print(f"[PayPal DEBUG] Errore richiesta token: {e}", file=sys.stderr, flush=True)
+            raise
         
         if response.status_code != 200:
-            logger.error(f"PayPal auth failed: {response.text}")
+            logger.error(f"[PayPal] Auth failed ({response.status_code}): {response.text}")
+            print(f"[PayPal DEBUG] Auth failed: {response.status_code}", file=sys.stderr, flush=True)
             raise Exception(f"PayPal authentication failed: {response.status_code}")
         
         token_data = response.json()
@@ -221,6 +233,9 @@ class RealPayPalProvider(BasePaymentProvider):
         # PayPal tokens durano tipicamente 9 ore (expires_in in secondi)
         expires_in = token_data.get('expires_in', 32400)
         self._token_expires_at = self.time.time() + expires_in
+        
+        logger.info(f"[PayPal] Token ottenuto, scade in {expires_in}s")
+        print(f"[PayPal DEBUG] Token OK, scade in {expires_in}s", file=sys.stderr, flush=True)
         
         return self._access_token
     

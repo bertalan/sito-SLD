@@ -267,3 +267,48 @@ GA4_MEASUREMENT_ID = os.environ.get('GA4_MEASUREMENT_ID', '')
 # Matomo (alternativa privacy-friendly)
 MATOMO_URL = os.environ.get('MATOMO_URL', '')  # es: https://matomo.example.com
 MATOMO_SITE_ID = os.environ.get('MATOMO_SITE_ID', '')  # es: 1
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOGGING
+# ═══════════════════════════════════════════════════════════════════════════════
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'booking': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
