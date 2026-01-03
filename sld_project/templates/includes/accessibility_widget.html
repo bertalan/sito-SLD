@@ -3,6 +3,15 @@ Widget Accessibilità - Conformità WCAG 2.0 / Legge Stanca / D.Lgs. 33/2013
 Fornisce controlli per ipovedenti e utenti con disabilità visive.
 {% endcomment %}
 
+<!-- Pulsante Reset Emergenza (sempre visibile, doppio click = reset) -->
+<button id="a11y-emergency-reset" 
+        class="a11y-widget fixed bottom-24 left-6 z-[9999] w-10 h-10 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400"
+        aria-label="Doppio click per resettare tutte le impostazioni accessibilità"
+        title="Reset Accessibilità (doppio click)"
+        ondblclick="localStorage.removeItem('a11y_preferences'); location.reload();">
+    <span class="text-xs font-bold">R</span>
+</button>
+
 <!-- Pulsante Toggle Accessibilità -->
 <button id="a11y-toggle" 
         class="a11y-widget fixed bottom-24 right-6 z-[9996] w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
@@ -207,9 +216,11 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
        CLASSI DI ACCESSIBILITÀ APPLICATE AL BODY
        ═══════════════════════════════════════════════════════════════════════════ */
     
-    /* Escludi il widget accessibilità da tutti gli effetti */
+    /* Escludi il widget accessibilità e il cookie banner da tutti gli effetti */
     .a11y-widget,
-    .a11y-widget * {
+    .a11y-widget *,
+    #cookie-banner,
+    #cookie-banner * {
         filter: none !important;
         color: inherit;
     }
@@ -218,7 +229,7 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
     body.a11y-contrast-high {
         filter: contrast(1.25);
     }
-    body.a11y-contrast-high *:not(.a11y-widget):not(.a11y-widget *) {
+    body.a11y-contrast-high *:not(.a11y-widget):not(.a11y-widget *):not(#cookie-banner):not(#cookie-banner *) {
         border-color: #000 !important;
     }
     
@@ -232,12 +243,15 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
         filter: invert(1) hue-rotate(180deg);
     }
     
-    /* Mantieni il widget sempre leggibile */
+    /* Mantieni widget e banner sempre leggibili */
     body.a11y-contrast-high .a11y-widget,
-    body.a11y-contrast-inverted .a11y-widget {
+    body.a11y-contrast-inverted .a11y-widget,
+    body.a11y-contrast-high #cookie-banner,
+    body.a11y-contrast-inverted #cookie-banner {
         filter: none !important;
     }
-    body.a11y-contrast-inverted .a11y-widget {
+    body.a11y-contrast-inverted .a11y-widget,
+    body.a11y-contrast-inverted #cookie-banner {
         /* Inverti di nuovo per tornare ai colori normali */
         filter: invert(1) hue-rotate(180deg) !important;
     }
