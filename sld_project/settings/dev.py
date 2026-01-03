@@ -14,6 +14,10 @@ ALLOWED_HOSTS = ["*"]
 # In dev, usa console backend a meno che non sia specificato diversamente via env
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
+# Disable rate limiting in development/tests (can be overridden via env)
+# Set RATELIMIT_ENABLE=True in .env if you want to test rate limiting locally
+RATELIMIT_ENABLE = os.environ.get('RATELIMIT_ENABLE', 'false').lower() == 'true'
+
 
 try:
     from .local import *

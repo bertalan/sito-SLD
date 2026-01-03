@@ -68,6 +68,12 @@ class RateLimitMixin:
     rate_limit = '10/m'  # Default: 10 requests per minute per IP
     
     def dispatch(self, request, *args, **kwargs):
+        from django.conf import settings
+        
+        # Skip rate limiting if disabled (e.g., in tests)
+        if not getattr(settings, 'RATELIMIT_ENABLE', True):
+            return super().dispatch(request, *args, **kwargs)
+        
         if request.method == 'POST':
             # Check rate limit
             from django_ratelimit.core import is_ratelimited

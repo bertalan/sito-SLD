@@ -37,6 +37,7 @@ class TestPaymentConfigStripeMode(TestCase):
         config = PaymentConfig()
         self.assertTrue(config.stripe_enabled)
     
+    @override_settings(STRIPE_MODE='sandbox')
     def test_stripe_mode_default_is_sandbox(self):
         """Se STRIPE_MODE non è impostato, default a sandbox (abilitato)."""
         from booking.payment_config import PaymentConfig

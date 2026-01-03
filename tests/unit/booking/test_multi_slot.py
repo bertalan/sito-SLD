@@ -3,6 +3,7 @@ Test per la funzionalità multi-slot del sistema di prenotazione.
 """
 from django.test import TestCase, Client
 from datetime import date, time, timedelta
+from unittest.mock import patch, MagicMock
 import json
 import re
 
@@ -161,8 +162,15 @@ class MultiSlotCheckoutTest(TestCase):
         days_until_monday = (7 - today.weekday()) % 7 or 7
         self.next_monday = today + timedelta(days=days_until_monday)
     
-    def test_checkout_with_slot_count(self):
+    @patch('stripe.checkout.Session.create')
+    def test_checkout_with_slot_count(self, mock_stripe):
         """Verifica che il checkout accetti slot_count."""
+        mock_stripe.return_value = MagicMock(
+            url='https://checkout.stripe.com/test',
+            payment_intent='pi_test123',
+            id='cs_test123'
+        )
+        
         response = self.client.post(
             '/prenota/checkout/',
             data=json.dumps({
