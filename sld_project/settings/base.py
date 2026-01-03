@@ -269,6 +269,13 @@ MATOMO_URL = os.environ.get('MATOMO_URL', '')  # es: https://matomo.example.com
 MATOMO_SITE_ID = os.environ.get('MATOMO_SITE_ID', '')  # es: 1
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# RATE LIMITING
+# ═══════════════════════════════════════════════════════════════════════════════
+# Quando si usa Unix socket con nginx, REMOTE_ADDR è vuoto.
+# Usiamo X-Forwarded-For passato da nginx.
+RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING
 # ═══════════════════════════════════════════════════════════════════════════════
 LOGGING = {
