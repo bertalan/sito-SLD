@@ -222,7 +222,28 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
     #cookie-banner,
     #cookie-banner * {
         filter: none !important;
-        color: inherit;
+        pointer-events: auto !important;
+    }
+    
+    /* Cookie banner: forza colori originali */
+    #cookie-banner {
+        background-color: #0a0a0a !important;
+        color: #fff !important;
+    }
+    #cookie-banner button {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+    #cookie-banner .text-brand-gray {
+        color: #6b7280 !important;
+    }
+    #cookie-banner .text-brand-accent,
+    #cookie-banner a.text-brand-accent {
+        color: #e91e63 !important;
+    }
+    #cookie-banner .bg-brand-accent {
+        background-color: #e91e63 !important;
+        color: #fff !important;
     }
     
     /* Alto Contrasto */
@@ -243,17 +264,20 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
         filter: invert(1) hue-rotate(180deg);
     }
     
-    /* Mantieni widget e banner sempre leggibili */
+    /* Mantieni widget e banner sempre leggibili - NON applicare filtri */
     body.a11y-contrast-high .a11y-widget,
-    body.a11y-contrast-inverted .a11y-widget,
     body.a11y-contrast-high #cookie-banner,
-    body.a11y-contrast-inverted #cookie-banner {
+    body.a11y-contrast-high #cookie-banner * {
         filter: none !important;
     }
-    body.a11y-contrast-inverted .a11y-widget,
-    body.a11y-contrast-inverted #cookie-banner {
+    body.a11y-contrast-inverted .a11y-widget {
         /* Inverti di nuovo per tornare ai colori normali */
         filter: invert(1) hue-rotate(180deg) !important;
+    }
+    /* Cookie banner: NON invertire, mantieni colori originali */
+    body.a11y-contrast-inverted #cookie-banner,
+    body.a11y-contrast-inverted #cookie-banner * {
+        filter: none !important;
     }
     
     /* ═══════════════════════════════════════════════════════════════════════════
