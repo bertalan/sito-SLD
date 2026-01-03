@@ -7,12 +7,12 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 <div id="a11y-buttons" class="a11y-widget fixed z-[9996] flex flex-col items-center gap-2 transition-all duration-300
     right-4 sm:right-6
     bottom-4">
-    <!-- Pulsante Reset Emergenza (singolo click = reset) -->
+    <!-- Pulsante Reset Emergenza (singolo click = reset accessibilità + cookie) -->
     <button id="a11y-emergency-reset" 
             class="w-9 h-9 sm:w-10 sm:h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 flex items-center justify-center rounded"
-            aria-label="Reset tutte le impostazioni accessibilità"
-            title="Reset Accessibilità"
-            onclick="if(confirm('Vuoi resettare tutte le impostazioni di accessibilità?')) { localStorage.removeItem('a11y_preferences'); location.reload(); }">
+            aria-label="Reset tutte le impostazioni (accessibilità e cookie)"
+            title="Reset Completo"
+            onclick="if(confirm('Vuoi resettare tutte le impostazioni (accessibilità e preferenze cookie)?')) { localStorage.removeItem('a11y_preferences'); document.cookie = 'cookie_consent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; location.reload(); }">
         <span class="text-xs font-bold">R</span>
     </button>
     
