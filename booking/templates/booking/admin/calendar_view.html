@@ -203,6 +203,10 @@
         <p class="sync-info">
             {% if last_sync %}
                 Ultimo aggiornamento Google Calendar: {{ last_sync|date:"d/m/Y H:i" }}
+                &nbsp;|&nbsp;
+                <a href="{% url 'booking_alignment_check' %}" style="color: var(--w-color-primary);">
+                    🔄 Verifica allineamento
+                </a>
             {% else %}
                 Google Calendar non ancora sincronizzato
             {% endif %}

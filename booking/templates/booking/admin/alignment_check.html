@@ -1,0 +1,231 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags %}
+
+{% block titletag %}Verifica Allineamento - Prenotazioni{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .alignment-stats {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        background: var(--w-color-surface-field);
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 150px;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        margin: 0.5rem 0 0;
+        color: var(--w-color-text-meta);
+    }
+    
+    .stat-aligned { border-left: 4px solid #057a55; }
+    .stat-orphan { border-left: 4px solid #dc2626; }
+    .stat-total { border-left: 4px solid #1a56db; }
+    
+    .alignment-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+    }
+    
+    .alignment-table th,
+    .alignment-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--w-color-border-furniture);
+    }
+    
+    .alignment-table th {
+        background: var(--w-color-surface-header);
+        font-weight: 600;
+    }
+    
+    .status-aligned {
+        color: #057a55;
+        font-weight: 600;
+    }
+    
+    .status-orphan {
+        color: #dc2626;
+        font-weight: 600;
+    }
+    
+    .orphan-row {
+        background: #fef2f2;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+    
+    .btn-secondary {
+        background: var(--w-color-secondary);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    
+    .warning-box {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .warning-box h4 {
+        color: #92400e;
+        margin: 0 0 0.5rem;
+    }
+    
+    .warning-box p {
+        color: #78350f;
+        margin: 0;
+    }
+    
+    .info-box {
+        background: #dbeafe;
+        border: 1px solid #3b82f6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-box p {
+        color: #1e40af;
+        margin: 0;
+    }
+    
+    .back-link {
+        margin-bottom: 1.5rem;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "wagtailadmin/shared/header.html" with title="Verifica Allineamento" icon="sync" %}
+
+<div class="nice-padding">
+    <a href="{% url 'booking_calendar' %}" class="back-link">← Torna al Calendario</a>
+    
+    <div class="info-box">
+        <p>
+            <strong>ℹ️ Come funziona:</strong> Questa pagina confronta gli appuntamenti confermati nel sistema 
+            con gli eventi nel Google Calendar. Gli appuntamenti "orfani" sono quelli presenti nel sistema 
+            ma non più trovati nel calendario Google (possibile cancellazione manuale o mancata sincronizzazione).
+        </p>
+    </div>
+    
+    <div class="alignment-stats">
+        <div class="stat-card stat-total">
+            <h3>{{ total_local }}</h3>
+            <p>Appuntamenti locali</p>
+        </div>
+        <div class="stat-card stat-total">
+            <h3>{{ total_google }}</h3>
+            <p>Eventi Google Calendar</p>
+        </div>
+        <div class="stat-card stat-aligned">
+            <h3>{{ aligned_count }}</h3>
+            <p>Allineati</p>
+        </div>
+        <div class="stat-card stat-orphan">
+            <h3>{{ orphan_count }}</h3>
+            <p>Non allineati</p>
+        </div>
+    </div>
+    
+    {% if orphan_count > 0 %}
+    <div class="warning-box">
+        <h4>⚠️ Attenzione</h4>
+        <p>
+            Ci sono {{ orphan_count }} appuntamento/i che non risultano più nel Google Calendar.
+            Prima di cancellarli, verifica che non siano semplicemente appuntamenti con nomi diversi 
+            o creati direttamente nel sistema senza prefisso "App ".
+        </p>
+    </div>
+    {% endif %}
+    
+    {% if alignment_info %}
+    <table class="alignment-table">
+        <thead>
+            <tr>
+                <th>Data/Ora</th>
+                <th>Cliente</th>
+                <th>Stato locale</th>
+                <th>Google Calendar</th>
+                <th>Allineamento</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in alignment_info %}
+            <tr class="{% if not item.is_aligned %}orphan-row{% endif %}">
+                <td>{{ item.datetime|date:"d/m/Y H:i" }}</td>
+                <td>{{ item.appointment.first_name }} {{ item.appointment.last_name }}</td>
+                <td>{{ item.appointment.get_status_display }}</td>
+                <td>
+                    {% if item.google_event %}
+                        {{ item.google_event.summary }}
+                    {% else %}
+                        <em style="color: #9ca3af;">Non trovato</em>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.is_aligned %}
+                        <span class="status-aligned">✓ Allineato</span>
+                    {% else %}
+                        <span class="status-orphan">✗ Orfano</span>
+                    {% endif %}
+                </td>
+                <td class="action-buttons">
+                    <a href="{% url 'wagtailsnippets_booking_appointment:edit' item.appointment.pk %}" 
+                       class="btn-secondary">Modifica</a>
+                    {% if not item.is_aligned %}
+                        <!-- Azione di cancellazione sicura via conferma -->
+                        <a href="{% url 'wagtailsnippets_booking_appointment:delete' item.appointment.pk %}" 
+                           class="btn-danger"
+                           onclick="return confirm('Sei sicuro di voler cancellare l\'appuntamento di {{ item.appointment.first_name }} {{ item.appointment.last_name }} del {{ item.datetime|date:"d/m/Y" }} alle {{ item.datetime|date:"H:i" }}?');">
+                            Cancella
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nessun appuntamento futuro confermato da verificare.</p>
+    {% endif %}
+</div>
+{% endblock %}

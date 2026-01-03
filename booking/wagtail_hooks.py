@@ -1,12 +1,13 @@
 from wagtail import hooks
 from wagtail.admin.menu import MenuItem, Menu, SubmenuMenuItem
-from wagtail.admin.ui.tables import Column
+from wagtail.admin.ui.tables import Column, StatusTagColumn
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 from wagtail.admin.views.generic.base import WagtailAdminTemplateMixin
 from django.urls import reverse, path
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.utils.html import format_html
 from datetime import timedelta
 import json
 
@@ -120,7 +121,69 @@ def register_calendar_url():
     """Registra URL per la vista calendario."""
     return [
         path('calendario/', CalendarAdminView.as_view(), name='booking_calendar'),
+        path('calendario/verifica-allineamento/', AllineamentoView.as_view(), name='booking_alignment_check'),
     ]
+
+
+class AllineamentoView(WagtailAdminTemplateMixin, TemplateView):
+    """Vista per verificare l'allineamento tra appuntamenti locali e Google Calendar."""
+    
+    template_name = 'booking/admin/alignment_check.html'
+    page_title = "Verifica Allineamento"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Forza sincronizzazione
+        from .google_calendar import sync_google_calendar_events
+        from django.core.cache import cache
+        cache.delete('google_calendar_last_sync')
+        sync_google_calendar_events()
+        
+        now = timezone.now()
+        today = now.date()
+        
+        # Appuntamenti futuri confermati
+        local_appointments = Appointment.objects.filter(
+            date__gte=today,
+            status='confirmed'
+        ).order_by('date', 'time')
+        
+        # Eventi Google Calendar futuri
+        google_events = GoogleCalendarEvent.objects.filter(
+            start_datetime__gte=now
+        ).order_by('start_datetime')
+        
+        # Analisi allineamento
+        alignment_info = []
+        
+        for appt in local_appointments:
+            appt_datetime = timezone.make_aware(
+                timezone.datetime.combine(appt.date, appt.time)
+            )
+            
+            # Cerca un evento Google corrispondente (stesso orario ±5 minuti)
+            matching_event = None
+            for event in google_events:
+                time_diff = abs((event.start_datetime - appt_datetime).total_seconds())
+                if time_diff < 300:  # 5 minuti di tolleranza
+                    matching_event = event
+                    break
+            
+            alignment_info.append({
+                'appointment': appt,
+                'datetime': appt_datetime,
+                'google_event': matching_event,
+                'is_aligned': matching_event is not None,
+            })
+        
+        context['alignment_info'] = alignment_info
+        context['total_local'] = local_appointments.count()
+        context['total_google'] = google_events.count()
+        context['aligned_count'] = sum(1 for a in alignment_info if a['is_aligned'])
+        context['orphan_count'] = sum(1 for a in alignment_info if not a['is_aligned'])
+        
+        return context
 
 
 class AllegatiColumn(Column):
@@ -149,6 +212,55 @@ class AppointmentViewSet(SnippetViewSet):
 register_snippet(AppointmentViewSet)
 
 
+class StatoRegolaColumn(Column):
+    """Colonna per mostrare lo stato attivo/disabilitato con etichetta colorata."""
+    
+    def get_value(self, instance):
+        if instance.is_active:
+            return format_html(
+                '<span style="background:#057a55;color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">✓ Attiva</span>'
+            )
+        else:
+            return format_html(
+                '<span style="background:#9ca3af;color:white;padding:2px 8px;border-radius:4px;font-size:0.85em;">✗ Disabilitata</span>'
+            )
+
+
+class GiornoColumn(Column):
+    """Colonna per mostrare il giorno della settimana."""
+    
+    def get_value(self, instance):
+        return instance.get_weekday_display()
+
+
+class OrarioColumn(Column):
+    """Colonna per mostrare l'orario della regola."""
+    
+    def get_value(self, instance):
+        return f"{instance.start_time.strftime('%H:%M')} - {instance.end_time.strftime('%H:%M')}"
+
+
+class AvailabilityRuleViewSet(SnippetViewSet):
+    """ViewSet per le regole di disponibilità con stato visibile."""
+    model = AvailabilityRule
+    icon = "time"
+    menu_label = "Regole disponibilità"
+    menu_order = 200
+    add_to_admin_menu = False
+    list_display = [
+        'name',
+        GiornoColumn("giorno", label="Giorno"),
+        OrarioColumn("orario", label="Orario"),
+        StatoRegolaColumn("stato", label="Stato"),
+    ]
+    list_filter = ['weekday', 'is_active']
+    ordering = ['weekday', 'start_time']
+
+
+# Registra il ViewSet per AvailabilityRule
+register_snippet(AvailabilityRuleViewSet)
+
+
 class BookingMenu(Menu):
     """Menu per la gestione prenotazioni."""
     pass
@@ -170,6 +282,12 @@ def register_booking_menu():
             reverse('wagtailsnippets_booking_appointment:list'),
             icon_name='calendar',
             order=100
+        ),
+        MenuItem(
+            '🔄 Verifica allineamento',
+            reverse('booking_alignment_check'),
+            icon_name='resubmit',
+            order=150
         ),
         MenuItem(
             'Regole disponibilità',

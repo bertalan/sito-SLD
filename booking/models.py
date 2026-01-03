@@ -35,7 +35,6 @@ class GoogleCalendarEvent(models.Model):
         return int(delta.total_seconds() / 60)
 
 
-@register_snippet
 class AvailabilityRule(models.Model):
     """Regola di disponibilità ricorsiva per appuntamenti."""
     

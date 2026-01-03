@@ -65,8 +65,11 @@ def responsive_page(browser: Browser, request):
 
 @pytest.fixture
 def mobile_page(browser: Browser):
-    """Pagina configurata per viewport mobile."""
-    context = browser.new_context(viewport=VIEWPORTS["mobile_portrait"])
+    """Pagina configurata per viewport mobile con touch support."""
+    context = browser.new_context(
+        viewport=VIEWPORTS["mobile_portrait"],
+        has_touch=True
+    )
     page = context.new_page()
     yield page
     page.close()
