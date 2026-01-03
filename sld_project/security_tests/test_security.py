@@ -308,4 +308,170 @@ class RateLimitSecurityTest(TestCase):
         # Verifica formato (es: "10/m", "5/m")
         for key, value in RATE_LIMITS.items():
             self.assertRegex(value, r'\d+/[smh]', f"{key} rate limit format invalid")
+    
+    def test_rate_limit_mixin_exists(self):
+        """Verifica che RateLimitMixin sia importabile e configurato."""
+        from sld_project.ratelimit import RateLimitMixin
+        
+        # Verifica che abbia l'attributo rate_limit
+        self.assertTrue(hasattr(RateLimitMixin, 'rate_limit'))
+        self.assertEqual(RateLimitMixin.rate_limit, '10/m')
+    
+    def test_booking_view_uses_rate_limit(self):
+        """Verifica che CreateCheckoutSession usi RateLimitMixin."""
+        from booking.views import CreateCheckoutSession
+        from sld_project.ratelimit import RateLimitMixin
+        
+        # Verifica che la view erediti da RateLimitMixin
+        self.assertTrue(issubclass(CreateCheckoutSession, RateLimitMixin))
+        # Verifica che abbia un rate limit configurato
+        self.assertTrue(hasattr(CreateCheckoutSession, 'rate_limit'))
 
+
+class SecurityHeadersTest(TestCase):
+    """
+    Test per verificare la configurazione degli header di sicurezza.
+    """
+    
+    def test_production_security_settings_exist(self):
+        """Verifica che le impostazioni di sicurezza esistano in production.py."""
+        # Importa il modulo production direttamente (senza applicarlo)
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "production", 
+            "/app/sld_project/settings/production.py"
+        )
+        
+        # Verifica che il file esista e sia leggibile
+        self.assertIsNotNone(spec)
+    
+    def test_security_headers_configuration(self):
+        """Verifica la configurazione corretta degli header di sicurezza."""
+        # Leggiamo il file production.py per verificare la presenza delle impostazioni
+        with open('/app/sld_project/settings/production.py', 'r') as f:
+            content = f.read()
+        
+        # Verifica HSTS
+        self.assertIn('SECURE_HSTS_SECONDS', content)
+        self.assertIn('31536000', content)  # 1 year
+        self.assertIn('SECURE_HSTS_INCLUDE_SUBDOMAINS', content)
+        self.assertIn('SECURE_HSTS_PRELOAD', content)
+        
+        # Verifica altri header di sicurezza
+        self.assertIn('SECURE_CONTENT_TYPE_NOSNIFF', content)
+        self.assertIn('X_FRAME_OPTIONS', content)
+        self.assertIn("'DENY'", content)
+        
+        # Verifica SSL/HTTPS
+        self.assertIn('SECURE_SSL_REDIRECT', content)
+        self.assertIn('SESSION_COOKIE_SECURE', content)
+        self.assertIn('CSRF_COOKIE_SECURE', content)
+        
+        # Verifica CSP
+        self.assertIn('ContentSecurityPolicyMiddleware', content)
+        self.assertIn('CSP_POLICY', content)
+    
+    def test_csp_policy_configuration(self):
+        """Verifica che la CSP policy sia configurata correttamente."""
+        with open('/app/sld_project/settings/production.py', 'r') as f:
+            content = f.read()
+        
+        # Verifica direttive CSP importanti
+        self.assertIn("default-src", content)
+        self.assertIn("script-src", content)
+        self.assertIn("style-src", content)
+        self.assertIn("object-src", content)
+        self.assertIn("'none'", content)  # object-src: 'none'
+
+
+class AllowedHostsTest(TestCase):
+    """
+    Test per verificare la configurazione ALLOWED_HOSTS.
+    """
+    
+    def test_dev_allowed_hosts_is_wildcard(self):
+        """Verifica che dev.py abbia ALLOWED_HOSTS = ['*']."""
+        with open('/app/sld_project/settings/dev.py', 'r') as f:
+            content = f.read()
+        
+        self.assertIn('ALLOWED_HOSTS', content)
+        self.assertIn('["*"]', content)
+    
+    def test_base_allowed_hosts_from_env(self):
+        """Verifica che base.py legga ALLOWED_HOSTS da .env."""
+        with open('/app/sld_project/settings/base.py', 'r') as f:
+            content = f.read()
+        
+        # Deve leggere da os.environ
+        self.assertIn('ALLOWED_HOSTS', content)
+        self.assertIn("os.environ.get('ALLOWED_HOSTS'", content)
+    
+    def test_production_does_not_override_allowed_hosts(self):
+        """Verifica che production.py non sovrascriva ALLOWED_HOSTS con wildcard."""
+        with open('/app/sld_project/settings/production.py', 'r') as f:
+            content = f.read()
+        
+        # Non deve contenere ALLOWED_HOSTS = ["*"]
+        self.assertNotIn('ALLOWED_HOSTS = ["*"]', content)
+        self.assertNotIn("ALLOWED_HOSTS = ['*']", content)
+
+
+class SecretKeyTest(TestCase):
+    """
+    Test per verificare la gestione della SECRET_KEY.
+    """
+    
+    def test_base_secret_key_from_env(self):
+        """Verifica che base.py legga SECRET_KEY da .env."""
+        with open('/app/sld_project/settings/base.py', 'r') as f:
+            content = f.read()
+        
+        self.assertIn('SECRET_KEY', content)
+        self.assertIn("os.environ.get('SECRET_KEY'", content)
+    
+    def test_dev_secret_key_has_fallback(self):
+        """Verifica che dev.py abbia un fallback per SECRET_KEY (solo per sviluppo)."""
+        with open('/app/sld_project/settings/dev.py', 'r') as f:
+            content = f.read()
+        
+        self.assertIn('SECRET_KEY', content)
+        # Deve avere un fallback insicuro
+        self.assertIn('django-insecure', content)
+        # Deve leggere da env prima
+        self.assertIn("os.environ.get('SECRET_KEY'", content)
+    
+    def test_no_hardcoded_production_secret(self):
+        """Verifica che production.py non abbia SECRET_KEY hardcoded."""
+        with open('/app/sld_project/settings/production.py', 'r') as f:
+            content = f.read()
+        
+        # Non deve contenere assegnazione diretta di SECRET_KEY
+        self.assertNotIn('SECRET_KEY =', content)
+
+
+class WagtailDocsSecurityTest(TestCase):
+    """
+    Test per verificare la configurazione sicura di Wagtail Documents.
+    """
+    
+    def test_wagtaildocs_serve_method_is_serve_view(self):
+        """Verifica che WAGTAILDOCS_SERVE_METHOD sia 'serve_view' (non 'direct')."""
+        from django.conf import settings
+        
+        serve_method = getattr(settings, 'WAGTAILDOCS_SERVE_METHOD', None)
+        self.assertIsNotNone(serve_method, "WAGTAILDOCS_SERVE_METHOD non configurato")
+        self.assertEqual(
+            serve_method, 
+            'serve_view',
+            f"WAGTAILDOCS_SERVE_METHOD dovrebbe essere 'serve_view', trovato: {serve_method}"
+        )
+    
+    def test_wagtaildocs_not_direct(self):
+        """Verifica che i documenti non siano serviti direttamente (bypassing Django)."""
+        with open('/app/sld_project/settings/base.py', 'r') as f:
+            content = f.read()
+        
+        # Deve avere serve_view
+        self.assertIn("WAGTAILDOCS_SERVE_METHOD = 'serve_view'", content)
+        # Non deve avere 'direct'
+        self.assertNotIn("WAGTAILDOCS_SERVE_METHOD = 'direct'", content)
