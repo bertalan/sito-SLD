@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 import json
 import logging
 
