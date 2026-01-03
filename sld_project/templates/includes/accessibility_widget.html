@@ -5,7 +5,7 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 
 <!-- Pulsante Toggle Accessibilità -->
 <button id="a11y-toggle" 
-        class="fixed bottom-24 right-6 z-[9996] w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
+        class="a11y-widget fixed bottom-24 right-6 z-[9996] w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
         aria-label="Apri pannello accessibilità"
         aria-expanded="false"
         aria-controls="a11y-panel"
@@ -15,7 +15,7 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 
 <!-- Pannello Accessibilità -->
 <div id="a11y-panel" 
-     class="fixed bottom-24 right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
+     class="a11y-widget fixed bottom-24 right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
      role="dialog"
      aria-labelledby="a11y-panel-title"
      aria-modal="true"
@@ -207,11 +207,18 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
        CLASSI DI ACCESSIBILITÀ APPLICATE AL BODY
        ═══════════════════════════════════════════════════════════════════════════ */
     
+    /* Escludi il widget accessibilità da tutti gli effetti */
+    .a11y-widget,
+    .a11y-widget * {
+        filter: none !important;
+        color: inherit;
+    }
+    
     /* Alto Contrasto */
     body.a11y-contrast-high {
         filter: contrast(1.25);
     }
-    body.a11y-contrast-high * {
+    body.a11y-contrast-high *:not(.a11y-widget):not(.a11y-widget *) {
         border-color: #000 !important;
     }
     
@@ -219,10 +226,20 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
     body.a11y-contrast-inverted {
         filter: invert(1) hue-rotate(180deg);
     }
-    body.a11y-contrast-inverted img,
-    body.a11y-contrast-inverted video,
-    body.a11y-contrast-inverted iframe {
+    body.a11y-contrast-inverted img:not(.a11y-widget img),
+    body.a11y-contrast-inverted video:not(.a11y-widget video),
+    body.a11y-contrast-inverted iframe:not(.a11y-widget iframe) {
         filter: invert(1) hue-rotate(180deg);
+    }
+    
+    /* Mantieni il widget sempre leggibile */
+    body.a11y-contrast-high .a11y-widget,
+    body.a11y-contrast-inverted .a11y-widget {
+        filter: none !important;
+    }
+    body.a11y-contrast-inverted .a11y-widget {
+        /* Inverti di nuovo per tornare ai colori normali */
+        filter: invert(1) hue-rotate(180deg) !important;
     }
     
     /* Evidenzia Link */
