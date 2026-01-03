@@ -306,3 +306,73 @@ class TestAdminPages(TestCase):
         content = response.content.decode('utf-8')
         self.assertIn('captcha_result', content)
         self.assertIn('expected_result', content)
+    
+    # ========== TDD: Test per struttura pulsanti Wagtail ==========
+    
+    def test_refund_page_has_cancel_button(self):
+        """La pagina rimborso ha il pulsante Annulla che torna all'edit."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_refund', args=[self.cancelled_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica pulsante Annulla con link corretto
+        self.assertIn('Annulla', content)
+        edit_url = reverse('wagtailsnippets_booking_appointment:edit', args=[self.cancelled_appointment.pk])
+        self.assertIn(edit_url, content)
+    
+    def test_refund_page_has_confirm_button(self):
+        """La pagina rimborso ha il pulsante Conferma Rimborso."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_refund', args=[self.cancelled_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica pulsante submit
+        self.assertIn('Conferma Rimborso', content)
+        self.assertIn('type="submit"', content)
+    
+    def test_send_link_page_has_cancel_button(self):
+        """La pagina invio link ha il pulsante Annulla che torna all'edit."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_send_payment_link', args=[self.pending_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica pulsante Annulla con link corretto
+        self.assertIn('Annulla', content)
+        edit_url = reverse('wagtailsnippets_booking_appointment:edit', args=[self.pending_appointment.pk])
+        self.assertIn(edit_url, content)
+    
+    def test_send_link_page_has_submit_button(self):
+        """La pagina invio link ha il pulsante Invia Link."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_send_payment_link', args=[self.pending_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica pulsante submit
+        self.assertIn('Invia Link', content)
+        self.assertIn('type="submit"', content)
+    
+    def test_refund_page_buttons_in_actions_container(self):
+        """I pulsanti della pagina rimborso sono in un container con flex layout."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_refund', args=[self.cancelled_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica struttura con container per pulsanti (button class e flex layout)
+        self.assertIn('button button-secondary', content)
+        self.assertIn('button serious', content)
+    
+    def test_send_link_page_buttons_in_actions_container(self):
+        """I pulsanti della pagina invio link sono in un container con flex layout."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_send_payment_link', args=[self.pending_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        # Verifica struttura con container per pulsanti (button class)
+        self.assertIn('button button-secondary', content)
+        self.assertIn('type="submit"', content)

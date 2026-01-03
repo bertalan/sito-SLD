@@ -103,22 +103,16 @@
             </div>
 
             <!-- Pulsanti azione -->
-            <footer class="footer" style="margin-top: 1.5rem;">
-                <ul>
-                    <li class="footer__container">
-                        <a href="{% url 'wagtailsnippets_booking_appointment:edit' appointment.pk %}" 
-                           class="button button-secondary">
-                            Annulla
-                        </a>
-                    </li>
-                    <li class="footer__container">
-                        <button type="submit" class="button button--icon no">
-                            <svg class="icon icon-cross" aria-hidden="true"><use href="#icon-cross"></use></svg>
-                            Conferma Rimborso
-                        </button>
-                    </li>
-                </ul>
-            </footer>
+            <div class="w-mb-4" style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'wagtailsnippets_booking_appointment:edit' appointment.pk %}" 
+                   class="button button-secondary">
+                    Annulla
+                </a>
+                <button type="submit" class="button serious">
+                    {% icon name="warning" %}
+                    Conferma Rimborso
+                </button>
+            </div>
         </form>
     </div>
 {% endblock %}
