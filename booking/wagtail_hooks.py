@@ -6,9 +6,13 @@ from wagtail.snippets.views.snippets import SnippetViewSet
 from wagtail.admin.views.generic.base import WagtailAdminTemplateMixin
 from django.urls import reverse, path
 from django.views.generic import TemplateView
+from django.views import View
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.html import format_html
-from datetime import timedelta
+from django.conf import settings
+from datetime import timedelta, datetime
 import json
 
 from .models import Appointment, AvailabilityRule, BlockedDate, GoogleCalendarEvent
@@ -122,6 +126,7 @@ def register_calendar_url():
     return [
         path('calendario/', CalendarAdminView.as_view(), name='booking_calendar'),
         path('calendario/verifica-allineamento/', AllineamentoView.as_view(), name='booking_alignment_check'),
+        path('calendario/download-ics/<int:appointment_id>/', DownloadAppointmentICSView.as_view(), name='booking_download_ics'),
     ]
 
 
@@ -134,11 +139,9 @@ class AllineamentoView(WagtailAdminTemplateMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Forza sincronizzazione
+        # Forza sincronizzazione (ignora cache)
         from .google_calendar import sync_google_calendar_events
-        from django.core.cache import cache
-        cache.delete('google_calendar_last_sync')
-        sync_google_calendar_events()
+        sync_google_calendar_events(force=True)
         
         now = timezone.now()
         today = now.date()
@@ -184,6 +187,74 @@ class AllineamentoView(WagtailAdminTemplateMixin, TemplateView):
         context['orphan_count'] = sum(1 for a in alignment_info if not a['is_aligned'])
         
         return context
+
+
+class DownloadAppointmentICSView(View):
+    """Genera e scarica un file .ics per un appuntamento."""
+    
+    def get(self, request, appointment_id):
+        from icalendar import Calendar, Event
+        import uuid
+        
+        appointment = get_object_or_404(Appointment, pk=appointment_id)
+        
+        # Crea calendario
+        cal = Calendar()
+        cal.add('prodid', '-//Studio Legale//Appuntamenti//IT')
+        cal.add('version', '2.0')
+        cal.add('calscale', 'GREGORIAN')
+        cal.add('method', 'PUBLISH')
+        
+        # Crea evento
+        event = Event()
+        
+        # Titolo con prefisso "App " per coerenza con Google Calendar
+        event.add('summary', f"App {appointment.first_name} {appointment.last_name}")
+        
+        # Data/ora inizio e fine
+        start_dt = timezone.make_aware(
+            datetime.combine(appointment.date, appointment.time)
+        )
+        # Calcola la fine usando il metodo duration_minutes del modello
+        end_dt = start_dt + timedelta(minutes=appointment.duration_minutes)
+        
+        event.add('dtstart', start_dt)
+        event.add('dtend', end_dt)
+        event.add('dtstamp', timezone.now())
+        
+        # UID univoco
+        event.add('uid', f"appointment-{appointment.id}@studiolegale")
+        
+        # Descrizione con dettagli
+        description = f"""Appuntamento con: {appointment.first_name} {appointment.last_name}
+Email: {appointment.email}
+Telefono: {appointment.phone or 'Non specificato'}
+
+Note: {appointment.notes or 'Nessuna'}
+
+Prezzo: €{appointment.total_price_cents / 100:.2f}
+Stato: {appointment.get_status_display()}"""
+        
+        event.add('description', description)
+        
+        # Luogo (se configurato)
+        studio_address = getattr(settings, 'STUDIO_ADDRESS', '')
+        if studio_address:
+            event.add('location', studio_address)
+        
+        # Organizzatore
+        studio_email = getattr(settings, 'STUDIO_EMAIL', '')
+        if studio_email:
+            event.add('organizer', f'mailto:{studio_email}')
+        
+        cal.add_component(event)
+        
+        # Genera risposta
+        response = HttpResponse(cal.to_ical(), content_type='text/calendar')
+        filename = f"appuntamento_{appointment.date}_{appointment.first_name}_{appointment.last_name}.ics"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
 
 
 class AllegatiColumn(Column):

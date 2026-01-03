@@ -82,10 +82,13 @@ def fetch_calendar_events():
         return []
 
 
-def sync_google_calendar_events():
+def sync_google_calendar_events(force=False):
     """
     Sincronizza gli eventi da Google Calendar al database locale.
     Usa cache per evitare chiamate troppo frequenti.
+    
+    Args:
+        force: Se True, ignora la cache e sincronizza comunque
     """
     from .models import GoogleCalendarEvent
     
@@ -95,9 +98,12 @@ def sync_google_calendar_events():
     cache_key = 'google_calendar_last_sync'
     last_sync = cache.get(cache_key)
     
-    if last_sync:
-        logger.debug("Calendario Google già sincronizzato di recente, uso cache")
+    if last_sync and not force:
+        # Non logghiamo ogni volta, solo se DEBUG è attivo e non troppo spesso
         return False
+    
+    if force:
+        logger.info("Sincronizzazione Google Calendar forzata")
     
     events = fetch_calendar_events()
     

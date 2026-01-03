@@ -94,6 +94,23 @@
         font-size: 0.85rem;
     }
     
+    .btn-secondary:hover {
+        background: var(--w-color-secondary-hover, #374151);
+    }
+    
+    .btn-download {
+        background: #059669;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    
+    .btn-download:hover {
+        background: #047857;
+    }
+    
     .warning-box {
         background: #fef3c7;
         border: 1px solid #f59e0b;
@@ -209,6 +226,10 @@
                     {% endif %}
                 </td>
                 <td class="action-buttons">
+                    <a href="{% url 'booking_download_ics' item.appointment.pk %}" 
+                       class="btn-download" title="Scarica file .ics">
+                        📅 .ics
+                    </a>
                     <a href="{% url 'wagtailsnippets_booking_appointment:edit' item.appointment.pk %}" 
                        class="btn-secondary">Modifica</a>
                     {% if not item.is_aligned %}
