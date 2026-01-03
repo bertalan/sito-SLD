@@ -2,7 +2,7 @@
 <html lang="it" dir="ltr">
     <head>
         <meta charset="utf-8" />
-        <title>Errore del server - Studio Legale</title>
+        <title>Accesso negato - Studio Legale</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
@@ -25,34 +25,39 @@
     </head>
     <body class="bg-brand-white min-h-screen flex items-center justify-center">
         <div class="max-w-2xl mx-auto px-6 text-center py-20">
-            <span class="text-9xl font-bold text-brand-silver tracking-tighter block mb-4">500</span>
-            <i data-lucide="alert-triangle" class="w-16 h-16 text-brand-accent mx-auto mb-6"></i>
+            <span class="text-9xl font-bold text-brand-silver tracking-tighter block mb-4">403</span>
+            <i data-lucide="shield-x" class="w-16 h-16 text-brand-accent mx-auto mb-6"></i>
             <h1 class="text-4xl md:text-5xl font-bold tracking-tighter text-brand-black mb-6">
-                ERRORE DEL SERVER<span class="text-brand-accent">,</span>
+                ACCESSO NEGATO<span class="text-brand-accent">,</span>
             </h1>
-            <p class="text-brand-gray text-lg max-w-xl mx-auto mb-8">
-                Si è verificato un errore interno. Stiamo lavorando per risolvere il problema. 
-                Ti preghiamo di riprovare tra qualche minuto.
+            <p class="text-brand-gray text-lg max-w-xl mx-auto mb-4">
+                Non hai i permessi per accedere a questa pagina.
+            </p>
+            <p class="text-brand-gray text-base max-w-xl mx-auto mb-8">
+                Se stavi compilando un modulo, la sessione potrebbe essere scaduta. 
+                Torna alla pagina precedente e riprova.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                <a href="/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
-                    Torna alla home
+                <a href="javascript:history.back()" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                    <i data-lucide="arrow-left" class="inline w-4 h-4 mr-2"></i>
+                    Torna indietro
                 </a>
-                <a href="/contatti/" class="inline-block bg-brand-black text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-accent transition-colors">
-                    Contattaci
+                <a href="/" class="inline-block bg-brand-black text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-accent transition-colors">
+                    <i data-lucide="home" class="inline w-4 h-4 mr-2"></i>
+                    Vai alla home
                 </a>
             </div>
             
             <!-- Segnalazione errore -->
             <div class="mt-8 pt-8 border-t border-brand-gray/20">
                 <p class="text-brand-gray text-sm mb-4">
-                    Aiutaci a risolvere il problema segnalandoci l'errore:
+                    Se ritieni che questo sia un errore, segnalacelo:
                 </p>
                 <a href="#" id="report-error" 
                    data-email="info@studiolegaledonofrio.it"
                    class="inline-flex items-center text-brand-accent hover:text-brand-black font-medium transition-colors">
                     <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
-                    Segnala questo errore via email
+                    Segnala questo problema via email
                 </a>
             </div>
         </div>
@@ -64,7 +69,7 @@
                 e.preventDefault();
                 
                 var errorInfo = {
-                    errorType: '500 - Internal Server Error',
+                    errorType: '403 - Forbidden (Accesso negato)',
                     url: window.location.href,
                     referrer: document.referrer || 'Accesso diretto',
                     timestamp: new Date().toLocaleString('it-IT'),
@@ -73,10 +78,10 @@
                     platform: navigator.platform || 'Non disponibile'
                 };
                 
-                var subject = encodeURIComponent('Segnalazione errore 500 sul sito');
+                var subject = encodeURIComponent('Segnalazione errore 403 sul sito');
                 var body = encodeURIComponent(
                     'Gentile Studio,\n\n' +
-                    'Ho riscontrato un errore sul vostro sito web.\n\n' +
+                    'Ho riscontrato un problema di accesso sul vostro sito web.\n\n' +
                     '═══════════════════════════════════════\n' +
                     'INFORMAZIONI ERRORE\n' +
                     '═══════════════════════════════════════\n' +

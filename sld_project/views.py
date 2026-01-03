@@ -60,3 +60,43 @@ def terms_view(request):
         "page_subtitle": "",
         "content": content,
     })
+
+
+def custom_404_view(request, exception=None):
+    """
+    View personalizzata per la pagina 404.
+    Include le aree di attività e gli articoli recenti.
+    """
+    from services.models import ServiceArea
+    
+    # Recupera le aree di attività
+    service_areas = ServiceArea.objects.all()[:8]
+    
+    # Recupera gli articoli recenti
+    recent_articles = []
+    try:
+        from articles.models import ArticlePage
+        recent_articles = ArticlePage.objects.live().order_by('-first_published_at')[:3]
+    except Exception:
+        pass
+    
+    return render(request, "404.html", {
+        "service_areas": service_areas,
+        "recent_articles": recent_articles,
+    }, status=404)
+
+
+def custom_403_view(request, exception=None):
+    """
+    View personalizzata per la pagina 403 (Forbidden).
+    Usata per errori CSRF, permessi insufficienti, ecc.
+    """
+    return render(request, "403.html", status=403)
+
+
+def custom_500_view(request):
+    """
+    View personalizzata per la pagina 500 (Internal Server Error).
+    Nota: non riceve exception, viene chiamata direttamente da Django.
+    """
+    return render(request, "500.html", status=500)

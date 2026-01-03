@@ -1,11 +1,141 @@
 {% extends "base.html" %}
+{% load wagtailcore_tags wagtailsettings_tags %}
+{% get_settings %}
 
-{% block title %}Page not found{% endblock %}
+{% block title %}Pagina non trovata - {{ settings.sld_project.SiteSettings.studio_name }}{% endblock %}
 
 {% block body_class %}template-404{% endblock %}
 
 {% block content %}
-<h1>Page not found</h1>
+<!-- Hero 404 -->
+<section class="pt-32 pb-16 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <span class="text-9xl font-bold text-brand-silver/50 tracking-tighter block mb-4">404</span>
+        <i data-lucide="search-x" class="w-16 h-16 text-brand-accent mx-auto mb-6"></i>
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-brand-black mb-6">
+            PAGINA NON TROVATA<span class="text-brand-accent">,</span>
+        </h1>
+        <p class="text-brand-gray text-lg max-w-2xl mx-auto mb-8">
+            La pagina che stai cercando potrebbe essere stata spostata, eliminata o non è mai esistita.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+                <i data-lucide="home" class="inline w-4 h-4 mr-2"></i>
+                Torna alla home
+            </a>
+            <a href="/contatti/" class="inline-block bg-brand-black text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-accent transition-colors">
+                <i data-lucide="mail" class="inline w-4 h-4 mr-2"></i>
+                Contattaci
+            </a>
+        </div>
+    </div>
+</section>
 
-<h2>Sorry, this page could not be found.</h2>
+<!-- Aree di Attività -->
+<section class="py-16 bg-brand-silver border-b border-brand-gray/20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-brand-black mb-4">
+                ESPLORA LE NOSTRE AREE DI ATTIVITÀ<span class="text-brand-accent">,</span>
+            </h2>
+            <p class="text-brand-gray">Scopri come possiamo assisterti</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-brand-gray/20 bg-brand-white">
+            {% for service in service_areas %}
+            <a href="{% if service.pages.first %}{% pageurl service.pages.first %}{% else %}/aree-attivita/{% endif %}"
+               class="group p-6 border-r border-b border-brand-gray/20 hover:bg-brand-silver transition-colors duration-300 flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    {% if service.icon %}
+                    <i data-lucide="{{ service.icon }}" class="w-6 h-6 text-brand-accent"></i>
+                    {% endif %}
+                    <i data-lucide="arrow-up-right" class="w-4 h-4 text-brand-gray opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </div>
+                <h3 class="text-lg font-bold text-brand-black mb-2 tracking-tight group-hover:text-brand-accent transition-colors">
+                    {{ service.name }}
+                </h3>
+                <p class="text-brand-gray text-sm leading-relaxed line-clamp-2">
+                    {{ service.short_description|truncatewords:15 }}
+                </p>
+            </a>
+            {% empty %}
+            <p class="col-span-4 text-center text-brand-gray py-8">Nessuna area di attività disponibile.</p>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="/aree-attivita/" class="inline-flex items-center text-brand-black font-bold uppercase tracking-widest text-sm hover:text-brand-accent transition-colors">
+                Tutte le aree di attività
+                <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Articoli Recenti -->
+{% if recent_articles %}
+<section class="py-16 bg-brand-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-brand-black mb-4">
+                ARTICOLI RECENTI<span class="text-brand-accent">,</span>
+            </h2>
+            <p class="text-brand-gray">Le ultime novità dal nostro studio</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for article in recent_articles %}
+            <a href="{% pageurl article %}" class="group bg-brand-silver hover:bg-brand-black transition-colors duration-300 overflow-hidden">
+                <div class="p-6">
+                    {% if article.category %}
+                    <span class="text-xs uppercase tracking-widest text-brand-accent mb-3 block">
+                        {{ article.category.name }}
+                    </span>
+                    {% endif %}
+                    <h3 class="text-xl font-bold text-brand-black group-hover:text-white mb-3 tracking-tight transition-colors">
+                        {{ article.title }}
+                    </h3>
+                    {% if article.subtitle %}
+                    <p class="text-brand-gray group-hover:text-brand-silver text-sm line-clamp-2 transition-colors">
+                        {{ article.subtitle }}
+                    </p>
+                    {% endif %}
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-brand-gray/20 group-hover:border-brand-gray/40">
+                        <span class="text-xs text-brand-gray group-hover:text-brand-silver transition-colors">
+                            {{ article.first_published_at|date:"d M Y" }}
+                        </span>
+                        <span class="text-xs text-brand-gray group-hover:text-brand-silver transition-colors">
+                            {{ article.reading_time }} min lettura
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="/articoli/" class="inline-flex items-center text-brand-black font-bold uppercase tracking-widest text-sm hover:text-brand-accent transition-colors">
+                Tutti gli articoli
+                <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="py-16 bg-brand-dark">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-white mb-6">
+            HAI BISOGNO DI ASSISTENZA<span class="text-brand-accent">?</span>
+        </h2>
+        <p class="text-brand-gray text-lg mb-8">
+            Prenota una consulenza per discutere del tuo caso con un nostro avvocato.
+        </p>
+        <a href="/prenota/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-brand-black transition-colors">
+            Prenota appuntamento
+            <i data-lucide="arrow-right" class="inline ml-2 w-4 h-4"></i>
+        </a>
+    </div>
+</section>
 {% endblock %}

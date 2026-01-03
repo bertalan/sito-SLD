@@ -10,7 +10,12 @@ from wagtail.contrib.sitemaps.views import sitemap
 
 from search import views as search_views
 from django.views.generic import TemplateView
-from .views import privacy_view, terms_view
+from .views import privacy_view, terms_view, custom_404_view, custom_403_view, custom_500_view
+
+# Custom error handlers
+handler403 = custom_403_view
+handler404 = custom_404_view
+handler500 = custom_500_view
 
 
 def robots_txt(request):

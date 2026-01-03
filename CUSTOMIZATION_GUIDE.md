@@ -230,6 +230,63 @@ docker compose exec web python manage.py collectstatic --noinput
 docker compose exec web python manage.py createsuperuser
 ```
 
+## Configurazione Produzione con Gunicorn
+
+Per garantire che Django usi le impostazioni di produzione (DEBUG=False, sicurezza attiva), configura il servizio systemd:
+
+### File: `/etc/systemd/system/gunicorn-studiolegale.service`
+
+```ini
+[Unit]
+Description=Gunicorn daemon for Studio Legale
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/studiolegale
+Environment="DJANGO_SETTINGS_MODULE=sld_project.settings.production"
+ExecStart=/var/www/studiolegale/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/var/www/studiolegale/sld.sock \
+    sld_project.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Applicare le modifiche
+
+```bash
+# Ricarica la configurazione systemd
+sudo systemctl daemon-reload
+
+# Riavvia il servizio
+sudo systemctl restart gunicorn-studiolegale.service
+
+# Verifica lo stato
+sudo systemctl status gunicorn-studiolegale.service
+```
+
+### ⚠️ Importante
+
+La variabile `DJANGO_SETTINGS_MODULE=sld_project.settings.production` è **essenziale** per:
+- `DEBUG=False`
+- Header di sicurezza HTTP attivi
+- CSRF/CORS configurati per il dominio di produzione
+
+## Pagine di Errore Personalizzate
+
+Il sito include pagine di errore personalizzate per 403, 404 e 500:
+
+| Codice | Template | Descrizione |
+|--------|----------|-------------|
+| 403 | `sld_project/templates/403.html` | Accesso negato/CSRF |
+| 404 | `sld_project/templates/404.html` | Pagina non trovata |
+| 500 | `sld_project/templates/500.html` | Errore del server |
+
+Le pagine 403 e 500 includono un link mailto con informazioni diagnostiche automatiche (URL, timestamp, browser, ecc.) per facilitare la segnalazione degli errori.
+
 ## Note Importanti
 
 1. **Mai hardcodare** dati studio nei template - usare SiteSettings
@@ -239,3 +296,4 @@ docker compose exec web python manage.py createsuperuser
 5. Admin: `/admin/` (Wagtail) e `/django-admin/` (Django)
 6. **Solo DEBUG, SECRET_KEY, DATABASE_URL** vanno in `.env` - tutto il resto in SiteSettings
 7. Ogni campo SiteSettings ha `help_text` con istruzioni (es: dove trovare chiavi Stripe)
+8. **Produzione**: Assicurarsi che `DJANGO_SETTINGS_MODULE=sld_project.settings.production` sia configurato nel servizio Gunicorn
