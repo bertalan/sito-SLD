@@ -5,6 +5,42 @@ Tutte le modifiche significative a questo progetto sono documentate in questo fi
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.1.0] - 2026-01-03
+
+### 🔒 Security
+- **Django 5.2.9**: aggiornamento critico per CVE-2025-13372 (SQL Injection) e CVE-2025-64460 (DoS)
+- **requests 2.32.4**: fix CVE-2024-47081 (leak credenziali .netrc)
+- **pip 25.3**: fix CVE-2025-8869
+- **pip-audit**: scansione CVE ora integrata nel workflow
+
+### 🛡️ Security Hardening
+- **28 test di sicurezza**: copertura completa di tutte le patch implementate
+- **HTTP Security Headers**: HSTS, CSP, X-Frame-Options, X-Content-Type-Options in produzione
+- **SECRET_KEY**: obbligatoriamente caricata da .env
+- **ALLOWED_HOSTS**: configurabile da .env
+- **Rate Limiting**: protezione form con django-ratelimit (10/min contatti, 5/min booking)
+- **File Validation**: MIME type checking con python-magic
+- **WAGTAILDOCS_SERVE_METHOD**: 'serve_view' per protezione documenti
+
+### 🔄 Modifiche
+- **Logo/Favicon**: migrati da Document a Image (supporto SVG nativo)
+- **Template URL**: `.file.url` per Wagtail Image invece di `.url`
+
+### 📦 Dipendenze Aggiornate
+| Pacchetto | Versione Precedente | Nuova Versione |
+|-----------|---------------------|----------------|
+| Django    | 5.2.1               | 5.2.9          |
+| requests  | 2.32.3              | 2.32.4         |
+
+### ⚠️ Breaking Changes
+- Logo e Favicon devono essere ricaricati come **Immagini** (non più Documenti)
+- Dopo `migrate`, azzerare manualmente i campi se esistono dati:
+  ```sql
+  UPDATE sld_project_sitesettings SET logo_id = NULL, favicon_id = NULL;
+  ```
+
+---
+
 ## [1.0.1] - 2026-01-02
 
 ### 🐛 Bugfix

@@ -1,7 +1,8 @@
 # Studio Legale – SLD
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
 Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
 
@@ -145,8 +146,8 @@ docker compose exec web python manage.py setup_holidays --list
 
 | Componente | Tecnologia |
 |------------|------------|
-| CMS | Wagtail 6.4 |
-| Backend | Django 5.2 |
+| CMS | Wagtail 6.4.1 |
+| Backend | Django 5.2.9 |
 | Database | PostgreSQL 15 |
 | Frontend | Tailwind CSS (CDN) |
 | Icone | Lucide |
@@ -157,15 +158,38 @@ docker compose exec web python manage.py setup_holidays --list
 | Server WSGI | Gunicorn |
 | Static files | WhiteNoise |
 
+## 🔒 Sicurezza
+
+### Vulnerabilità CVE
+Il progetto viene regolarmente scansionato con `pip-audit`:
+
+```bash
+docker compose exec web pip-audit
+# Expected: "No known vulnerabilities found"
+```
+
+### Misure implementate
+- ✅ **HTTP Security Headers**: HSTS, CSP, X-Frame-Options, X-Content-Type-Options
+- ✅ **Rate Limiting**: protezione form con django-ratelimit
+- ✅ **File Validation**: MIME type checking con python-magic
+- ✅ **Secret Management**: SECRET_KEY e API keys in .env (mai in codice)
+- ✅ **WAGTAILDOCS_SERVE_METHOD**: 'serve_view' per protezione documenti
+
+### Test di sicurezza
+```bash
+docker compose exec web python -m pytest sld_project/security_tests/ -v
+# 28 test di sicurezza
+```
+
 ## Test e TDD
 
 Il progetto segue il metodo TDD (Test Driven Development):
 
 - **Pytest + pytest-django**: tutti i moduli hanno test automatici
-- **93 test** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR
+- **135+ test** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
 - **Esecuzione**:
   ```sh
-  docker compose exec web python manage.py test
+  docker compose exec web python -m pytest
   ```
 
 ### Copertura test:
@@ -181,6 +205,7 @@ Il progetto segue il metodo TDD (Test Driven Development):
 - ✅ Cookie banner GDPR
 - ✅ Google Analytics 4 e Matomo
 - ✅ Consenso privacy nei form
+- ✅ **28 test sicurezza** (headers, rate limit, file validation, secrets)
 
 ## Configurazione
 
