@@ -181,7 +181,9 @@ class RealPayPalProvider(BasePaymentProvider):
     
     def __init__(self):
         import requests
+        import time
         self.requests = requests
+        self.time = time
         self.mode = settings.PAYPAL_MODE
         self.client_id = settings.PAYPAL_CLIENT_ID
         self.client_secret = settings.PAYPAL_CLIENT_SECRET
@@ -193,10 +195,12 @@ class RealPayPalProvider(BasePaymentProvider):
             self.base_url = 'https://api-m.sandbox.paypal.com'
         
         self._access_token = None
+        self._token_expires_at = 0
     
     def _get_access_token(self):
-        """Ottiene un access token OAuth2 da PayPal."""
-        if self._access_token:
+        """Ottiene un access token OAuth2 da PayPal (con gestione scadenza)."""
+        # Se il token esiste e non è scaduto (con 60 secondi di margine), riusalo
+        if self._access_token and self.time.time() < (self._token_expires_at - 60):
             return self._access_token
         
         auth_url = f'{self.base_url}/v1/oauth2/token'
@@ -204,14 +208,20 @@ class RealPayPalProvider(BasePaymentProvider):
             auth_url,
             auth=(self.client_id, self.client_secret),
             headers={'Content-Type': 'application/x-www-form-urlencoded'},
-            data={'grant_type': 'client_credentials'}
+            data={'grant_type': 'client_credentials'},
+            timeout=30
         )
         
         if response.status_code != 200:
             logger.error(f"PayPal auth failed: {response.text}")
             raise Exception(f"PayPal authentication failed: {response.status_code}")
         
-        self._access_token = response.json()['access_token']
+        token_data = response.json()
+        self._access_token = token_data['access_token']
+        # PayPal tokens durano tipicamente 9 ore (expires_in in secondi)
+        expires_in = token_data.get('expires_in', 32400)
+        self._token_expires_at = self.time.time() + expires_in
+        
         return self._access_token
     
     def _headers(self):
@@ -248,7 +258,8 @@ class RealPayPalProvider(BasePaymentProvider):
             response = self.requests.post(
                 f'{self.base_url}/v2/checkout/orders',
                 headers=self._headers(),
-                json=order_data
+                json=order_data,
+                timeout=30
             )
             
             if response.status_code not in [200, 201]:
@@ -267,6 +278,12 @@ class RealPayPalProvider(BasePaymentProvider):
             
             return PaymentResult(success=False, error='URL di approvazione PayPal non trovato')
             
+        except self.requests.exceptions.Timeout:
+            logger.error("PayPal create payment timeout")
+            return PaymentResult(success=False, error="Timeout connessione PayPal")
+        except self.requests.exceptions.ConnectionError as e:
+            logger.error(f"PayPal connection error: {e}")
+            return PaymentResult(success=False, error="Errore connessione PayPal")
         except Exception as e:
             logger.error(f"PayPal create payment failed: {e}")
             return PaymentResult(success=False, error=str(e))
@@ -282,7 +299,8 @@ class RealPayPalProvider(BasePaymentProvider):
             # Capture il pagamento
             response = self.requests.post(
                 f'{self.base_url}/v2/checkout/orders/{order_id}/capture',
-                headers=self._headers()
+                headers=self._headers(),
+                timeout=30
             )
             
             if response.status_code not in [200, 201]:
