@@ -13,6 +13,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.html import format_html
 from django.conf import settings
+
+# Importa le bulk actions per registrarle con Wagtail
+from . import wagtail_bulk_actions  # noqa: F401
 from datetime import timedelta, datetime
 import json
 

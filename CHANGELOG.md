@@ -11,16 +11,27 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - **Admin AvailabilityRule**: colonna "Stato" con badge colorati (verde attiva, grigio disabilitata)
 - **Admin Allineamento Calendario**: nuova pagina per verificare sincronizzazione Google Calendar/appuntamenti
 - **Cancellazione sicura appuntamenti orfani**: rimozione con conferma degli appuntamenti non più in Google Calendar
+- **Admin slot_count**: campo modificabile per gestire durata appuntamento
 
 ### ♿ Accessibilità
-- **Widget accessibilità**: pulsanti rialzati di 20px (da bottom-24 a bottom-[116px])
-- **Reset emergenza**: cambiato da doppio click a singolo click con conferma dialog
+- **Widget accessibilità posizionamento dinamico**:
+  - Rileva automaticamente cookie banner e Wagtail userbar
+  - Si sposta sopra gli elementi fissi quando presenti
+  - CSS responsive per mobile/tablet/desktop
+  - Pulsanti dimensionati per viewport (più piccoli su mobile)
+- **Reset completo (pulsante R)**: resetta sia preferenze accessibilità che cookie consent
+- **Pannello adattivo**: larghezza full-width su mobile, 320px su desktop
 
 ### 🔧 Refactoring Configurazione Pagamenti
 - **Rimossi campi duplicati da SiteSettings**: `payment_mode`, `stripe_public_key`, `paypal_client_id`
 - **Tutte le chiavi pagamento ora solo in `.env`**: nessuna ridondanza tra database e file config
 - **Aggiornato `.env.example`** con tutte le variabili necessarie
 - **Migrato PayPal da SDK deprecata a API REST v2**: rimosso `paypalrestsdk`, usa `requests` direttamente
+
+### 🐛 Bug Fix
+- **Payment link 500 error**: aggiunto import `Decimal` mancante in views.py
+- **Payment link redirect**: ora fa redirect HTTP invece di JSON response
+- **Token nascosto nei form**: aggiunto campo hidden per POST su tutte le form
 
 ### ⚠️ Breaking Changes
 - Dopo `migrate`, le configurazioni pagamento vanno inserite in `.env`:

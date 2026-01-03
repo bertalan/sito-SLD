@@ -97,6 +97,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "wagtail.contrib.settings.context_processors.settings",
                 "sld_project.context_processors.global_settings",
+                "booking.context_processors.payment_config_context",
             ],
         },
     },
@@ -217,19 +218,27 @@ WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'tx
 # - 'direct': Bypasses Django, faster but no access control
 WAGTAILDOCS_SERVE_METHOD = 'serve_view'
 
-# Payment Mode: demo | sandbox | live
+# Payment Mode: demo | live
 # - demo: Simula il pagamento (sempre successo, per test senza chiavi API)
-# - sandbox: Usa i dati di test Stripe/PayPal
-# - live: Usa i dati reali di produzione
+# - live: Usa le API reali (sandbox o produzione in base a STRIPE_MODE/PAYPAL_MODE)
 PAYMENT_MODE = os.environ.get('PAYMENT_MODE', 'demo')
 
 # Stripe settings
+# STRIPE_MODE: sandbox | live | off
+# - off: nasconde il pulsante Stripe dalla pagina prenotazione
+# - sandbox: usa chiavi di test
+# - live: usa chiavi di produzione
+STRIPE_MODE = os.environ.get('STRIPE_MODE', 'sandbox')
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
 # PayPal settings
-PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # sandbox o live
+# PAYPAL_MODE: sandbox | live | off
+# - off: nasconde il pulsante PayPal dalla pagina prenotazione
+# - sandbox: usa API sandbox
+# - live: usa API di produzione
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')
 PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
 PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
 

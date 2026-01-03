@@ -160,17 +160,21 @@
                     </div>
                     
                     <!-- Scelta metodo di pagamento -->
+                    {% if not payment_config.payment_deferred %}
                     <div class="mt-6">
                         <label class="block text-xs uppercase tracking-widest text-brand-gray mb-4">Metodo di pagamento *</label>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-{% if payment_config.stripe_enabled and payment_config.paypal_enabled %}2{% else %}1{% endif %} gap-4">
+                            {% if payment_config.stripe_enabled %}
                             <label class="payment-option cursor-pointer">
-                                <input type="radio" name="payment_method" value="stripe" required class="sr-only peer">
+                                <input type="radio" name="payment_method" value="stripe" {% if not payment_config.paypal_enabled %}checked{% endif %} required class="sr-only peer">
                                 <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
                                     <i data-lucide="credit-card" class="w-8 h-8 mx-auto mb-2 text-brand-gray peer-checked:text-brand-accent"></i>
                                     <span class="block font-bold text-sm">Carta di credito</span>
                                     <span class="text-xs text-brand-gray">Visa, Mastercard, Amex</span>
                                 </div>
                             </label>
+                            {% endif %}
+                            {% if payment_config.paypal_enabled %}
                             <label class="payment-option cursor-pointer">
                                 <input type="radio" name="payment_method" value="paypal" checked class="sr-only peer">
                                 <div class="border-2 border-brand-gray/30 p-4 text-center peer-checked:border-brand-accent peer-checked:bg-brand-accent/10 transition-all">
@@ -182,12 +186,27 @@
                                     <span class="text-xs text-brand-gray">Paga con il tuo conto</span>
                                 </div>
                             </label>
+                            {% endif %}
                         </div>
                     </div>
+                    {% else %}
+                    <!-- Pagamento differito - hidden input per compatibilità backend -->
+                    <input type="hidden" name="payment_method" value="deferred">
+                    <div class="mt-6 bg-brand-silver p-4 text-center">
+                        <p class="text-sm text-brand-gray">
+                            <i data-lucide="info" class="w-4 h-4 inline-block mr-1"></i>
+                            Riceverai le istruzioni per il pagamento via email dopo la conferma dell'appuntamento.
+                        </p>
+                    </div>
+                    {% endif %}
                     
                     <button type="submit" id="submit-btn" disabled
                         class="w-full bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6">
+                        {% if payment_config.payment_deferred %}
+                        <span id="btn-text">Richiedi appuntamento</span>
+                        {% else %}
                         <span id="btn-text">Procedi al pagamento - €{{ booking_price }}</span>
+                        {% endif %}
                     </button>
                 </form>
             </div>
@@ -210,6 +229,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const SLOT_DURATION = {{ slot_duration }};
 const PRICE_CENTS = {{ booking_price_cents }};
 const MAX_SLOTS = {{ max_slots }};
+const PAYMENT_DEFERRED = {% if payment_config.payment_deferred %}true{% else %}false{% endif %};
 
 function formatPrice(cents) {
     return (cents / 100).toFixed(2).replace('.', ',');
@@ -220,8 +240,10 @@ function updatePriceDisplay() {
     const priceStr = formatPrice(totalCents);
     const durationMins = selectedSlotCount * SLOT_DURATION;
     
-    // Aggiorna bottone
-    document.getElementById('btn-text').textContent = `Procedi al pagamento - €${priceStr}`;
+    // Aggiorna bottone (solo se pagamento non differito)
+    if (!PAYMENT_DEFERRED) {
+        document.getElementById('btn-text').textContent = `Procedi al pagamento - €${priceStr}`;
+    }
     
     // Aggiorna prezzi nei bottoni durata
     document.querySelectorAll('.duration-btn').forEach(btn => {
@@ -589,12 +611,12 @@ async function handleSubmit(e) {
         } else {
             alert(result.error || 'Errore durante la prenotazione');
             submitBtn.disabled = false;
-            document.getElementById('btn-text').textContent = `Procedi al pagamento - €${currentPrice}`;
+            document.getElementById('btn-text').textContent = PAYMENT_DEFERRED ? 'Richiedi appuntamento' : `Procedi al pagamento - €${currentPrice}`;
         }
     } catch (error) {
         alert('Errore di connessione');
         submitBtn.disabled = false;
-        document.getElementById('btn-text').textContent = `Procedi al pagamento - €${currentPrice}`;
+        document.getElementById('btn-text').textContent = PAYMENT_DEFERRED ? 'Richiedi appuntamento' : `Procedi al pagamento - €${currentPrice}`;
     }
 }
 </script>

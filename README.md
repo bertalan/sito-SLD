@@ -110,6 +110,23 @@ docker compose exec web python manage.py setup_holidays --list
 - Preferenze salvate per 365 giorni
 - Link alla Privacy Policy integrato
 
+### ♿ Widget Accessibilità WCAG 2.0
+- Conforme a **WCAG 2.0 AA** e **Legge Stanca** (D.Lgs. 33/2013)
+- **Controlli disponibili**:
+  - Dimensione testo (80%-200%)
+  - Modalità contrasto: Normale, Alto, Invertito
+  - Evidenzia link
+  - Focus potenziato
+  - Blocca animazioni
+  - Modalità lettura
+  - Cursore grande
+- **Posizionamento dinamico**:
+  - Si sposta automaticamente sopra il cookie banner
+  - Responsive per mobile/tablet/desktop
+  - Non interferisce con la Wagtail userbar
+- **Pulsante Reset (R)**: resetta tutte le preferenze (accessibilità + cookie)
+- Preferenze salvate in localStorage
+
 ### 📊 Analytics (GA4 + Matomo)
 - Supporto **Google Analytics 4** (GA4)
 - Supporto **Matomo** (alternativa privacy-friendly)
