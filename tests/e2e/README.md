@@ -19,8 +19,8 @@ python manage.py runserver
 
 ### Tutti i test
 ```bash
-cd e2e_tests
-pytest -v
+cd tests/e2e
+pytest -v -n 4  # con 4 worker paralleli
 ```
 
 ### Solo test cookie banner

@@ -1,6 +1,6 @@
 # Studio Legale – SLD
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
@@ -186,11 +186,29 @@ docker compose exec web python -m pytest sld_project/security_tests/ -v
 Il progetto segue il metodo TDD (Test Driven Development):
 
 - **Pytest + pytest-django**: tutti i moduli hanno test automatici
-- **135+ test** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
-- **Esecuzione**:
-  ```sh
-  docker compose exec web python -m pytest
+- **180+ test E2E** + **86 test unit** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
+- **Struttura test unificata**:
   ```
+  tests/
+  ├── unit/           # Test unitari Django
+  │   ├── booking/    # Modelli, viste, pagamenti, email
+  │   ├── contact/    # Form contatti, validazione email
+  │   ├── home/       # SEO tags, JSON-LD
+  │   └── sld_project/ # SiteSettings, coordinate
+  └── e2e/            # Test end-to-end Playwright
+      ├── test_accessibility_widget.py
+      ├── test_cookie_banner.py
+      └── test_complete_interactions.py
+  ```
+
+### Esecuzione test:
+```sh
+# Test unitari
+docker compose exec web python -m pytest tests/unit/ -v
+
+# Test E2E (localmente, con Playwright installato)
+cd tests/e2e && pytest -v -n 4
+```
 
 ### Copertura test:
 - ✅ Modelli Appointment, AvailabilityRule, BlockedDate
@@ -202,9 +220,12 @@ Il progetto segue il metodo TDD (Test Driven Development):
 - ✅ Gestione slot duplicati
 - ✅ Servizi e aree di attività
 - ✅ Sitemap XML e robots.txt
-- ✅ Cookie banner GDPR
+- ✅ Cookie banner GDPR (E2E su 6 viewport)
+- ✅ Widget accessibilità WCAG 2.0 (E2E su 6 viewport)
 - ✅ Google Analytics 4 e Matomo
 - ✅ Consenso privacy nei form
+- ✅ Validazione email e PEC
+- ✅ Validazione coordinate geografiche lat/lng
 - ✅ **28 test sicurezza** (headers, rate limit, file validation, secrets)
 
 ## Configurazione
@@ -256,6 +277,13 @@ sito-SLD/
 │   ├── settings/
 │   ├── templates/
 │   └── static/
+├── tests/             # Test suite unificata
+│   ├── unit/          # Test unitari per modulo
+│   │   ├── booking/
+│   │   ├── contact/
+│   │   ├── home/
+│   │   └── sld_project/
+│   └── e2e/           # Test E2E Playwright
 ├── docker-compose.yml
 ├── Dockerfile
 ├── gunicorn.conf.py

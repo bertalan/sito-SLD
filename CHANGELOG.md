@@ -5,6 +5,31 @@ Tutte le modifiche significative a questo progetto sono documentate in questo fi
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.2.0] - 2026-01-03
+
+### ✨ Nuove Funzionalità
+- **Admin AvailabilityRule**: colonna "Stato" con badge colorati (verde attiva, grigio disabilitata)
+- **Admin Allineamento Calendario**: nuova pagina per verificare sincronizzazione Google Calendar/appuntamenti
+- **Cancellazione sicura appuntamenti orfani**: rimozione con conferma degli appuntamenti non più in Google Calendar
+
+### ♿ Accessibilità
+- **Widget accessibilità**: pulsanti rialzati di 20px (da bottom-24 a bottom-[116px])
+- **Reset emergenza**: cambiato da doppio click a singolo click con conferma dialog
+
+### 🧪 Test
+- **Riorganizzazione struttura test**: unificata in `tests/unit/` e `tests/e2e/`
+- **Nuovi test contact** (`tests/unit/contact/test_models.py`):
+  - Validazione email standard e PEC
+  - Gestione email unicode/IDN
+  - Test modelli ContactPage, SocialLink, ContactFormField
+- **Nuovi test SiteSettings** (`tests/unit/sld_project/test_settings.py`):
+  - Validazione coordinate lat/lng (range, precisione, formato italiano)
+  - Test campi obbligatori e singleton
+- **180 test E2E** tutti passanti (accessibilità, cookie banner, interazioni complete)
+- **86 test unitari** organizzati per modulo
+
+---
+
 ## [1.1.0] - 2026-01-03
 
 ### 🔒 Security
