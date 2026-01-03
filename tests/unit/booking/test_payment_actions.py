@@ -223,3 +223,86 @@ class TestPaymentActionsAdmin(TestCase):
         
         # Il pulsante dovrebbe essere visibile
         self.assertTrue(appointment.can_send_payment_link)
+
+
+class TestAdminPages(TestCase):
+    """Test per le pagine admin di rimborso e invio link."""
+    
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_superuser(
+            username='admin', password='admin123', email='admin@test.com'
+        )
+        self.client.login(username='admin', password='admin123')
+        
+        self.cancelled_appointment = Appointment.objects.create(
+            first_name="Mario",
+            last_name="Rimborso",
+            email="mario@test.com",
+            phone="+39123456789",
+            notes="Test rimborso",
+            date=date(2026, 4, 1),
+            time=time(10, 0),
+            status='cancelled',
+            payment_method='stripe',
+            stripe_payment_intent_id='pi_test_refund',
+            amount_paid=Decimal('60.00'),
+        )
+        
+        self.pending_appointment = Appointment.objects.create(
+            first_name="Luigi",
+            last_name="Pending",
+            email="luigi@test.com",
+            phone="+39987654321",
+            notes="Test pending",
+            date=date(2026, 4, 2),
+            time=time(11, 0),
+            status='pending',
+            payment_method='paypal',
+            amount_paid=Decimal('0.00'),
+        )
+    
+    def test_refund_page_contains_helper_text(self):
+        """La pagina rimborso contiene l'helper text esplicativo."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_refund', args=[self.cancelled_appointment.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Verifica helper text
+        self.assertIn('Come funziona il rimborso', content)
+        self.assertIn('5-10 giorni lavorativi', content)
+    
+    def test_send_link_page_contains_helper_text(self):
+        """La pagina invio link contiene l'helper text esplicativo."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_send_payment_link', args=[self.pending_appointment.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        # Verifica helper text
+        self.assertIn('Come funziona', content)
+        self.assertIn('Link personalizzato', content)
+    
+    def test_refund_page_has_captcha(self):
+        """La pagina rimborso ha il captcha matematico."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_refund', args=[self.cancelled_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        self.assertIn('captcha_result', content)
+        self.assertIn('expected_result', content)
+    
+    def test_send_link_page_has_captcha(self):
+        """La pagina invio link ha il captcha matematico."""
+        from django.urls import reverse
+        response = self.client.get(
+            reverse('booking_send_payment_link', args=[self.pending_appointment.pk])
+        )
+        content = response.content.decode('utf-8')
+        self.assertIn('captcha_result', content)
+        self.assertIn('expected_result', content)

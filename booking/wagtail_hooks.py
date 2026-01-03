@@ -4,6 +4,7 @@ from wagtail.admin.ui.tables import Column, StatusTagColumn
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 from wagtail.admin.views.generic.base import WagtailAdminTemplateMixin
+from wagtail.log_actions import log as wagtail_log, registry as log_registry, LogFormatter
 from django.urls import reverse, path
 from django.views.generic import TemplateView
 from django.views import View
@@ -16,6 +17,35 @@ from datetime import timedelta, datetime
 import json
 
 from .models import Appointment, AvailabilityRule, BlockedDate, GoogleCalendarEvent
+
+
+# Formatter per azione rimborso con dettagli
+@log_registry.register_action('booking.refund')
+class RefundLogFormatter(LogFormatter):
+    label = 'Rimborso pagamento'
+    
+    def format_message(self, log_entry):
+        data = log_entry.data or {}
+        amount = data.get('amount', '?')
+        refund_id = data.get('refund_id', '?')
+        method = data.get('method', '?')
+        service = data.get('service', 'Consulenza')
+        client = data.get('client', '')
+        return f'💰 Rimborso di €{amount} effettuato per {client} - Servizio: {service} - Metodo: {method} (ID: {refund_id})'
+
+
+# Formatter per azione invio link con dettagli
+@log_registry.register_action('booking.send_payment_link')
+class SendPaymentLinkLogFormatter(LogFormatter):
+    label = 'Invio link pagamento'
+    
+    def format_message(self, log_entry):
+        data = log_entry.data or {}
+        email = data.get('email', '?')
+        method = data.get('method', '?')
+        service = data.get('service', 'Consulenza')
+        client = data.get('client', '')
+        return f'📧 Link di pagamento inviato a {email} per {client} - Servizio: {service} - Metodo: {method}'
 
 
 class CalendarAdminView(WagtailAdminTemplateMixin, TemplateView):
@@ -445,6 +475,21 @@ class RefundPaymentView(WagtailAdminTemplateMixin, View):
             refund_id = result.get('refund_id')
             messages.success(request, f"Rimborso effettuato con successo! ID: {refund_id}")
             
+            # Audit log in Wagtail history
+            service_name = appointment.get_consultation_type_display()
+            wagtail_log(
+                instance=appointment,
+                action='booking.refund',
+                user=request.user,
+                data={
+                    'amount': str(appointment.amount_paid),
+                    'refund_id': refund_id,
+                    'method': appointment.get_payment_method_display(),
+                    'service': service_name,
+                    'client': f'{appointment.first_name} {appointment.last_name}',
+                }
+            )
+            
             # Invia email di notifica rimborso al cliente
             from . import email_service
             email_service.send_refund_notification(appointment, refund_id)
@@ -529,6 +574,20 @@ class SendPaymentLinkView(WagtailAdminTemplateMixin, View):
         result = ps.send_payment_link(appointment, request)
         if result:
             messages.success(request, f"Link di pagamento inviato a {appointment.email}!")
+            
+            # Audit log in Wagtail history
+            service_name = appointment.get_consultation_type_display()
+            wagtail_log(
+                instance=appointment,
+                action='booking.send_payment_link',
+                user=request.user,
+                data={
+                    'email': appointment.email,
+                    'method': appointment.get_payment_method_display(),
+                    'service': service_name,
+                    'client': f'{appointment.first_name} {appointment.last_name}',
+                }
+            )
         else:
             messages.error(request, "Errore nell'invio dell'email.")
         
