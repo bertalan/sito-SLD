@@ -230,7 +230,7 @@ cd tests/e2e && pytest -v -n 4
 
 ## Configurazione
 
-### Variabili d'ambiente (.env) - Solo configurazione server
+### Variabili d'ambiente (.env) - Configurazione server e pagamenti
 
 ```env
 # Django
@@ -241,9 +241,25 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 # Database
 DATABASE_URL=postgres://user:pass@host:5432/dbname
 POSTGRES_PASSWORD=your-db-password
+
+# Pagamenti (demo/sandbox/live)
+PAYMENT_MODE=sandbox
+
+# Stripe
+STRIPE_PUBLIC_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# PayPal
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=xxx
+PAYPAL_CLIENT_SECRET=xxx
+
+# Google Calendar (opzionale)
+GOOGLE_CALENDAR_ICAL_URL=https://calendar.google.com/calendar/ical/xxx/basic.ics
 ```
 
-### SiteSettings (Admin Wagtail) - Tutte le altre configurazioni
+### SiteSettings (Admin Wagtail) - Dati studio e contenuti
 
 Vai su: **Admin → Impostazioni → Impostazioni Studio**
 
@@ -253,15 +269,14 @@ Vai su: **Admin → Impostazioni → Impostazioni Studio**
 | 📞 Contatti | Email, PEC, telefono, cellulare |
 | 📍 Sede | Indirizzo, città, coordinate mappa |
 | 🌐 Web & Social | Sito, Facebook, Twitter, LinkedIn |
-| 💳 Prenotazioni | Modalità pagamento, durata slot, prezzo |
-| 💳 Stripe | Chiavi API pubbliche e segrete |
-| 💳 PayPal | Client ID e Secret |
+| 💳 Prenotazioni | Durata slot, prezzo consulenza |
 | 📧 Email SMTP | Server, porta, credenziali |
 | 📊 Analytics | Google Analytics 4, Matomo |
-| 📅 Google Calendar | URL iCal per sincronizzazione |
+| 📅 Google Calendar | Cache TTL |
 | 📹 Videochiamate | Prefisso stanze Jitsi |
+| 📄 Pagine Legali | Privacy Policy, Termini e Condizioni |
 
-> ℹ️ Ogni campo ha un **help text** con istruzioni su dove trovare i valori necessari.
+> ℹ️ Le **chiavi API pagamento** (Stripe/PayPal) vanno **solo in `.env`**, non in SiteSettings.
 
 
 ## Struttura progetto

@@ -16,6 +16,22 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - **Widget accessibilità**: pulsanti rialzati di 20px (da bottom-24 a bottom-[116px])
 - **Reset emergenza**: cambiato da doppio click a singolo click con conferma dialog
 
+### 🔧 Refactoring Configurazione Pagamenti
+- **Rimossi campi duplicati da SiteSettings**: `payment_mode`, `stripe_public_key`, `paypal_client_id`
+- **Tutte le chiavi pagamento ora solo in `.env`**: nessuna ridondanza tra database e file config
+- **Aggiornato `.env.example`** con tutte le variabili necessarie
+
+### ⚠️ Breaking Changes
+- Dopo `migrate`, le configurazioni pagamento vanno inserite in `.env`:
+  ```bash
+  PAYMENT_MODE=sandbox
+  STRIPE_PUBLIC_KEY=pk_test_xxx
+  STRIPE_SECRET_KEY=sk_test_xxx
+  PAYPAL_MODE=sandbox
+  PAYPAL_CLIENT_ID=xxx
+  PAYPAL_CLIENT_SECRET=xxx
+  ```
+
 ### 🧪 Test
 - **Riorganizzazione struttura test**: unificata in `tests/unit/` e `tests/e2e/`
 - **Nuovi test contact** (`tests/unit/contact/test_models.py`):

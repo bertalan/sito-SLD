@@ -223,42 +223,10 @@ class SiteSettings(BaseSiteSetting):
     # ═══════════════════════════════════════════════════════════════════════════
     # PAGAMENTI
     # ═══════════════════════════════════════════════════════════════════════════
-    
-    PAYMENT_MODE_CHOICES = [
-        ('demo', 'Demo (simulato)'),
-        ('sandbox', 'Sandbox (test)'),
-        ('live', 'Live (produzione)'),
-    ]
-    
-    payment_mode = models.CharField(
-        "Modalità pagamento",
-        max_length=10,
-        choices=PAYMENT_MODE_CHOICES,
-        default="demo",
-        help_text="ℹ️ Demo: simula pagamenti (per sviluppo). Sandbox: usa chiavi di test Stripe/PayPal. Live: pagamenti reali."
-    )
-    
-    # Stripe
-    stripe_public_key = models.CharField(
-        "Stripe Public Key",
-        max_length=200,
-        blank=True,
-        help_text="ℹ️ Trova in: Stripe Dashboard → Developers → API Keys → Publishable key (pk_test_... o pk_live_...)"
-    )
-    # NOTA: stripe_secret_key e stripe_webhook_secret sono stati rimossi per sicurezza.
-    # Devono essere configurati SOLO nel file .env del server.
-    # Vedi: STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET
-    
-    # PayPal
-    paypal_client_id = models.CharField(
-        "PayPal Client ID",
-        max_length=200,
-        blank=True,
-        help_text="ℹ️ Trova in: PayPal Developer → My Apps & Credentials → App → Client ID"
-    )
-    # NOTA: paypal_client_secret è stato rimosso per sicurezza.
-    # Deve essere configurato SOLO nel file .env del server.
-    # Vedi: PAYPAL_CLIENT_SECRET
+    # NOTA: Tutte le configurazioni pagamento sono in .env per sicurezza:
+    # - PAYMENT_MODE (demo/sandbox/live)
+    # - STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+    # - PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE
     
     # Booking
     booking_slot_duration = models.PositiveIntegerField(
@@ -405,16 +373,9 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('domiciliazioni_tipi_udienza'),
         ], heading="📋 Domiciliazioni", classname="collapsible"),
         MultiFieldPanel([
-            FieldPanel('payment_mode'),
             FieldPanel('booking_slot_duration'),
             FieldPanel('booking_price_cents'),
         ], heading="💳 Prenotazioni", classname="collapsible"),
-        MultiFieldPanel([
-            FieldPanel('stripe_public_key'),
-        ], heading="💳 Stripe", classname="collapsible collapsed"),
-        MultiFieldPanel([
-            FieldPanel('paypal_client_id'),
-        ], heading="💳 PayPal", classname="collapsible collapsed"),
         MultiFieldPanel([
             FieldPanel('email_host'),
             FieldPanel('email_port'),
