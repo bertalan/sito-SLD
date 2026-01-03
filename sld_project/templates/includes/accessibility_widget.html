@@ -3,24 +3,31 @@ Widget Accessibilità - Conformità WCAG 2.0 / Legge Stanca / D.Lgs. 33/2013
 Fornisce controlli per ipovedenti e utenti con disabilità visive.
 {% endcomment %}
 
-<!-- Pulsante Reset Emergenza (sempre visibile, doppio click = reset) -->
-<button id="a11y-emergency-reset" 
-        class="a11y-widget fixed bottom-40 right-6 z-[9999] w-10 h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400"
-        aria-label="Doppio click per resettare tutte le impostazioni accessibilità"
-        title="Reset Accessibilità (doppio click)"
-        ondblclick="localStorage.removeItem('a11y_preferences'); location.reload();">
-    <span class="text-xs font-bold">R</span>
-</button>
-
-<!-- Pulsante Toggle Accessibilità -->
-<button id="a11y-toggle" 
-        class="a11y-widget fixed bottom-24 right-6 z-[9996] w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
-        aria-label="Apri pannello accessibilità"
-        aria-expanded="false"
-        aria-controls="a11y-panel"
-        title="Opzioni Accessibilità">
-    <i data-lucide="eye" class="w-6 h-6 mx-auto" aria-hidden="true"></i>
-</button>
+<!-- Container pulsanti accessibilità (allineati verticalmente) -->
+<div class="a11y-widget fixed bottom-24 right-6 z-[9996] flex flex-col items-center gap-2">
+    <!-- Pulsante Reset Emergenza (doppio click = reset) -->
+    <button id="a11y-emergency-reset" 
+            class="w-10 h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 flex items-center justify-center"
+            aria-label="Doppio click per resettare tutte le impostazioni accessibilità"
+            title="Reset Accessibilità (doppio click)"
+            ondblclick="localStorage.removeItem('a11y_preferences'); location.reload();">
+        <span class="text-xs font-bold">R</span>
+    </button>
+    
+    <!-- Pulsante Toggle Accessibilità -->
+    <button id="a11y-toggle" 
+            class="w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50 flex items-center justify-center"
+            aria-label="Apri pannello accessibilità"
+            aria-expanded="false"
+            aria-controls="a11y-panel"
+            title="Opzioni Accessibilità">
+        <!-- SVG inline per garantire visibilità sempre -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    </button>
+</div>
 
 <!-- Pannello Accessibilità -->
 <div id="a11y-panel" 
