@@ -1,0 +1,479 @@
+{% comment %}
+Widget Accessibilità - Conformità WCAG 2.0 / Legge Stanca / D.Lgs. 33/2013
+Fornisce controlli per ipovedenti e utenti con disabilità visive.
+{% endcomment %}
+
+<!-- Pulsante Toggle Accessibilità -->
+<button id="a11y-toggle" 
+        class="fixed bottom-24 right-6 z-[9996] w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
+        aria-label="Apri pannello accessibilità"
+        aria-expanded="false"
+        aria-controls="a11y-panel"
+        title="Opzioni Accessibilità">
+    <i data-lucide="eye" class="w-6 h-6 mx-auto" aria-hidden="true"></i>
+</button>
+
+<!-- Pannello Accessibilità -->
+<div id="a11y-panel" 
+     class="fixed bottom-24 right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
+     role="dialog"
+     aria-labelledby="a11y-panel-title"
+     aria-modal="true"
+     hidden>
+    
+    <div class="p-4 border-b-2 border-brand-black bg-brand-silver">
+        <div class="flex items-center justify-between">
+            <h2 id="a11y-panel-title" class="text-lg font-bold text-brand-black tracking-tight flex items-center">
+                <i data-lucide="accessibility" class="w-5 h-5 mr-2 text-brand-accent" aria-hidden="true"></i>
+                Accessibilità
+            </h2>
+            <button id="a11y-close" 
+                    class="text-brand-gray hover:text-brand-black transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                    aria-label="Chiudi pannello accessibilità">
+                <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
+            </button>
+        </div>
+        <p class="text-xs text-brand-gray mt-1">Personalizza la visualizzazione del sito</p>
+    </div>
+    
+    <div class="p-4 space-y-4 max-h-96 overflow-y-auto">
+        
+        <!-- Dimensione Testo -->
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-brand-black flex items-center">
+                <i data-lucide="type" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                Dimensione Testo
+            </label>
+            <div class="flex items-center space-x-2" role="group" aria-label="Controlli dimensione testo">
+                <button data-a11y-action="font-decrease" 
+                        class="flex-1 py-2 px-3 bg-brand-silver hover:bg-brand-gray/30 text-brand-black font-bold text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                        aria-label="Riduci dimensione testo">
+                    A-
+                </button>
+                <span id="a11y-font-size" class="flex-1 text-center text-sm font-medium text-brand-gray" aria-live="polite">100%</span>
+                <button data-a11y-action="font-increase" 
+                        class="flex-1 py-2 px-3 bg-brand-silver hover:bg-brand-gray/30 text-brand-black font-bold text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                        aria-label="Aumenta dimensione testo">
+                    A+
+                </button>
+            </div>
+        </div>
+        
+        <!-- Alto Contrasto -->
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-brand-black flex items-center">
+                <i data-lucide="contrast" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                Contrasto
+            </label>
+            <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Selezione modalità contrasto">
+                <button data-a11y-action="contrast-normal" 
+                        class="py-2 px-3 bg-white border-2 border-brand-gray/30 hover:border-brand-accent text-brand-black text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-contrast-btn"
+                        role="radio"
+                        aria-checked="true">
+                    Normale
+                </button>
+                <button data-a11y-action="contrast-high" 
+                        class="py-2 px-3 bg-black border-2 border-black text-white text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-contrast-btn"
+                        role="radio"
+                        aria-checked="false">
+                    Alto
+                </button>
+                <button data-a11y-action="contrast-inverted" 
+                        class="py-2 px-3 bg-yellow-300 border-2 border-black text-black text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-contrast-btn"
+                        role="radio"
+                        aria-checked="false">
+                    Invertito
+                </button>
+            </div>
+        </div>
+        
+        <!-- Toggle Options -->
+        <div class="space-y-3 pt-2 border-t border-brand-gray/20">
+            
+            <!-- Evidenzia Link -->
+            <label class="flex items-center justify-between cursor-pointer group">
+                <span class="text-sm text-brand-black flex items-center">
+                    <i data-lucide="link" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                    Evidenzia Link
+                </span>
+                <button data-a11y-toggle="highlight-links" 
+                        role="switch"
+                        aria-checked="false"
+                        class="relative w-11 h-6 bg-brand-gray/30 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-switch"
+                        aria-label="Attiva evidenziazione link">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow"></span>
+                </button>
+            </label>
+            
+            <!-- Focus Visibile -->
+            <label class="flex items-center justify-between cursor-pointer group">
+                <span class="text-sm text-brand-black flex items-center">
+                    <i data-lucide="focus" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                    Focus Potenziato
+                </span>
+                <button data-a11y-toggle="enhanced-focus" 
+                        role="switch"
+                        aria-checked="false"
+                        class="relative w-11 h-6 bg-brand-gray/30 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-switch"
+                        aria-label="Attiva focus potenziato">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow"></span>
+                </button>
+            </label>
+            
+            <!-- Blocca Animazioni -->
+            <label class="flex items-center justify-between cursor-pointer group">
+                <span class="text-sm text-brand-black flex items-center">
+                    <i data-lucide="pause-circle" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                    Blocca Animazioni
+                </span>
+                <button data-a11y-toggle="reduce-motion" 
+                        role="switch"
+                        aria-checked="false"
+                        class="relative w-11 h-6 bg-brand-gray/30 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-switch"
+                        aria-label="Blocca animazioni">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow"></span>
+                </button>
+            </label>
+            
+            <!-- Modalità Lettura -->
+            <label class="flex items-center justify-between cursor-pointer group">
+                <span class="text-sm text-brand-black flex items-center">
+                    <i data-lucide="book-open" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                    Modalità Lettura
+                </span>
+                <button data-a11y-toggle="reading-mode" 
+                        role="switch"
+                        aria-checked="false"
+                        class="relative w-11 h-6 bg-brand-gray/30 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-switch"
+                        aria-label="Attiva modalità lettura">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow"></span>
+                </button>
+            </label>
+            
+            <!-- Cursore Grande -->
+            <label class="flex items-center justify-between cursor-pointer group">
+                <span class="text-sm text-brand-black flex items-center">
+                    <i data-lucide="mouse-pointer" class="w-4 h-4 mr-2 text-brand-accent" aria-hidden="true"></i>
+                    Cursore Grande
+                </span>
+                <button data-a11y-toggle="large-cursor" 
+                        role="switch"
+                        aria-checked="false"
+                        class="relative w-11 h-6 bg-brand-gray/30 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent a11y-switch"
+                        aria-label="Attiva cursore grande">
+                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform shadow"></span>
+                </button>
+            </label>
+            
+        </div>
+        
+        <!-- Reset -->
+        <div class="pt-3 border-t border-brand-gray/20">
+            <button data-a11y-action="reset" 
+                    class="w-full py-2 px-4 bg-brand-gray/20 hover:bg-brand-accent hover:text-white text-brand-black text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent flex items-center justify-center">
+                <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2" aria-hidden="true"></i>
+                Ripristina Impostazioni
+            </button>
+        </div>
+        
+    </div>
+    
+    <!-- Footer con info conformità -->
+    <div class="p-3 bg-brand-silver border-t-2 border-brand-black text-xs text-brand-gray">
+        <p class="flex items-center">
+            <i data-lucide="shield-check" class="w-3 h-3 mr-1 text-green-600" aria-hidden="true"></i>
+            Conforme WCAG 2.0 AA
+        </p>
+    </div>
+</div>
+
+<!-- Stili Accessibilità -->
+<style>
+    /* Switch toggle attivo */
+    .a11y-switch[aria-checked="true"] {
+        background-color: var(--brand-accent, #e91e63);
+    }
+    .a11y-switch[aria-checked="true"] span {
+        transform: translateX(1.25rem);
+    }
+    
+    /* Pulsante contrasto attivo */
+    .a11y-contrast-btn[aria-checked="true"] {
+        outline: 3px solid var(--brand-accent, #e91e63);
+        outline-offset: 2px;
+    }
+    
+    /* ═══════════════════════════════════════════════════════════════════════════
+       CLASSI DI ACCESSIBILITÀ APPLICATE AL BODY
+       ═══════════════════════════════════════════════════════════════════════════ */
+    
+    /* Alto Contrasto */
+    body.a11y-contrast-high {
+        filter: contrast(1.25);
+    }
+    body.a11y-contrast-high * {
+        border-color: #000 !important;
+    }
+    
+    /* Contrasto Invertito (giallo/nero) */
+    body.a11y-contrast-inverted {
+        filter: invert(1) hue-rotate(180deg);
+    }
+    body.a11y-contrast-inverted img,
+    body.a11y-contrast-inverted video,
+    body.a11y-contrast-inverted iframe {
+        filter: invert(1) hue-rotate(180deg);
+    }
+    
+    /* Evidenzia Link */
+    body.a11y-highlight-links a {
+        background-color: #ff0 !important;
+        color: #000 !important;
+        text-decoration: underline !important;
+        outline: 2px solid #000 !important;
+        padding: 2px 4px !important;
+    }
+    
+    /* Focus Potenziato */
+    body.a11y-enhanced-focus *:focus {
+        outline: 4px solid var(--brand-accent, #e91e63) !important;
+        outline-offset: 4px !important;
+        box-shadow: 0 0 0 8px rgba(233, 30, 99, 0.3) !important;
+    }
+    
+    /* Blocca Animazioni */
+    body.a11y-reduce-motion,
+    body.a11y-reduce-motion * {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    /* Modalità Lettura */
+    body.a11y-reading-mode nav,
+    body.a11y-reading-mode footer,
+    body.a11y-reading-mode aside,
+    body.a11y-reading-mode .hero,
+    body.a11y-reading-mode [class*="bg-brand-"],
+    body.a11y-reading-mode [class*="bg-gradient"] {
+        background: #fff !important;
+    }
+    body.a11y-reading-mode {
+        background: #fff !important;
+    }
+    body.a11y-reading-mode main {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    body.a11y-reading-mode * {
+        color: #222 !important;
+        background-image: none !important;
+    }
+    body.a11y-reading-mode img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* Cursore Grande */
+    body.a11y-large-cursor,
+    body.a11y-large-cursor * {
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M4 4l16 8-8 2-2 8z'/%3E%3C/svg%3E") 0 0, auto !important;
+    }
+    body.a11y-large-cursor a,
+    body.a11y-large-cursor button,
+    body.a11y-large-cursor [role="button"],
+    body.a11y-large-cursor input,
+    body.a11y-large-cursor select,
+    body.a11y-large-cursor textarea {
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M10 6v12h4V6h4l-6-6-6 6z'/%3E%3C/svg%3E") 12 0, pointer !important;
+    }
+</style>
+
+<!-- Script Accessibilità -->
+<script>
+(function() {
+    'use strict';
+    
+    const STORAGE_KEY = 'a11y_preferences';
+    const DEFAULT_PREFS = {
+        fontSize: 100,
+        contrast: 'normal',
+        highlightLinks: false,
+        enhancedFocus: false,
+        reduceMotion: false,
+        readingMode: false,
+        largeCursor: false
+    };
+    
+    let prefs = { ...DEFAULT_PREFS };
+    
+    // Carica preferenze salvate
+    function loadPrefs() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                prefs = { ...DEFAULT_PREFS, ...JSON.parse(saved) };
+            }
+        } catch (e) {}
+        
+        // Rispetta prefers-reduced-motion del sistema
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            prefs.reduceMotion = true;
+        }
+        
+        // Rispetta prefers-contrast del sistema
+        if (window.matchMedia('(prefers-contrast: more)').matches) {
+            prefs.contrast = 'high';
+        }
+    }
+    
+    // Salva preferenze
+    function savePrefs() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+        } catch (e) {}
+    }
+    
+    // Applica tutte le preferenze
+    function applyPrefs() {
+        const body = document.body;
+        const html = document.documentElement;
+        
+        // Font size
+        html.style.fontSize = prefs.fontSize + '%';
+        const sizeDisplay = document.getElementById('a11y-font-size');
+        if (sizeDisplay) sizeDisplay.textContent = prefs.fontSize + '%';
+        
+        // Contrasto
+        body.classList.remove('a11y-contrast-high', 'a11y-contrast-inverted');
+        if (prefs.contrast === 'high') body.classList.add('a11y-contrast-high');
+        if (prefs.contrast === 'inverted') body.classList.add('a11y-contrast-inverted');
+        updateContrastButtons();
+        
+        // Toggle classes
+        body.classList.toggle('a11y-highlight-links', prefs.highlightLinks);
+        body.classList.toggle('a11y-enhanced-focus', prefs.enhancedFocus);
+        body.classList.toggle('a11y-reduce-motion', prefs.reduceMotion);
+        body.classList.toggle('a11y-reading-mode', prefs.readingMode);
+        body.classList.toggle('a11y-large-cursor', prefs.largeCursor);
+        
+        // Update switches
+        updateSwitch('highlight-links', prefs.highlightLinks);
+        updateSwitch('enhanced-focus', prefs.enhancedFocus);
+        updateSwitch('reduce-motion', prefs.reduceMotion);
+        updateSwitch('reading-mode', prefs.readingMode);
+        updateSwitch('large-cursor', prefs.largeCursor);
+    }
+    
+    function updateSwitch(name, active) {
+        const btn = document.querySelector(`[data-a11y-toggle="${name}"]`);
+        if (btn) btn.setAttribute('aria-checked', active ? 'true' : 'false');
+    }
+    
+    function updateContrastButtons() {
+        document.querySelectorAll('.a11y-contrast-btn').forEach(btn => {
+            const action = btn.dataset.a11yAction;
+            const isActive = 
+                (action === 'contrast-normal' && prefs.contrast === 'normal') ||
+                (action === 'contrast-high' && prefs.contrast === 'high') ||
+                (action === 'contrast-inverted' && prefs.contrast === 'inverted');
+            btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        });
+    }
+    
+    // Event handlers
+    function setupEventHandlers() {
+        const toggle = document.getElementById('a11y-toggle');
+        const panel = document.getElementById('a11y-panel');
+        const closeBtn = document.getElementById('a11y-close');
+        
+        // Toggle panel
+        toggle?.addEventListener('click', () => {
+            const isOpen = !panel.hidden;
+            panel.hidden = isOpen;
+            panel.classList.toggle('opacity-0', isOpen);
+            panel.classList.toggle('pointer-events-none', isOpen);
+            panel.classList.toggle('translate-x-4', isOpen);
+            toggle.setAttribute('aria-expanded', !isOpen);
+            
+            if (!isOpen) {
+                // Refresh icons in panel
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+        
+        // Close panel
+        closeBtn?.addEventListener('click', () => {
+            panel.hidden = true;
+            panel.classList.add('opacity-0', 'pointer-events-none', 'translate-x-4');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        });
+        
+        // Close on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !panel.hidden) {
+                closeBtn?.click();
+            }
+        });
+        
+        // Font size
+        document.querySelector('[data-a11y-action="font-increase"]')?.addEventListener('click', () => {
+            if (prefs.fontSize < 200) {
+                prefs.fontSize += 10;
+                applyPrefs();
+                savePrefs();
+            }
+        });
+        
+        document.querySelector('[data-a11y-action="font-decrease"]')?.addEventListener('click', () => {
+            if (prefs.fontSize > 80) {
+                prefs.fontSize -= 10;
+                applyPrefs();
+                savePrefs();
+            }
+        });
+        
+        // Contrast
+        document.querySelectorAll('.a11y-contrast-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.a11yAction;
+                prefs.contrast = action.replace('contrast-', '');
+                applyPrefs();
+                savePrefs();
+            });
+        });
+        
+        // Toggles
+        document.querySelectorAll('[data-a11y-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const toggle = btn.dataset.a11yToggle;
+                const prefKey = toggle.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
+                prefs[prefKey] = !prefs[prefKey];
+                applyPrefs();
+                savePrefs();
+            });
+        });
+        
+        // Reset
+        document.querySelector('[data-a11y-action="reset"]')?.addEventListener('click', () => {
+            prefs = { ...DEFAULT_PREFS };
+            applyPrefs();
+            savePrefs();
+        });
+    }
+    
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPrefs();
+        applyPrefs();
+        setupEventHandlers();
+    });
+    
+    // Applica subito se DOM già pronto
+    if (document.readyState !== 'loading') {
+        loadPrefs();
+        applyPrefs();
+    }
+})();
+</script>

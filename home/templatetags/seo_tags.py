@@ -11,6 +11,88 @@ import base64
 register = template.Library()
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# COLORI BRAND
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Colori di default (fallback se SiteSettings non disponibile)
+DEFAULT_BRAND_COLORS = {
+    'brand-black': '#0a0a0a',
+    'brand-dark': '#1a1a1a',
+    'brand-gray': '#6b7280',
+    'brand-silver': '#f5f5f5',
+    'brand-white': '#ffffff',
+    'brand-accent': '#e91e63',
+    'brand-accent-hover': '#be185d',
+}
+
+
+def _get_brand_colors():
+    """Helper per ottenere i colori brand dal database o default."""
+    try:
+        from sld_project.models import SiteSettings
+        settings = SiteSettings.get_current()
+        return settings.get_brand_colors()
+    except Exception:
+        return DEFAULT_BRAND_COLORS
+
+
+@register.simple_tag(takes_context=True)
+def tailwind_brand_config(context):
+    """
+    Genera la configurazione Tailwind con i colori dal database.
+    
+    Uso nel template:
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {% tailwind_brand_config %},
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    """
+    return mark_safe(json.dumps(_get_brand_colors()))
+
+
+@register.simple_tag(takes_context=True)
+def brand_css_variables(context):
+    """
+    Genera le CSS custom properties per i colori brand.
+    Da usare in un tag <style> nel <head>.
+    
+    Uso nel template:
+    <style>
+        :root {
+            {% brand_css_variables %}
+        }
+    </style>
+    
+    Genera:
+        --brand-black: #0a0a0a;
+        --brand-accent: #e91e63;
+        ...
+    """
+    colors = _get_brand_colors()
+    css_vars = []
+    for name, value in colors.items():
+        css_vars.append(f"--{name}: {value};")
+    return mark_safe("\n            ".join(css_vars))
+
+
+@register.simple_tag(takes_context=True)
+def brand_accent_color(context):
+    """
+    Ritorna il colore accent per uso inline (es: style="background-color: {% brand_accent_color %};")
+    """
+    colors = _get_brand_colors()
+    return colors.get('brand-accent', DEFAULT_BRAND_COLORS['brand-accent'])
+
+
 @register.filter
 def b64encode(value):
     """Codifica una stringa in base64 per offuscare email dallo spam."""

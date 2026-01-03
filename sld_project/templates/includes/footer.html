@@ -1,6 +1,6 @@
 {% load wagtailcore_tags wagtailsettings_tags seo_tags %}
 {% get_settings %}
-<footer id="contact" class="bg-brand-dark pt-24 pb-12 border-t border-brand-gray/20">
+<footer id="contact" class="bg-brand-dark pt-24 pb-12 border-t border-brand-gray/20" role="contentinfo" aria-label="Informazioni di contatto e link utili">
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24">
             <div>
@@ -45,18 +45,18 @@
             </div>
             <div class="flex space-x-6">
                 {% if settings.sld_project.SiteSettings.facebook_url %}
-                <a href="{{ settings.sld_project.SiteSettings.facebook_url }}" target="_blank" class="hover:text-brand-accent transition-colors">
-                    <i data-lucide="facebook" class="w-4 h-4"></i>
+                <a href="{{ settings.sld_project.SiteSettings.facebook_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent" aria-label="Seguici su Facebook (si apre in una nuova finestra)">
+                    <i data-lucide="facebook" class="w-4 h-4" aria-hidden="true"></i>
                 </a>
                 {% endif %}
                 {% if settings.sld_project.SiteSettings.x_url %}
-                <a href="{{ settings.sld_project.SiteSettings.x_url }}" target="_blank" class="hover:text-brand-accent transition-colors">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <a href="{{ settings.sld_project.SiteSettings.x_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent" aria-label="Seguici su X (si apre in una nuova finestra)">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
                 {% endif %}
                 {% if settings.sld_project.SiteSettings.linkedin_url %}
-                <a href="{{ settings.sld_project.SiteSettings.linkedin_url }}" target="_blank" class="hover:text-brand-accent transition-colors">
-                    <i data-lucide="linkedin" class="w-4 h-4"></i>
+                <a href="{{ settings.sld_project.SiteSettings.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent" aria-label="Seguici su LinkedIn (si apre in una nuova finestra)">
+                    <i data-lucide="linkedin" class="w-4 h-4" aria-hidden="true"></i>
                 </a>
                 {% endif %}
             </div>

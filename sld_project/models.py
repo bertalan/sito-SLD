@@ -157,6 +157,53 @@ class SiteSettings(BaseSiteSetting):
     )
     
     # ═══════════════════════════════════════════════════════════════════════════
+    # COLORI BRAND
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    color_black = models.CharField(
+        "Colore Nero",
+        max_length=7,
+        default="#0a0a0a",
+        help_text="Colore nero principale per testi e sfondi scuri (formato HEX: #000000)"
+    )
+    color_dark = models.CharField(
+        "Colore Scuro",
+        max_length=7,
+        default="#1a1a1a",
+        help_text="Grigio scuro per elementi secondari (formato HEX: #000000)"
+    )
+    color_gray = models.CharField(
+        "Colore Grigio",
+        max_length=7,
+        default="#6b7280",
+        help_text="Grigio per testi secondari (formato HEX: #000000)"
+    )
+    color_silver = models.CharField(
+        "Colore Argento",
+        max_length=7,
+        default="#f5f5f5",
+        help_text="Sfondo chiaro per sezioni alternate (formato HEX: #000000)"
+    )
+    color_white = models.CharField(
+        "Colore Bianco",
+        max_length=7,
+        default="#ffffff",
+        help_text="Bianco per sfondi e testi chiari (formato HEX: #000000)"
+    )
+    color_accent = models.CharField(
+        "Colore Accento",
+        max_length=7,
+        default="#e91e63",
+        help_text="Colore principale del brand per CTA, link e decorazioni (formato HEX: #000000)"
+    )
+    color_accent_hover = models.CharField(
+        "Colore Accento Hover",
+        max_length=7,
+        default="#be185d",
+        help_text="Colore accento al passaggio del mouse, tipicamente più scuro (formato HEX: #000000)"
+    )
+    
+    # ═══════════════════════════════════════════════════════════════════════════
     # DOMICILIAZIONI
     # ═══════════════════════════════════════════════════════════════════════════
     
@@ -322,6 +369,15 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('lawyer_name'),
         ], heading="Identità Studio"),
         MultiFieldPanel([
+            FieldPanel('color_black'),
+            FieldPanel('color_dark'),
+            FieldPanel('color_gray'),
+            FieldPanel('color_silver'),
+            FieldPanel('color_white'),
+            FieldPanel('color_accent'),
+            FieldPanel('color_accent_hover'),
+        ], heading="🎨 Colori Brand", classname="collapsible collapsed"),
+        MultiFieldPanel([
             FieldPanel('email'),
             FieldPanel('email_pec'),
             FieldPanel('phone'),
@@ -461,6 +517,18 @@ class SiteSettings(BaseSiteSetting):
             'city': self.city,
             'maps_url': self.maps_url,
             'website': self.website,
+        }
+
+    def get_brand_colors(self):
+        """Ritorna un dizionario con i colori del brand."""
+        return {
+            'brand-black': self.color_black or '#0a0a0a',
+            'brand-dark': self.color_dark or '#1a1a1a',
+            'brand-gray': self.color_gray or '#6b7280',
+            'brand-silver': self.color_silver or '#f5f5f5',
+            'brand-white': self.color_white or '#ffffff',
+            'brand-accent': self.color_accent or '#e91e63',
+            'brand-accent-hover': self.color_accent_hover or '#be185d',
         }
 
     def _parse_choices(self, text):

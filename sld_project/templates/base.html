@@ -86,14 +86,7 @@
             tailwind.config = {
                 theme: {
                     extend: {
-                        colors: {
-                            'brand-black': '#0a0a0a',
-                            'brand-dark': '#1a1a1a',
-                            'brand-gray': '#6b7280',
-                            'brand-silver': '#f5f5f5',
-                            'brand-white': '#ffffff',
-                            'brand-accent': '#e91e63',
-                        },
+                        colors: {% tailwind_brand_config %},
                         fontFamily: {
                             'sans': ['Inter', 'system-ui', 'sans-serif'],
                         }
@@ -114,11 +107,16 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         
         <style>
-            ::selection { background-color: #e91e63; color: white; }
+            /* CSS Custom Properties per colori brand */
+            :root {
+                {% brand_css_variables %}
+            }
+            
+            ::selection { background-color: var(--brand-accent); color: white; }
             
             /* Typography plugin styles per contenuto rich text */
             .prose {
-                color: #374151;
+                color: var(--brand-gray);
                 line-height: 1.75;
             }
             .prose p {
@@ -140,7 +138,7 @@
                 margin-top: 2em;
                 margin-bottom: 1em;
                 line-height: 1.33;
-                color: #0a0a0a;
+                color: var(--brand-black);
             }
             .prose h3 {
                 font-size: 1.25em;
@@ -148,32 +146,32 @@
                 margin-top: 1.6em;
                 margin-bottom: 0.6em;
                 line-height: 1.6;
-                color: #0a0a0a;
+                color: var(--brand-black);
             }
             .prose h4 {
                 font-weight: 600;
                 margin-top: 1.5em;
                 margin-bottom: 0.5em;
                 line-height: 1.5;
-                color: #0a0a0a;
+                color: var(--brand-black);
             }
             .prose a {
-                color: #e91e63;
+                color: var(--brand-accent);
                 text-decoration: underline;
             }
             .prose a:hover {
-                color: #be185d;
+                color: var(--brand-accent-hover);
             }
             .prose strong {
                 font-weight: 600;
-                color: #0a0a0a;
+                color: var(--brand-black);
             }
             .prose blockquote {
                 font-style: italic;
-                border-left: 4px solid #e91e63;
+                border-left: 4px solid var(--brand-accent);
                 padding-left: 1em;
                 margin: 1.6em 0;
-                color: #6b7280;
+                color: var(--brand-gray);
             }
             
             /* Stili per elenchi puntati nel contenuto rich text */
@@ -287,9 +285,16 @@
     <body class="bg-brand-white min-h-screen flex flex-col font-sans antialiased {% block body_class %}{% endblock %}">
         {% wagtailuserbar %}
         
+        {# Skip Link per accessibilità - WCAG 2.4.1 #}
+        <a href="#main-content" 
+           class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10000] focus:bg-brand-accent focus:text-white focus:px-6 focus:py-3 focus:font-bold focus:uppercase focus:tracking-wider focus:outline-none focus:ring-4 focus:ring-brand-accent/50"
+           id="skip-link">
+            Vai al contenuto principale
+        </a>
+        
         {% include "includes/navigation.html" %}
 
-        <main class="flex-grow">
+        <main id="main-content" class="flex-grow" role="main" tabindex="-1">
             {% block content %}{% endblock %}
         </main>
         
@@ -304,6 +309,9 @@
         
         {# Cookie Banner GDPR #}
         {% include "includes/cookie_banner.html" %}
+        
+        {# Widget Accessibilità - WCAG 2.0 / Legge Stanca #}
+        {% include "includes/accessibility_widget.html" %}
 
         {% block extra_js %}{% endblock %}
     </body>
