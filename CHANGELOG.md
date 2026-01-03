@@ -68,7 +68,7 @@ Supportate: `{{studio_name}}`, `{{lawyer_name}}`, `{{address}}`, `{{city}}`, `{{
 ### ✨ Features
 - **Sistema Prenotazioni**: calendario interattivo, slot 30 min, pagamento Stripe/PayPal
 - **Domiciliazioni Legali**: form completo con upload documenti, notifiche email
-- **8 Aree di Pratica**: Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione
+- **8 Aree di Attività**: Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione
 - **Videochiamate Jitsi**: link generati automaticamente per consulenze video
 - **SiteSettings Centralizzato**: tutti i dati studio configurabili da admin Wagtail
 - **Email Conferma**: con allegato iCal (.ics) per aggiunta a calendario

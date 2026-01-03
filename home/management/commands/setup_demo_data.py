@@ -38,7 +38,7 @@ class Command(BaseCommand):
         # 1. Crea/aggiorna HomePage
         self._setup_homepage()
         
-        # 2. Crea le aree di pratica (ServiceArea)
+        # 2. Crea le aree di attività (ServiceArea)
         self._setup_service_areas()
         
         # 3. Crea la pagina indice servizi
@@ -116,7 +116,7 @@ class Command(BaseCommand):
             self.stdout.write('  - HomePage già esistente, saltata')
 
     def _setup_service_areas(self):
-        """Crea le aree di pratica (snippet)."""
+        """Crea le aree di attività (snippet)."""
         from services.models import ServiceArea
         
         areas = [
@@ -187,7 +187,7 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
         
-        self.stdout.write(self.style.SUCCESS(f'  ✓ {created_count} aree di pratica create'))
+        self.stdout.write(self.style.SUCCESS(f'  ✓ {created_count} aree di attività create'))
 
     def _setup_services_page(self):
         """Crea la pagina indice dei servizi e le pagine delle singole aree."""
@@ -200,25 +200,25 @@ class Command(BaseCommand):
             return
         
         # Crea la pagina indice
-        if not ServicesIndexPage.objects.filter(slug='aree-pratica').exists():
+        if not ServicesIndexPage.objects.filter(slug='aree-attivita').exists():
             services_page = ServicesIndexPage(
-                title="Aree di Pratica",
-                slug="aree-pratica",
+                title="Aree di Attività",
+                slug="aree-attivita",
                 intro="""<p>Lo Studio offre assistenza legale qualificata in diverse 
                 aree del diritto. Scopri i nostri servizi e contattaci per una 
                 consulenza personalizzata.</p>"""
             )
             home.add_child(instance=services_page)
-            self.stdout.write(self.style.SUCCESS('  ✓ Pagina Aree di Pratica creata'))
+            self.stdout.write(self.style.SUCCESS('  ✓ Pagina Aree di Attività creata'))
         else:
-            services_page = ServicesIndexPage.objects.filter(slug='aree-pratica').first()
-            self.stdout.write('  - Pagina Aree di Pratica già esistente, saltata')
+            services_page = ServicesIndexPage.objects.filter(slug='aree-attivita').first()
+            self.stdout.write('  - Pagina Aree di Attività già esistente, saltata')
         
-        # Crea le pagine delle singole aree di pratica
+        # Crea le pagine delle singole aree di attività
         self._setup_service_pages(services_page)
 
     def _setup_service_pages(self, services_index):
-        """Crea le pagine delle singole aree di pratica con contenuti."""
+        """Crea le pagine delle singole aree di attività con contenuti."""
         from services.models import ServiceArea, ServicePage
         
         if not services_index:
@@ -621,7 +621,7 @@ class Command(BaseCommand):
             article_index = ArticleIndexPage.objects.first()
             self.stdout.write('  - Pagina indice articoli già esistente, saltata')
         
-        # Mappa aree di pratica
+        # Mappa aree di attività
         areas = {area.slug: area for area in ServiceArea.objects.all()}
         
         # Articoli demo con contenuti realistici
@@ -882,7 +882,7 @@ class Command(BaseCommand):
             article.first_published_at = pub_date
             article.last_published_at = pub_date
             
-            # Collega aree di pratica
+            # Collega aree di attività
             for area_slug in art['service_areas']:
                 if area_slug in areas:
                     article.service_areas.add(areas[area_slug])

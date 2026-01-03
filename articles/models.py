@@ -1,5 +1,5 @@
 """
-Sistema articoli/blog collegato alle aree di pratica.
+Sistema articoli/blog collegato alle aree di attività.
 Segue i pattern Wagtail: Page models, Snippets, ParentalManyToManyField.
 """
 from django.db import models
@@ -99,12 +99,12 @@ class ArticlePage(Page):
         verbose_name="Categoria"
     )
     
-    # Aree di pratica collegate (ManyToMany via Wagtail)
+    # Aree di attività collegate (ManyToMany via Wagtail)
     service_areas = ParentalManyToManyField(
         ServiceArea,
         blank=True,
         related_name='articles',
-        verbose_name="Aree di pratica"
+        verbose_name="Aree di attività"
     )
     
     # Contenuto

@@ -115,12 +115,12 @@ class WagtailPagesTest(TestCase):
         
         # Creo la pagina servizi
         services_page = ServicesIndexPage(
-            title="Aree di Pratica",
-            slug="aree-pratica"
+            title="Aree di Attività",
+            slug="aree-attivita"
         )
         self.home.add_child(instance=services_page)
         
-        response = self.client.get('/aree-pratica/')
+        response = self.client.get('/aree-attivita/')
         self.assertEqual(response.status_code, 200)
     
     def test_contact_page_accessible(self):

@@ -24,8 +24,8 @@ class ServiceArea(models.Model):
     ]
     
     class Meta:
-        verbose_name = "Area di pratica"
-        verbose_name_plural = "Aree di pratica"
+        verbose_name = "Area di attività"
+        verbose_name_plural = "Aree di attività"
         ordering = ['order', 'name']
     
     def __str__(self):
@@ -37,7 +37,7 @@ class ServiceArea(models.Model):
 
 
 class ServicesIndexPage(Page):
-    """Pagina indice delle aree di pratica."""
+    """Pagina indice delle aree di attività."""
     
     intro = RichTextField("Introduzione", blank=True)
     
@@ -48,7 +48,7 @@ class ServicesIndexPage(Page):
     subpage_types = ['services.ServicePage']
     
     class Meta:
-        verbose_name = "Pagina Aree di Pratica"
+        verbose_name = "Pagina Aree di Attività"
     
     def get_context(self, request):
         context = super().get_context(request)

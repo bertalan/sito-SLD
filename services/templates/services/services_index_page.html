@@ -2,13 +2,13 @@
 {% load wagtailcore_tags wagtailsettings_tags %}
 {% get_settings %}
 
-{% block meta_description %}<meta name="description" content="{% if page.search_description %}{{ page.search_description }}{% elif page.intro %}{{ page.intro|striptags|truncatewords:30 }}{% else %}Le aree di pratica legale dello {{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}">{% endblock %}
+{% block meta_description %}<meta name="description" content="{% if page.search_description %}{{ page.search_description }}{% elif page.intro %}{{ page.intro|striptags|truncatewords:30 }}{% else %}Le aree di attività legale dello {{ settings.sld_project.SiteSettings.studio_name }} - {{ settings.sld_project.SiteSettings.city }}{% endif %}">{% endblock %}
 
 {% block content %}
 <section class="pt-32 pb-24 bg-brand-white border-b border-brand-gray/20">
     <div class="max-w-7xl mx-auto px-6">
         <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-brand-black mb-8">
-              AREE DI<br/>PRATICA<span class="text-brand-accent">,</span>
+              AREE DI<br/>ATTIVITÀ<span class="text-brand-accent">,</span>
         </h1>
         {% if page.intro %}
         <div class="text-brand-gray text-lg max-w-6xl">

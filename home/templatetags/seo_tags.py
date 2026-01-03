@@ -175,7 +175,7 @@ def schema_org_jsonld(context):
     if studio.get('linkedin_url'):
         same_as.append(studio['linkedin_url'])
     
-    # Recupera aree di pratica per knowsAbout
+    # Recupera aree di attività per knowsAbout
     knows_about = _get_knows_about()
     
     # Schema base - Organization + LegalService
@@ -187,7 +187,7 @@ def schema_org_jsonld(context):
                 "@type": "LegalService",
                 "@id": f"{site_url}/#legalservice",
                 "name": studio['studio_name'],
-                "description": f"{studio['studio_name']} specializzato in diritto penale, famiglia e successioni, cittadinanza italiana e altre aree di pratica. Ufficio a {studio['city']}.",
+                "description": f"{studio['studio_name']} specializzato in diritto penale, famiglia e successioni, cittadinanza italiana e altre aree di attività. Ufficio a {studio['city']}.",
                 "url": site_url,
                 "logo": logo_url,
                 "image": logo_url,
@@ -263,7 +263,7 @@ def schema_org_jsonld(context):
 
 
 def _get_knows_about():
-    """Recupera le aree di pratica per il campo knowsAbout."""
+    """Recupera le aree di attività per il campo knowsAbout."""
     try:
         from services.models import ServiceArea
         areas = ServiceArea.objects.all().order_by('order', 'name')

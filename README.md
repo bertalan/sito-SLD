@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
-Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di pratica.
+Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di attività.
 
 📚 **Documentazione**: [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) | [UPGRADE.md](UPGRADE.md) | [CHANGELOG.md](CHANGELOG.md)
 
@@ -36,7 +36,7 @@ docker compose exec web python manage.py setup_demo_data
 Il comando `setup_demo_data` crea:
 - ✅ **SiteSettings** con dati studio configurabili
 - ✅ **HomePage** con testi hero
-- ✅ **8 Aree di pratica** (Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
+- ✅ **8 Aree di attività** (Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
 - ✅ **Pagina Contatti** con form
 - ✅ **Pagina Domiciliazioni** per colleghi avvocati
 - ✅ **Regole disponibilità** (Lun-Ven 9-13, 15-18)
@@ -94,7 +94,7 @@ docker compose exec web python manage.py setup_holidays --list
 - Mappa interattiva **OpenStreetMap** con Leaflet.js
 - Form contatto con invio email
 
-### ⚖️ Aree di Pratica
+### ⚖️ Aree di Attività
 - 12 aree tematiche con pagine dedicate
 - Icone **Lucide** per ogni area
 - Contenuti da brochure professionale
@@ -200,7 +200,7 @@ Il progetto segue il metodo TDD (Test Driven Development):
 - ✅ Invio email conferma
 - ✅ Videochiamate Jitsi
 - ✅ Gestione slot duplicati
-- ✅ Servizi e aree di pratica
+- ✅ Servizi e aree di attività
 - ✅ Sitemap XML e robots.txt
 - ✅ Cookie banner GDPR
 - ✅ Google Analytics 4 e Matomo
@@ -251,7 +251,7 @@ sito-SLD/
 ├── contact/           # Pagina contatti, mappa
 ├── domiciliazioni/    # Form domiciliazioni legali
 ├── home/              # Homepage, modelli Wagtail
-├── services/          # Aree di pratica
+├── services/          # Aree di attività
 ├── sld_project/       # Settings Django, templates base, URL
 │   ├── settings/
 │   ├── templates/

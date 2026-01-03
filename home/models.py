@@ -18,7 +18,7 @@ class HomePage(Page):
     hero_location = models.CharField("Location", max_length=100, default="• Lecce")
     
     # Servizi
-    services_title = models.CharField("Titolo Servizi", max_length=100, default="AREE DI PRATICA")
+    services_title = models.CharField("Titolo Servizi", max_length=100, default="AREE DI ATTIVITÀ")
     services_subtitle = models.CharField("Sottotitolo", max_length=200, blank=True)
     
     # Chi siamo

@@ -1,5 +1,5 @@
 """
-Test TDD per il modulo servizi/aree di pratica.
+Test TDD per il modulo servizi/aree di attività.
 """
 from django.test import TestCase
 from wagtail.models import Page, Site
@@ -85,17 +85,17 @@ class ServicesIndexPageTest(TestCase):
     def test_create_services_index_page(self):
         """Verifica che una pagina indice servizi possa essere creata."""
         services_page = ServicesIndexPage(
-            title="Aree di Pratica",
-            slug="aree-di-pratica",
+            title="Aree di Attività",
+            slug="aree-di-attivita",
             intro="<p>Le nostre competenze legali.</p>"
         )
         self.home.add_child(instance=services_page)
         
-        self.assertEqual(services_page.title, "Aree di Pratica")
+        self.assertEqual(services_page.title, "Aree di Attività")
         self.assertTrue(services_page.live)
     
     def test_get_context_includes_services(self):
-        """Verifica che il context includa le aree di pratica."""
+        """Verifica che il context includa le aree di attività."""
         services_page = ServicesIndexPage(title="Servizi", slug="servizi")
         self.home.add_child(instance=services_page)
         

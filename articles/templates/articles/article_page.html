@@ -92,11 +92,11 @@
         </div>
     </section>
     
-    {# Aree di pratica collegate #}
+    {# Aree di attività collegate #}
     {% if page.service_areas.all %}
     <section class="py-12 bg-brand-silver border-y border-brand-gray/20">
         <div class="max-w-4xl mx-auto px-6">
-            <h3 class="text-sm uppercase tracking-widest text-brand-gray mb-4">Aree di pratica correlate</h3>
+            <h3 class="text-sm uppercase tracking-widest text-brand-gray mb-4">Aree di attività correlate</h3>
             <div class="flex flex-wrap gap-3">
                 {% for area in page.service_areas.all %}
                 {% with area.get_page as area_page %}

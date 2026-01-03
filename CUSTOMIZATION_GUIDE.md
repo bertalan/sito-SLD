@@ -132,7 +132,7 @@ def b64encode(value):
 | Pagina | Model | Slug |
 |--------|-------|------|
 | Home | `home.HomePage` | `home` |
-| Servizi | `services.ServicesIndexPage` | `aree-pratica` |
+| Servizi | `services.ServicesIndexPage` | `aree-attivita` |
 | Contatti | `contact.ContactPage` | `contatti` |
 | Domiciliazioni | `domiciliazioni.DomiciliazioniPage` | `domiciliazioni` |
 
@@ -157,7 +157,7 @@ docker compose exec web python manage.py setup_demo_data --force
 Crea:
 - SiteSettings con dati studio
 - HomePage con testi hero
-- 8 ServiceAreas (aree di pratica)
+- 8 ServiceAreas (aree di attività)
 - ServicesIndexPage, ContactPage, DomiciliazioniPage
 - AvailabilityRules (Lun-Ven 9-13, 15-18)
 - **2 Appuntamenti demo** (date relative: domani e dopodomani lavorativi)
