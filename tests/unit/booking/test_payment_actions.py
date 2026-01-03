@@ -364,7 +364,8 @@ class TestAdminPages(TestCase):
         content = response.content.decode('utf-8')
         # Verifica struttura con container per pulsanti (button class e flex layout)
         self.assertIn('button button-secondary', content)
-        self.assertIn('button serious', content)
+        # Pulsante submit usa classi Wagtail: bicolor button--icon serious
+        self.assertIn('bicolor button--icon serious', content)
     
     def test_send_link_page_buttons_in_actions_container(self):
         """I pulsanti della pagina invio link sono in un container con flex layout."""
@@ -375,4 +376,5 @@ class TestAdminPages(TestCase):
         content = response.content.decode('utf-8')
         # Verifica struttura con container per pulsanti (button class)
         self.assertIn('button button-secondary', content)
-        self.assertIn('type="submit"', content)
+        # Pulsante submit usa classi Wagtail: bicolor button--icon
+        self.assertIn('bicolor button--icon', content)
