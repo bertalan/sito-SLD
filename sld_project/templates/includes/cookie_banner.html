@@ -1,5 +1,5 @@
 {# Cookie Banner GDPR #}
-<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-brand-black text-white z-[9999] transform translate-y-full transition-transform duration-300">
+<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-brand-black text-white z-[9999] transform translate-y-full transition-transform duration-300" style="isolation: isolate; filter: none !important;">
     <div class="max-w-7xl mx-auto px-4 py-6">
         <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div class="flex-1">
@@ -12,15 +12,15 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <button onclick="setCookieConsent('reject')" 
+                <button id="cookie-reject-btn" 
                         class="px-4 py-2 text-sm border border-brand-gray text-brand-gray hover:bg-brand-gray hover:text-white transition-colors rounded">
                     Rifiuta
                 </button>
-                <button onclick="showCookieSettings()" 
+                <button id="cookie-settings-btn" 
                         class="px-4 py-2 text-sm border border-white text-white hover:bg-white hover:text-brand-black transition-colors rounded">
                     Personalizza
                 </button>
-                <button onclick="setCookieConsent('all')" 
+                <button id="cookie-accept-btn" 
                         class="px-4 py-2 text-sm bg-brand-accent text-white hover:bg-pink-600 transition-colors rounded font-medium">
                     Accetta tutti
                 </button>
@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="mt-4 flex justify-end">
-                <button onclick="saveCookieSettings()" 
+                <button id="cookie-save-btn" 
                         class="px-6 py-2 bg-brand-accent text-white hover:bg-pink-600 transition-colors rounded font-medium">
                     Salva preferenze
                 </button>
@@ -60,6 +60,8 @@
 
 <script>
 (function() {
+    'use strict';
+    
     const COOKIE_NAME = 'cookie_consent';
     const COOKIE_DAYS = 365;
     
@@ -87,7 +89,7 @@
     }
     
     // Imposta il cookie di consenso
-    window.setCookieConsent = function(type) {
+    function setCookieConsent(type) {
         let value;
         if (type === 'all') {
             value = JSON.stringify({ necessary: true, analytics: true });
@@ -108,16 +110,20 @@
             if (typeof initGA4 === 'function') initGA4();
             if (typeof initMatomo === 'function') initMatomo();
         }
-    };
+    }
     
     // Mostra pannello impostazioni
-    window.showCookieSettings = function() {
-        document.getElementById('cookie-settings').classList.toggle('hidden');
-    };
+    function showCookieSettings() {
+        const settings = document.getElementById('cookie-settings');
+        if (settings) {
+            settings.classList.toggle('hidden');
+        }
+    }
     
     // Salva impostazioni personalizzate
-    window.saveCookieSettings = function() {
-        const analytics = document.getElementById('cookie-analytics').checked;
+    function saveCookieSettings() {
+        const analyticsCheckbox = document.getElementById('cookie-analytics');
+        const analytics = analyticsCheckbox ? analyticsCheckbox.checked : false;
         const value = JSON.stringify({ necessary: true, analytics: analytics });
         
         const expires = new Date();
@@ -131,9 +137,57 @@
             if (typeof initGA4 === 'function') initGA4();
             if (typeof initMatomo === 'function') initMatomo();
         }
-    };
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+        const rejectBtn = document.getElementById('cookie-reject-btn');
+        const settingsBtn = document.getElementById('cookie-settings-btn');
+        const acceptBtn = document.getElementById('cookie-accept-btn');
+        const saveBtn = document.getElementById('cookie-save-btn');
+        
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setCookieConsent('reject');
+            });
+        }
+        
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showCookieSettings();
+            });
+        }
+        
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setCookieConsent('all');
+            });
+        }
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                saveCookieSettings();
+            });
+        }
+    }
     
     // Inizializza al caricamento della pagina
-    document.addEventListener('DOMContentLoaded', showBanner);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            showBanner();
+        });
+    } else {
+        setupEventListeners();
+        showBanner();
+    }
 })();
 </script>
