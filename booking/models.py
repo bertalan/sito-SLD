@@ -126,7 +126,11 @@ class Appointment(ClusterableModel):
     # Data/ora appuntamento
     date = models.DateField("Data")
     time = models.TimeField("Ora")
-    slot_count = models.PositiveIntegerField("Numero slot", default=1, help_text="Numero di slot consecutivi da 30 minuti")
+    slot_count = models.PositiveIntegerField(
+        "Numero slot", 
+        default=1, 
+        help_text="Numero di slot consecutivi da 30 minuti. Prezzo: €60 × numero slot."
+    )
     
     # Stato e pagamento
     status = models.CharField("Stato", max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -156,6 +160,7 @@ class Appointment(ClusterableModel):
         MultiFieldPanel([
             FieldPanel('date'),
             FieldPanel('time'),
+            FieldPanel('slot_count'),
             FieldPanel('consultation_type'),
             FieldPanel('notes'),
         ], heading="Appuntamento"),
@@ -164,6 +169,10 @@ class Appointment(ClusterableModel):
             FieldPanel('payment_method'),
             FieldPanel('amount_paid'),
             HelpPanel(content="""
+                <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; margin-top: 12px; border-radius: 4px;">
+                    <strong style="color: #2e7d32;">💰 Calcolo Prezzo:</strong>
+                    <p style="margin: 8px 0 0 0;">Il prezzo totale dipende dal <strong>Numero slot</strong> (nella sezione Appuntamento): €60 × slot.</p>
+                </div>
                 <div style="background: #f0f4f8; border-left: 4px solid #007d7e; padding: 12px 16px; margin-top: 12px; border-radius: 4px;">
                     <strong style="color: #007d7e;">💡 Azioni disponibili nel menu "Salva":</strong>
                     <ul style="margin: 8px 0 0 0; padding-left: 20px; line-height: 1.8;">
