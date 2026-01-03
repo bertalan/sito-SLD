@@ -40,6 +40,7 @@
                 <!-- Stripe Payment -->
                 <form action="{% url 'booking:payment_link' appointment.pk %}" method="post">
                     {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ appointment.payment_token }}">
                     <input type="hidden" name="payment_method" value="stripe">
                     <button type="submit" class="w-full bg-[#635BFF] text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#4B45C6] transition-colors flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -52,6 +53,7 @@
                 <!-- PayPal Payment -->
                 <form action="{% url 'booking:payment_link' appointment.pk %}" method="post">
                     {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ appointment.payment_token }}">
                     <input type="hidden" name="payment_method" value="paypal">
                     <button type="submit" class="w-full bg-[#0070BA] text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#003087] transition-colors flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -64,6 +66,7 @@
                 <!-- Entrambi i metodi disponibili -->
                 <form action="{% url 'booking:payment_link' appointment.pk %}" method="post" class="space-y-4">
                     {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ appointment.payment_token }}">
                     
                     <button type="submit" name="payment_method" value="stripe" class="w-full bg-[#635BFF] text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-[#4B45C6] transition-colors flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">

@@ -389,16 +389,21 @@ class PaymentLinkView(View):
     def post(self, request, appointment_id):
         """Processa il pagamento dal link."""
         from django.shortcuts import get_object_or_404
+        from django.http import HttpResponseRedirect
         
         token = request.POST.get('token') or request.GET.get('token')
         appointment = get_object_or_404(Appointment, id=appointment_id)
         
         # Verifica token
         if not token or token != appointment.payment_token:
-            return JsonResponse({'error': 'Token non valido'}, status=403)
+            return render(request, 'booking/payment_link_error.html', {
+                'error': 'Token non valido o scaduto.'
+            }, status=403)
         
         if appointment.status != 'pending':
-            return JsonResponse({'error': 'Appuntamento non più disponibile'}, status=400)
+            return render(request, 'booking/payment_link_error.html', {
+                'error_message': 'Questo appuntamento è già stato pagato o annullato.'
+            })
         
         # Aggiorna metodo di pagamento se cambiato
         new_method = request.POST.get('payment_method')
@@ -415,12 +420,9 @@ class PaymentLinkView(View):
         result = payment_service.create_payment(request, appointment, data)
         
         if result.success:
-            return JsonResponse({
-                'success': True,
-                'redirect_url': result.redirect_url
-            })
+            # Redirect diretto al gateway di pagamento
+            return HttpResponseRedirect(result.redirect_url)
         else:
-            return JsonResponse({
-                'success': False,
-                'error': result.error
-            }, status=400)
+            return render(request, 'booking/payment_link_error.html', {
+                'error_message': f'Errore durante la creazione del pagamento: {result.error}'
+            })
