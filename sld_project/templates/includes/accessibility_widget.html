@@ -256,6 +256,36 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
         filter: invert(1) hue-rotate(180deg) !important;
     }
     
+    /* ═══════════════════════════════════════════════════════════════════════════
+       ALTO CONTRASTO: FOOTER LEGGIBILE
+       ═══════════════════════════════════════════════════════════════════════════ */
+    body.a11y-contrast-high footer {
+        background: #000 !important;
+    }
+    body.a11y-contrast-high footer * {
+        color: #fff !important;
+    }
+    body.a11y-contrast-high footer .text-brand-gray,
+    body.a11y-contrast-high footer .text-brand-gray * {
+        color: #ccc !important;
+    }
+    body.a11y-contrast-high footer a {
+        color: #ff0 !important;
+        text-decoration: underline !important;
+    }
+    body.a11y-contrast-high footer a:hover {
+        color: #fff !important;
+    }
+    body.a11y-contrast-high footer .border-brand-accent,
+    body.a11y-contrast-high footer .border-l-2 {
+        border-color: #ff0 !important;
+    }
+    
+    /* Contrasto invertito: footer */
+    body.a11y-contrast-inverted footer {
+        filter: invert(1) hue-rotate(180deg);
+    }
+    
     /* Evidenzia Link */
     body.a11y-highlight-links a {
         background-color: #ff0 !important;
