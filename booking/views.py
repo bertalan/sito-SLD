@@ -369,12 +369,13 @@ class PaymentLinkView(View):
                 'error_message': 'Questo appuntamento è già stato pagato o annullato.'
             })
         
-        # Calcola importo dovuto
-        amount_due = appointment.service.prezzo if appointment.service else Decimal('60.00')
+        # Usa il prezzo calcolato dal modello (basato su slot_count e BOOKING_PRICE_CENTS)
+        amount_due = Decimal(appointment.total_price_cents) / 100
         
         context = {
             'appointment': appointment,
             'amount_due': amount_due,
+            'amount_due_display': appointment.total_price_display,
             'payment_method': appointment.payment_method,
             'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
             'paypal_client_id': settings.PAYPAL_CLIENT_ID,

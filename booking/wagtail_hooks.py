@@ -29,9 +29,9 @@ class RefundLogFormatter(LogFormatter):
         amount = data.get('amount', '?')
         refund_id = data.get('refund_id', '?')
         method = data.get('method', '?')
-        service = data.get('service', 'Consulenza')
+        consultation_type = data.get('consultation_type', '')
         client = data.get('client', '')
-        return f'💰 Rimborso di €{amount} effettuato per {client} - Servizio: {service} - Metodo: {method} (ID: {refund_id})'
+        return f'💰 Rimborso di €{amount} per {client} ({consultation_type}) - Metodo: {method} - ID: {refund_id}'
 
 
 # Formatter per azione invio link con dettagli
@@ -43,9 +43,10 @@ class SendPaymentLinkLogFormatter(LogFormatter):
         data = log_entry.data or {}
         email = data.get('email', '?')
         method = data.get('method', '?')
-        service = data.get('service', 'Consulenza')
+        consultation_type = data.get('consultation_type', '')
+        price = data.get('price', '?')
         client = data.get('client', '')
-        return f'📧 Link di pagamento inviato a {email} per {client} - Servizio: {service} - Metodo: {method}'
+        return f'📧 Link inviato a {email} per {client} ({consultation_type}) - €{price} - Metodo: {method}'
 
 
 class CalendarAdminView(WagtailAdminTemplateMixin, TemplateView):
@@ -476,7 +477,6 @@ class RefundPaymentView(WagtailAdminTemplateMixin, View):
             messages.success(request, f"Rimborso effettuato con successo! ID: {refund_id}")
             
             # Audit log in Wagtail history
-            service_name = appointment.get_consultation_type_display()
             wagtail_log(
                 instance=appointment,
                 action='booking.refund',
@@ -485,7 +485,7 @@ class RefundPaymentView(WagtailAdminTemplateMixin, View):
                     'amount': str(appointment.amount_paid),
                     'refund_id': refund_id,
                     'method': appointment.get_payment_method_display(),
-                    'service': service_name,
+                    'consultation_type': appointment.get_consultation_type_display(),
                     'client': f'{appointment.first_name} {appointment.last_name}',
                 }
             )
@@ -576,7 +576,6 @@ class SendPaymentLinkView(WagtailAdminTemplateMixin, View):
             messages.success(request, f"Link di pagamento inviato a {appointment.email}!")
             
             # Audit log in Wagtail history
-            service_name = appointment.get_consultation_type_display()
             wagtail_log(
                 instance=appointment,
                 action='booking.send_payment_link',
@@ -584,7 +583,8 @@ class SendPaymentLinkView(WagtailAdminTemplateMixin, View):
                 data={
                     'email': appointment.email,
                     'method': appointment.get_payment_method_display(),
-                    'service': service_name,
+                    'consultation_type': appointment.get_consultation_type_display(),
+                    'price': appointment.total_price_display,
                     'client': f'{appointment.first_name} {appointment.last_name}',
                 }
             )

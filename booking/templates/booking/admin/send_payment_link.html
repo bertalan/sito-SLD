@@ -50,8 +50,11 @@
                     <dt style="font-weight: 600;">Ora:</dt>
                     <dd style="margin: 0;">{{ appointment.time|time:"H:i" }}</dd>
                     
-                    <dt style="font-weight: 600;">Servizio:</dt>
+                    <dt style="font-weight: 600;">Modalità:</dt>
                     <dd style="margin: 0;">{{ appointment.get_consultation_type_display }}</dd>
+                    
+                    <dt style="font-weight: 600;">Importo:</dt>
+                    <dd style="margin: 0; color: #059669; font-weight: 600;">€{{ appointment.total_price_display }}</dd>
                 </dl>
             </div>
             
