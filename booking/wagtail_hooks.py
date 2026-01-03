@@ -380,3 +380,232 @@ def register_booking_menu():
         icon_name='calendar-check',
         order=400
     )
+
+
+# =============================================================================
+# VIEW PER AZIONI PAGAMENTO (Rimborso e Invio Link)
+# =============================================================================
+
+class RefundPaymentView(WagtailAdminTemplateMixin, View):
+    """View per rimborsare un pagamento."""
+    
+    page_title = "Rimborsa Pagamento"
+    
+    def get(self, request, appointment_id):
+        """Mostra conferma rimborso con captcha."""
+        import random
+        
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if not appointment.can_refund:
+            from django.contrib import messages
+            messages.error(request, "Questo appuntamento non può essere rimborsato.")
+            return HttpResponseRedirect(
+                reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+            )
+        
+        # Genera captcha matematico
+        num1 = random.randint(10, 50)
+        num2 = random.randint(1, 20)
+        
+        return render(request, 'booking/admin/refund_confirm.html', {
+            'appointment': appointment,
+            'num1': num1,
+            'num2': num2,
+            'expected_result': num1 + num2,
+        })
+    
+    def post(self, request, appointment_id):
+        """Esegue il rimborso dopo verifica captcha."""
+        from django.contrib import messages
+        from . import payment_service as ps
+        
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if not appointment.can_refund:
+            messages.error(request, "Questo appuntamento non può essere rimborsato.")
+            return HttpResponseRedirect(
+                reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+            )
+        
+        # Verifica captcha
+        try:
+            expected = int(request.POST.get('expected_result', 0))
+            user_result = int(request.POST.get('captcha_result', -1))
+            if user_result != expected:
+                messages.error(request, "Verifica di sicurezza fallita. Riprova.")
+                return HttpResponseRedirect(reverse('booking_refund', args=[appointment.pk]))
+        except (ValueError, TypeError):
+            messages.error(request, "Inserisci un numero valido per la verifica.")
+            return HttpResponseRedirect(reverse('booking_refund', args=[appointment.pk]))
+        
+        # Esegui rimborso
+        result = ps.refund_payment(appointment)
+        if result.get('success'):
+            refund_id = result.get('refund_id')
+            messages.success(request, f"Rimborso effettuato con successo! ID: {refund_id}")
+            
+            # Invia email di notifica rimborso al cliente
+            from . import email_service
+            email_service.send_refund_notification(appointment, refund_id)
+        else:
+            messages.error(request, f"Errore nel rimborso: {result.get('error')}")
+        
+        return HttpResponseRedirect(
+            reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+        )
+
+
+class SendPaymentLinkView(WagtailAdminTemplateMixin, View):
+    """View per inviare il link di pagamento."""
+    
+    page_title = "Invia Link Pagamento"
+    
+    def get(self, request, appointment_id):
+        """Mostra form per invio link con captcha."""
+        import random
+        
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if not appointment.can_send_payment_link:
+            from django.contrib import messages
+            messages.error(request, "Non è possibile inviare il link per questo appuntamento.")
+            return HttpResponseRedirect(
+                reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+            )
+        
+        # Genera captcha matematico
+        num1 = random.randint(5, 30)
+        num2 = random.randint(1, 15)
+        
+        return render(request, 'booking/admin/send_payment_link.html', {
+            'appointment': appointment,
+            'payment_methods': [
+                ('stripe', 'Carta di credito (Stripe)'),
+                ('paypal', 'PayPal'),
+            ],
+            'num1': num1,
+            'num2': num2,
+            'expected_result': num1 + num2,
+        })
+    
+    def post(self, request, appointment_id):
+        """Invia il link di pagamento dopo verifica captcha."""
+        from django.contrib import messages
+        from . import payment_service as ps
+        import secrets
+        
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        if not appointment.can_send_payment_link:
+            messages.error(request, "Non è possibile inviare il link per questo appuntamento.")
+            return HttpResponseRedirect(
+                reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+            )
+        
+        # Verifica captcha
+        try:
+            expected = int(request.POST.get('expected_result', 0))
+            user_result = int(request.POST.get('captcha_result', -1))
+            if user_result != expected:
+                messages.error(request, "Verifica di sicurezza fallita. Riprova.")
+                return HttpResponseRedirect(reverse('booking_send_payment_link', args=[appointment.pk]))
+        except (ValueError, TypeError):
+            messages.error(request, "Inserisci un numero valido per la verifica.")
+            return HttpResponseRedirect(reverse('booking_send_payment_link', args=[appointment.pk]))
+        
+        # Aggiorna metodo di pagamento se specificato
+        new_method = request.POST.get('payment_method')
+        if new_method in ['stripe', 'paypal']:
+            appointment.payment_method = new_method
+        
+        # Genera token se non esiste
+        if not appointment.payment_token:
+            appointment.payment_token = secrets.token_urlsafe(32)
+        
+        appointment.save()
+        
+        # Invia email con link
+        result = ps.send_payment_link(appointment, request)
+        if result:
+            messages.success(request, f"Link di pagamento inviato a {appointment.email}!")
+        else:
+            messages.error(request, "Errore nell'invio dell'email.")
+        
+        return HttpResponseRedirect(
+            reverse('wagtailsnippets_booking_appointment:edit', args=[appointment.pk])
+        )
+
+
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+
+
+@hooks.register('register_admin_urls')
+def register_payment_action_urls():
+    """Registra URL per azioni pagamento."""
+    return [
+        path('booking/refund/<int:appointment_id>/', RefundPaymentView.as_view(), name='booking_refund'),
+        path('booking/send-payment-link/<int:appointment_id>/', SendPaymentLinkView.as_view(), name='booking_send_payment_link'),
+    ]
+
+
+from wagtail.snippets.action_menu import ActionMenuItem
+
+
+class RefundPaymentActionItem(ActionMenuItem):
+    """Pulsante Rimborsa Pagamento nel menu azioni snippet."""
+    name = 'refund_payment'
+    label = "💰 Rimborsa Pagamento"
+    
+    def is_shown(self, context):
+        instance = context.get('instance')
+        if instance and hasattr(instance, 'can_refund'):
+            return instance.can_refund
+        return False
+    
+    def get_url(self, context):
+        instance = context.get('instance')
+        if instance:
+            return reverse('booking_refund', args=[instance.pk])
+        return '#'
+
+
+class SendPaymentLinkActionItem(ActionMenuItem):
+    """Pulsante Invia Link Pagamento nel menu azioni snippet."""
+    name = 'send_payment_link'
+    label = "📧 Invia Link Pagamento"
+    
+    def is_shown(self, context):
+        instance = context.get('instance')
+        if instance and hasattr(instance, 'can_send_payment_link'):
+            return instance.can_send_payment_link
+        return False
+    
+    def get_url(self, context):
+        instance = context.get('instance')
+        if instance:
+            return reverse('booking_send_payment_link', args=[instance.pk])
+        return '#'
+
+
+@hooks.register('construct_snippet_action_menu')
+def add_payment_actions_to_appointment(menu_items, request, context):
+    """Aggiunge azioni pagamento al menu snippet Appointment."""
+    instance = context.get('instance')
+    
+    # Solo per Appointment
+    if instance and isinstance(instance, Appointment):
+        # Inserisci le azioni prima del pulsante Delete
+        insert_position = len(menu_items)
+        for i, item in enumerate(menu_items):
+            if item.name == 'delete':
+                insert_position = i
+                break
+        
+        if instance.can_send_payment_link:
+            menu_items.insert(insert_position, SendPaymentLinkActionItem())
+            insert_position += 1
+        
+        if instance.can_refund:
+            menu_items.insert(insert_position, RefundPaymentActionItem())

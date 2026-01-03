@@ -342,3 +342,83 @@ class PayPalSuccessView(TemplateView):
                 pass
         
         return context
+
+
+class PaymentLinkView(View):
+    """
+    View per il pagamento tramite link diretto.
+    Usata quando lo studio invia il link di pagamento al cliente.
+    """
+    
+    def get(self, request, appointment_id):
+        """Mostra la pagina di pagamento con i dati dell'appuntamento."""
+        from django.shortcuts import get_object_or_404
+        
+        token = request.GET.get('token')
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        # Verifica token
+        if not token or token != appointment.payment_token:
+            return render(request, 'booking/payment_link_error.html', {
+                'error': 'Link di pagamento non valido o scaduto.'
+            }, status=403)
+        
+        # Verifica che sia ancora pending
+        if appointment.status != 'pending':
+            return render(request, 'booking/payment_link_error.html', {
+                'error_message': 'Questo appuntamento è già stato pagato o annullato.'
+            })
+        
+        # Calcola importo dovuto
+        amount_due = appointment.service.prezzo if appointment.service else Decimal('60.00')
+        
+        context = {
+            'appointment': appointment,
+            'amount_due': amount_due,
+            'payment_method': appointment.payment_method,
+            'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+            'paypal_client_id': settings.PAYPAL_CLIENT_ID,
+            'payment_mode': settings.PAYMENT_MODE,
+            'is_demo_mode': payment_service.is_demo,
+        }
+        
+        return render(request, 'booking/payment_link.html', context)
+    
+    def post(self, request, appointment_id):
+        """Processa il pagamento dal link."""
+        from django.shortcuts import get_object_or_404
+        
+        token = request.POST.get('token') or request.GET.get('token')
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        
+        # Verifica token
+        if not token or token != appointment.payment_token:
+            return JsonResponse({'error': 'Token non valido'}, status=403)
+        
+        if appointment.status != 'pending':
+            return JsonResponse({'error': 'Appuntamento non più disponibile'}, status=400)
+        
+        # Aggiorna metodo di pagamento se cambiato
+        new_method = request.POST.get('payment_method')
+        if new_method in ['stripe', 'paypal']:
+            appointment.payment_method = new_method
+            appointment.save(update_fields=['payment_method'])
+        
+        # Crea sessione di pagamento
+        data = {
+            'date': appointment.date.isoformat(),
+            'time': appointment.time.strftime('%H:%M'),
+        }
+        
+        result = payment_service.create_payment(request, appointment, data)
+        
+        if result.success:
+            return JsonResponse({
+                'success': True,
+                'redirect_url': result.redirect_url
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': result.error
+            }, status=400)

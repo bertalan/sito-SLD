@@ -277,3 +277,221 @@ Il file calendario (.ics) è allegato a questa email.
     except Exception as e:
         logger.error(f"ERRORE invio email studio a {settings.STUDIO_EMAIL}: {type(e).__name__}: {e}")
         raise
+
+
+def send_payment_link_email(appointment, payment_url):
+    """
+    Invia email al cliente con il link per completare il pagamento.
+    
+    Args:
+        appointment: Istanza Appointment
+        payment_url: URL completo per il pagamento
+    
+    Returns:
+        bool: True se l'email è stata inviata
+    """
+    context = _get_studio_settings()
+    data_italiana = format_date_italian(appointment.date)
+    ora_inizio = appointment.time.strftime('%H:%M')
+    ora_fine = appointment.end_time.strftime('%H:%M')
+    importo = appointment.total_price_display
+    
+    metodo_display = "Carta di credito" if appointment.payment_method == 'stripe' else "PayPal"
+    
+    subject = f"Completa il pagamento - Appuntamento {data_italiana}"
+    
+    text_content = f"""Gentile {appointment.first_name},
+
+Ti inviamo il link per completare il pagamento del tuo appuntamento.
+
+RIEPILOGO APPUNTAMENTO:
+- Data: {data_italiana}
+- Orario: {ora_inizio} - {ora_fine}
+- Importo: €{importo}
+- Metodo di pagamento: {metodo_display}
+
+Per completare il pagamento, clicca sul seguente link:
+{payment_url}
+
+Il link è valido per le prossime 24 ore.
+
+Se hai bisogno di assistenza o desideri modificare il metodo di pagamento, 
+contattaci rispondendo a questa email.
+
+Cordiali saluti,
+
+{context['studio_name']}
+{context['studio_address']}
+Email: {context['studio_email']}
+PEC: {context['studio_pec']}
+Tel: {context['studio_phone']}
+"""
+    
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[appointment.email],
+        reply_to=[context['studio_email']],
+    )
+    
+    try:
+        result = email.send()
+        logger.info(f"Email link pagamento inviata a {appointment.email} (result={result})")
+        return bool(result)
+    except Exception as e:
+        logger.error(f"ERRORE invio email link pagamento a {appointment.email}: {type(e).__name__}: {e}")
+        return False
+
+
+def send_refund_notification(appointment, refund_id):
+    """
+    Invia email al cliente per confermare l'avvenuto rimborso.
+    
+    Args:
+        appointment: Istanza Appointment
+        refund_id: ID del rimborso effettuato
+    
+    Returns:
+        bool: True se l'email è stata inviata
+    """
+    context = _get_studio_settings()
+    data_italiana = format_date_italian(appointment.date)
+    ora_inizio = appointment.time.strftime('%H:%M')
+    importo = appointment.amount_paid
+    
+    metodo_display = "Carta di credito (Stripe)" if appointment.payment_method == 'stripe' else "PayPal"
+    
+    subject = f"Conferma rimborso - Appuntamento del {data_italiana}"
+    
+    text_content = f"""Gentile {appointment.first_name},
+
+Ti confermiamo che il rimborso relativo al tuo appuntamento è stato effettuato con successo.
+
+DETTAGLI RIMBORSO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 Appuntamento:     {data_italiana} ore {ora_inizio}
+💰 Importo rimborsato: €{importo:.2f}
+💳 Metodo:           {metodo_display}
+🔖 ID Rimborso:      {refund_id}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEMPISTICHE:
+Il rimborso verrà accreditato sul tuo metodo di pagamento originale entro:
+- Carte di credito/debito: 5-10 giorni lavorativi
+- PayPal: 3-5 giorni lavorativi
+
+Se dopo questo periodo non hai ricevuto il rimborso, ti preghiamo di:
+1. Verificare l'estratto conto del metodo di pagamento utilizzato
+2. Contattare la tua banca o PayPal con l'ID rimborso sopra indicato
+3. Contattarci per ulteriore assistenza
+
+Ci scusiamo per eventuali disagi e ti ringraziamo per la comprensione.
+
+Cordiali saluti,
+
+{context['studio_name']}
+{context['studio_address']}
+Email: {context['studio_email']}
+PEC: {context['studio_pec']}
+Tel: {context['studio_phone']}
+"""
+    
+    html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; background-color: #f3f4f6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            
+            <!-- Header con icona rimborso -->
+            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 32px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
+                    Rimborso Confermato
+                </h1>
+            </div>
+            
+            <!-- Corpo email -->
+            <div style="padding: 32px;">
+                <p style="margin: 0 0 24px 0; color: #374151;">
+                    Gentile <strong>{appointment.first_name}</strong>,
+                </p>
+                <p style="margin: 0 0 24px 0; color: #374151;">
+                    Ti confermiamo che il rimborso relativo al tuo appuntamento è stato effettuato con successo.
+                </p>
+                
+                <!-- Box dettagli rimborso -->
+                <div style="background-color: #ecfdf5; border-radius: 8px; padding: 24px; margin: 24px 0;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #059669;">
+                        Dettagli Rimborso
+                    </h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">📅 Appuntamento:</td>
+                            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{data_italiana} ore {ora_inizio}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">💰 Importo rimborsato:</td>
+                            <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #059669; font-size: 18px;">€{importo:.2f}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">💳 Metodo:</td>
+                            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{metodo_display}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #6b7280;">🔖 ID Rimborso:</td>
+                            <td style="padding: 8px 0; text-align: right; font-family: monospace; font-size: 12px; color: #6b7280;">{refund_id}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Info tempistiche -->
+                <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 24px 0; border-radius: 0 8px 8px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #92400e;">⏱️ Tempistiche accredito</h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #78350f;">
+                        <li>Carte di credito/debito: 5-10 giorni lavorativi</li>
+                        <li>PayPal: 3-5 giorni lavorativi</li>
+                    </ul>
+                </div>
+                
+                <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px;">
+                    Ci scusiamo per eventuali disagi e ti ringraziamo per la comprensione.
+                </p>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #f9fafb; padding: 24px 32px; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                    <strong>{context['studio_name']}</strong><br>
+                    {context['studio_address']}<br>
+                    📧 {context['studio_email']}<br>
+                    📞 {context['studio_phone']}
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+    
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[appointment.email],
+        reply_to=[context['studio_email']],
+    )
+    email.attach_alternative(html_content, "text/html")
+    
+    try:
+        result = email.send()
+        logger.info(f"Email rimborso inviata a {appointment.email} per appuntamento {appointment.pk} (result={result})")
+        return bool(result)
+    except Exception as e:
+        logger.error(f"ERRORE invio email rimborso a {appointment.email}: {type(e).__name__}: {e}")
+        return False

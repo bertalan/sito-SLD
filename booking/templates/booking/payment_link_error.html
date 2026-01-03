@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="pt-32 pb-24 min-h-screen flex items-center bg-brand-white">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+        
+        <i data-lucide="alert-circle" class="w-20 h-20 text-red-500 mx-auto mb-8"></i>
+        <h1 class="text-4xl md:text-5xl font-bold tracking-tighter text-brand-black mb-4">
+            LINK NON VALIDO<span class="text-brand-accent">,</span>
+        </h1>
+        
+        <p class="text-brand-gray text-lg max-w-2xl mx-auto mb-8">
+            {{ error_message|default:"Il link di pagamento non è valido o è scaduto." }}
+        </p>
+        
+        <div class="bg-brand-silver p-6 rounded max-w-md mx-auto mb-8">
+            <p class="text-brand-gray text-sm">
+                Se hai bisogno di assistenza, contattaci all'indirizzo email dello studio o richiedi un nuovo link di pagamento.
+            </p>
+        </div>
+        
+        <a href="/" class="inline-block bg-brand-accent text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-brand-black transition-colors">
+            Torna alla home
+        </a>
+        
+    </div>
+</section>
+{% endblock %}

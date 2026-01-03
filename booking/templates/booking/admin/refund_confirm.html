@@ -1,0 +1,94 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags %}
+
+{% block titletag %}Rimborsa Pagamento{% endblock %}
+
+{% block content %}
+<header class="w-header">
+    <div class="w-container">
+        <h1 class="w-header__title" id="header-title">
+            <svg class="icon icon-doc-full-inverse" aria-hidden="true"><use href="#icon-doc-full-inverse"></use></svg>
+            Rimborsa Pagamento
+        </h1>
+    </div>
+</header>
+
+<div class="w-container">
+    <div class="w-panel">
+        <div class="w-panel__content">
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                <p style="color: #991b1b; font-weight: 600; margin: 0 0 1rem 0;">
+                    ⚠️ Attenzione: questa azione non può essere annullata!
+                </p>
+                <p style="color: #7f1d1d; margin: 0;">
+                    Stai per rimborsare il pagamento per l'appuntamento di 
+                    <strong>{{ appointment.first_name }} {{ appointment.last_name }}</strong>.
+                </p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Dettagli Appuntamento
+                </h3>
+                <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem;">
+                    <dt style="font-weight: 600;">Data:</dt>
+                    <dd style="margin: 0;">{{ appointment.date|date:"l d F Y" }}</dd>
+                    
+                    <dt style="font-weight: 600;">Ora:</dt>
+                    <dd style="margin: 0;">{{ appointment.time|time:"H:i" }}</dd>
+                    
+                    <dt style="font-weight: 600;">Metodo pagamento:</dt>
+                    <dd style="margin: 0;">{{ appointment.get_payment_method_display }}</dd>
+                    
+                    <dt style="font-weight: 600;">Importo pagato:</dt>
+                    <dd style="margin: 0; color: #059669; font-weight: 600;">€{{ appointment.amount_paid }}</dd>
+                    
+                    {% if appointment.stripe_payment_intent_id %}
+                    <dt style="font-weight: 600;">ID Stripe:</dt>
+                    <dd style="margin: 0; font-family: monospace; font-size: 0.875rem;">{{ appointment.stripe_payment_intent_id }}</dd>
+                    {% endif %}
+                    
+                    {% if appointment.paypal_payment_id %}
+                    <dt style="font-weight: 600;">ID PayPal:</dt>
+                    <dd style="margin: 0; font-family: monospace; font-size: 0.875rem;">{{ appointment.paypal_payment_id }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Captcha matematico -->
+                <div style="background: #fef3c7; border: 1px solid #fcd34d; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">
+                        🔐 Verifica di sicurezza
+                    </label>
+                    <p style="color: #78350f; font-size: 0.875rem; margin: 0 0 0.75rem 0;">
+                        Per confermare il rimborso, risolvi questa operazione:
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.25rem; font-weight: 600; color: #78350f;">
+                            {{ num1 }} + {{ num2 }} =
+                        </span>
+                        <input type="hidden" name="expected_result" value="{{ expected_result }}">
+                        <input type="number" name="captcha_result" required
+                               style="width: 80px; padding: 0.5rem; font-size: 1.25rem; text-align: center; border: 2px solid #fcd34d; border-radius: 0.375rem;"
+                               placeholder="?">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <a href="{% url 'wagtailsnippets_booking_appointment:edit' appointment.pk %}" 
+                       class="button button-secondary">
+                        Annulla
+                    </a>
+                    <button type="submit" class="button button--icon button-secondary" style="background: #dc2626; color: white;">
+                        <svg class="icon icon-cross" aria-hidden="true"><use href="#icon-cross"></use></svg>
+                        Conferma Rimborso
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

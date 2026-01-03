@@ -11,4 +11,5 @@ urlpatterns = [
     path('cancel/', views.BookingCancelView.as_view(), name='cancel'),
     path('webhook/', views.stripe_webhook, name='webhook'),
     path('paypal/execute/', views.paypal_execute, name='paypal_execute'),
+    path('pay/<int:appointment_id>/', views.PaymentLinkView.as_view(), name='payment_link'),
 ]

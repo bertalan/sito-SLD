@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from datetime import datetime, timedelta
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
-from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.admin.panels import FieldPanel, InlinePanel, HelpPanel, MultiFieldPanel
 from wagtail.snippets.models import register_snippet
 from sld_project.validators import validate_attachment_file
 
@@ -135,22 +135,35 @@ class Appointment(ClusterableModel):
     paypal_payment_id = models.CharField(max_length=255, blank=True)
     amount_paid = models.DecimalField("Importo pagato", max_digits=10, decimal_places=2, default=0)
     
+    # Rimborso
+    refund_id = models.CharField("ID Rimborso", max_length=255, blank=True)
+    refunded_at = models.DateTimeField("Data rimborso", null=True, blank=True)
+    
+    # Token per link pagamento
+    payment_token = models.CharField("Token pagamento", max_length=64, blank=True)
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     panels = [
-        FieldPanel('first_name'),
-        FieldPanel('last_name'),
-        FieldPanel('email'),
-        FieldPanel('phone'),
-        FieldPanel('notes'),
-        FieldPanel('consultation_type'),
-        FieldPanel('date'),
-        FieldPanel('time'),
-        FieldPanel('status'),
-        FieldPanel('payment_method'),
-        FieldPanel('amount_paid'),
+        MultiFieldPanel([
+            FieldPanel('first_name'),
+            FieldPanel('last_name'),
+            FieldPanel('email'),
+            FieldPanel('phone'),
+        ], heading="Dati Cliente"),
+        MultiFieldPanel([
+            FieldPanel('date'),
+            FieldPanel('time'),
+            FieldPanel('consultation_type'),
+            FieldPanel('notes'),
+        ], heading="Appuntamento"),
+        MultiFieldPanel([
+            FieldPanel('status'),
+            FieldPanel('payment_method'),
+            FieldPanel('amount_paid'),
+        ], heading="Stato e Pagamento"),
         InlinePanel('attachments', label="📎 Documenti allegati", heading="Documenti allegati"),
     ]
     
@@ -218,6 +231,37 @@ class Appointment(ClusterableModel):
     def total_price_display(self):
         """Prezzo totale formattato per la visualizzazione (es: 60,00)."""
         return f"{self.total_price_cents / 100:.2f}".replace('.', ',')
+    
+    @property
+    def can_refund(self):
+        """Verifica se l'appuntamento può essere rimborsato."""
+        return (
+            self.status == 'cancelled' and 
+            self.amount_paid > 0 and 
+            not self.refund_id  # Non già rimborsato
+        )
+    
+    @property
+    def can_send_payment_link(self):
+        """Verifica se si può inviare il link di pagamento."""
+        return self.status == 'pending'
+    
+    def get_payment_link_url(self, request=None):
+        """Genera l'URL per il pagamento diretto."""
+        import secrets
+        from django.urls import reverse
+        
+        # Genera token se non esiste
+        if not self.payment_token:
+            self.payment_token = secrets.token_urlsafe(32)
+            self.save(update_fields=['payment_token'])
+        
+        path = reverse('booking:payment_link', kwargs={'appointment_id': self.id})
+        url = f"{path}?token={self.payment_token}"
+        
+        if request:
+            return request.build_absolute_uri(url)
+        return url
     
     @classmethod
     def get_available_slots(cls, date):

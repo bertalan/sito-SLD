@@ -410,3 +410,116 @@ class PaymentService:
 
 # Istanza singleton del servizio
 payment_service = PaymentService()
+
+
+def refund_payment(appointment):
+    """
+    Esegue il rimborso per un appuntamento.
+    
+    Returns:
+        dict: {'success': True/False, 'refund_id': str, 'error': str}
+    """
+    from django.utils import timezone
+    
+    if not appointment.can_refund:
+        return {'success': False, 'error': 'Appuntamento non rimborsabile'}
+    
+    try:
+        if appointment.payment_method == 'stripe':
+            result = _refund_stripe(appointment)
+        elif appointment.payment_method == 'paypal':
+            result = _refund_paypal(appointment)
+        else:
+            return {'success': False, 'error': f'Metodo pagamento non supportato: {appointment.payment_method}'}
+        
+        if result['success']:
+            appointment.refund_id = result['refund_id']
+            appointment.refunded_at = timezone.now()
+            appointment.save(update_fields=['refund_id', 'refunded_at'])
+            logger.info(f"Rimborso completato per appuntamento {appointment.id}: {result['refund_id']}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Errore rimborso appuntamento {appointment.id}: {e}")
+        return {'success': False, 'error': str(e)}
+
+
+def _refund_stripe(appointment):
+    """Esegue rimborso Stripe."""
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    
+    try:
+        refund = stripe.Refund.create(
+            payment_intent=appointment.stripe_payment_intent_id,
+            reason='requested_by_customer'
+        )
+        return {'success': True, 'refund_id': refund.id}
+    except stripe.error.StripeError as e:
+        return {'success': False, 'error': str(e)}
+
+
+def _refund_paypal(appointment):
+    """Esegue rimborso PayPal."""
+    import requests
+    
+    provider = RealPayPalProvider()
+    
+    try:
+        # PayPal richiede capture_id, non order_id
+        # Prima recuperiamo i dettagli dell'ordine per ottenere capture_id
+        order_response = requests.get(
+            f'{provider.base_url}/v2/checkout/orders/{appointment.paypal_payment_id}',
+            headers=provider._headers(),
+            timeout=30
+        )
+        
+        if order_response.status_code != 200:
+            return {'success': False, 'error': f'Ordine non trovato: {order_response.status_code}'}
+        
+        order_data = order_response.json()
+        
+        # Trova il capture_id
+        capture_id = None
+        for pu in order_data.get('purchase_units', []):
+            for capture in pu.get('payments', {}).get('captures', []):
+                capture_id = capture.get('id')
+                break
+        
+        if not capture_id:
+            return {'success': False, 'error': 'Capture ID non trovato'}
+        
+        # Esegui rimborso
+        refund_response = requests.post(
+            f'{provider.base_url}/v2/payments/captures/{capture_id}/refund',
+            headers=provider._headers(),
+            json={},  # Rimborso completo
+            timeout=30
+        )
+        
+        if refund_response.status_code in [200, 201]:
+            refund_data = refund_response.json()
+            return {'success': True, 'refund_id': refund_data.get('id', capture_id)}
+        else:
+            return {'success': False, 'error': f'Rimborso fallito: {refund_response.text}'}
+            
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
+def send_payment_link(appointment, request=None):
+    """
+    Invia il link di pagamento via email al cliente.
+    
+    Returns:
+        bool: True se l'email è stata inviata
+    """
+    from . import email_service
+    
+    if not appointment.can_send_payment_link:
+        return False
+    
+    payment_url = appointment.get_payment_link_url(request)
+    
+    return email_service.send_payment_link_email(appointment, payment_url)
