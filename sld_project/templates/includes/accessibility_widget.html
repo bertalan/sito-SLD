@@ -3,11 +3,13 @@ Widget Accessibilità - Conformità WCAG 2.0 / Legge Stanca / D.Lgs. 33/2013
 Fornisce controlli per ipovedenti e utenti con disabilità visive.
 {% endcomment %}
 
-<!-- Container pulsanti accessibilità (allineati verticalmente) -->
-<div class="a11y-widget fixed bottom-[116px] right-6 z-[9996] flex flex-col items-center gap-2">
+<!-- Container pulsanti accessibilità (posizione dinamica) -->
+<div id="a11y-buttons" class="a11y-widget fixed z-[9996] flex flex-col items-center gap-2 transition-all duration-300
+    right-4 sm:right-6
+    bottom-4">
     <!-- Pulsante Reset Emergenza (singolo click = reset) -->
     <button id="a11y-emergency-reset" 
-            class="w-10 h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 flex items-center justify-center"
+            class="w-9 h-9 sm:w-10 sm:h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 flex items-center justify-center rounded"
             aria-label="Reset tutte le impostazioni accessibilità"
             title="Reset Accessibilità"
             onclick="if(confirm('Vuoi resettare tutte le impostazioni di accessibilità?')) { localStorage.removeItem('a11y_preferences'); location.reload(); }">
@@ -16,22 +18,26 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
     
     <!-- Pulsante Toggle Accessibilità -->
     <button id="a11y-toggle" 
-            class="w-12 h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50 flex items-center justify-center"
+            class="w-11 h-11 sm:w-12 sm:h-12 bg-brand-black text-white rounded-full shadow-lg hover:bg-brand-accent transition-colors focus:outline-none focus:ring-4 focus:ring-brand-accent/50 flex items-center justify-center"
             aria-label="Apri pannello accessibilità"
             aria-expanded="false"
             aria-controls="a11y-panel"
             title="Opzioni Accessibilità">
         <!-- SVG inline per garantire visibilità sempre -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
             <circle cx="12" cy="12" r="3"></circle>
         </svg>
     </button>
 </div>
 
-<!-- Pannello Accessibilità -->
+<!-- Pannello Accessibilità (posizione dinamica) -->
 <div id="a11y-panel" 
-     class="a11y-widget fixed bottom-[116px] right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
+     class="a11y-widget fixed z-[9995] bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4
+     w-[calc(100vw-2rem)] sm:w-80
+     right-4 sm:right-20
+     bottom-4
+     max-h-[70vh] overflow-hidden"
      role="dialog"
      aria-labelledby="a11y-panel-title"
      aria-modal="true"
@@ -205,6 +211,36 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 
 <!-- Stili Accessibilità -->
 <style>
+    /* ═══════════════════════════════════════════════════════════════════════════
+       POSIZIONAMENTO RESPONSIVE DEI PULSANTI ACCESSIBILITÀ
+       ═══════════════════════════════════════════════════════════════════════════ */
+    
+    /* Mobile: pulsanti più piccoli, più vicini al bordo */
+    @media (max-width: 639px) {
+        #a11y-buttons {
+            right: 0.75rem !important; /* 12px */
+        }
+        #a11y-panel {
+            right: 0.75rem !important;
+            left: 0.75rem !important;
+            width: auto !important;
+        }
+    }
+    
+    /* Tablet: posizione standard */
+    @media (min-width: 640px) and (max-width: 1023px) {
+        #a11y-buttons {
+            right: 1rem;
+        }
+    }
+    
+    /* Desktop: evita interferenza con Wagtail userbar (di solito a sinistra) */
+    @media (min-width: 1024px) {
+        #a11y-buttons {
+            right: 1.5rem;
+        }
+    }
+    
     /* Switch toggle attivo */
     .a11y-switch[aria-checked="true"] {
         background-color: var(--brand-accent, #e91e63);
@@ -555,11 +591,79 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
         });
     }
     
+    // ═══════════════════════════════════════════════════════════════════════════
+    // POSIZIONAMENTO DINAMICO: evita sovrapposizione con cookie banner e userbar
+    // ═══════════════════════════════════════════════════════════════════════════
+    function updateWidgetPosition() {
+        const buttons = document.getElementById('a11y-buttons');
+        const panel = document.getElementById('a11y-panel');
+        if (!buttons) return;
+        
+        let bottomOffset = 16; // 1rem base (bottom-4)
+        
+        // Controlla se il cookie banner è visibile
+        const cookieBanner = document.getElementById('cookie-banner');
+        if (cookieBanner && !cookieBanner.classList.contains('translate-y-full')) {
+            const bannerHeight = cookieBanner.offsetHeight || 100;
+            bottomOffset = bannerHeight + 16;
+        }
+        
+        // Controlla se la Wagtail userbar è presente (solo per admin loggati)
+        const wagtailUserbar = document.querySelector('[data-wagtail-userbar]') || 
+                               document.querySelector('.wagtail-userbar') ||
+                               document.getElementById('wagtail-userbar');
+        if (wagtailUserbar) {
+            // La userbar Wagtail sta in basso a sinistra di default,
+            // ma su mobile può interferire. Aggiungi un po' di spazio.
+            const userbarRect = wagtailUserbar.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            // Se userbar è vicina al fondo
+            if (userbarRect.bottom > viewportHeight - 100) {
+                bottomOffset = Math.max(bottomOffset, viewportHeight - userbarRect.top + 16);
+            }
+        }
+        
+        // Applica posizione
+        buttons.style.bottom = bottomOffset + 'px';
+        if (panel) {
+            panel.style.bottom = bottomOffset + 'px';
+        }
+    }
+    
+    // Osserva cambiamenti nel DOM per il cookie banner
+    function setupPositionObserver() {
+        const cookieBanner = document.getElementById('cookie-banner');
+        if (cookieBanner) {
+            // Observer per cambiamenti di classe sul banner
+            const observer = new MutationObserver(() => {
+                setTimeout(updateWidgetPosition, 100);
+            });
+            observer.observe(cookieBanner, { 
+                attributes: true, 
+                attributeFilter: ['class', 'style'] 
+            });
+        }
+        
+        // Aggiorna anche su resize
+        window.addEventListener('resize', updateWidgetPosition);
+        
+        // Aggiorna periodicamente per la userbar Wagtail (caricata dinamicamente)
+        let attempts = 0;
+        const checkUserbar = setInterval(() => {
+            attempts++;
+            updateWidgetPosition();
+            if (attempts > 10) clearInterval(checkUserbar);
+        }, 500);
+    }
+    
     // Init
     document.addEventListener('DOMContentLoaded', () => {
         loadPrefs();
         applyPrefs();
         setupEventHandlers();
+        setupPositionObserver();
+        // Delay iniziale per dare tempo al banner di animare
+        setTimeout(updateWidgetPosition, 600);
     });
     
     // Applica subito se DOM già pronto
