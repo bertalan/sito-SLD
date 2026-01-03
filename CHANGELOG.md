@@ -8,6 +8,12 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 ## [1.2.0] - 2026-01-03
 
 ### ✨ Nuove Funzionalità
+- **Modalità pagamento flessibile**: `STRIPE_MODE` e `PAYPAL_MODE` supportano ora il valore `off`
+  - Se un provider è `off`, il pulsante corrispondente viene nascosto
+  - Se entrambi sono `off`, il pagamento è differito via email (pulsante mostra "Richiedi appuntamento" senza prezzo)
+- **Reinvio email da Wagtail admin**: nuova bulk action "📧 Reinvia email" per gli appuntamenti
+  - Sostituisce l'azione Django admin con una più accessibile in Wagtail
+  - Supporto selezione multipla con pagina di conferma
 - **Admin AvailabilityRule**: colonna "Stato" con badge colorati (verde attiva, grigio disabilitata)
 - **Admin Allineamento Calendario**: nuova pagina per verificare sincronizzazione Google Calendar/appuntamenti
 - **Cancellazione sicura appuntamenti orfani**: rimozione con conferma degli appuntamenti non più in Google Calendar
@@ -23,12 +29,15 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - **Pannello adattivo**: larghezza full-width su mobile, 320px su desktop
 
 ### 🔧 Refactoring Configurazione Pagamenti
+- **PaymentConfig**: nuova classe centralizzata per gestione modalità pagamento
+- **Context processor**: `payment_config_context` per accesso facile nei template
 - **Rimossi campi duplicati da SiteSettings**: `payment_mode`, `stripe_public_key`, `paypal_client_id`
 - **Tutte le chiavi pagamento ora solo in `.env`**: nessuna ridondanza tra database e file config
 - **Aggiornato `.env.example`** con tutte le variabili necessarie
 - **Migrato PayPal da SDK deprecata a API REST v2**: rimosso `paypalrestsdk`, usa `requests` direttamente
 
 ### 🐛 Bug Fix
+- **Rate limiting nei test**: `RateLimitMixin` ora rispetta `RATELIMIT_ENABLE` setting
 - **Payment link 500 error**: aggiunto import `Decimal` mancante in views.py
 - **Payment link redirect**: ora fa redirect HTTP invece di JSON response
 - **Token nascosto nei form**: aggiunto campo hidden per POST su tutte le form
@@ -37,15 +46,20 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - Dopo `migrate`, le configurazioni pagamento vanno inserite in `.env`:
   ```bash
   PAYMENT_MODE=sandbox
+  STRIPE_MODE=sandbox   # sandbox | live | off
   STRIPE_PUBLIC_KEY=pk_test_xxx
   STRIPE_SECRET_KEY=sk_test_xxx
-  PAYPAL_MODE=sandbox
+  PAYPAL_MODE=sandbox   # sandbox | live | off
   PAYPAL_CLIENT_ID=xxx
   PAYPAL_CLIENT_SECRET=xxx
   ```
 - **PayPal**: rimossa dipendenza `paypalrestsdk` (deprecata), ora usa API REST v2
 
+### 📄 Licenza
+- Progetto ora rilasciato sotto **CC-BY 4.0** (Creative Commons Attribution 4.0)
+
 ### 🧪 Test
+- **29 nuovi test TDD** per PaymentConfig e ResendEmailBulkAction
 - **Riorganizzazione struttura test**: unificata in `tests/unit/` e `tests/e2e/`
 - **Nuovi test contact** (`tests/unit/contact/test_models.py`):
   - Validazione email standard e PEC
@@ -55,7 +69,7 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
   - Validazione coordinate lat/lng (range, precisione, formato italiano)
   - Test campi obbligatori e singleton
 - **180 test E2E** tutti passanti (accessibilità, cookie banner, interazioni complete)
-- **86 test unitari** organizzati per modulo
+- **~115 test unitari** organizzati per modulo
 
 ---
 

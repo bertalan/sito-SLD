@@ -1,7 +1,7 @@
 # Studio Legale – SLD
 
 [![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](CHANGELOG.md)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
 Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di attività.
@@ -364,6 +364,18 @@ Il codice di questo progetto è rilasciato come template riutilizzabile per stud
 
 #### Font e risorse
 - Logo: SVG personalizzabile in `sld_project/static/images/StudioLegale.svg`
+
+---
+
+## 📄 Licenza
+
+Questo progetto è rilasciato sotto licenza [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+Sei libero di:
+- **Condividere** — copiare e ridistribuire il materiale in qualsiasi mezzo o formato
+- **Adattare** — remixare, trasformare e costruire sul materiale per qualsiasi scopo, anche commerciale
+
+A condizione di dare **attribuzione** appropriata, fornire un link alla licenza e indicare se sono state apportate modifiche.
 
 ---
 
