@@ -177,79 +177,128 @@ class RealStripeProvider(BasePaymentProvider):
 
 
 class RealPayPalProvider(BasePaymentProvider):
-    """Provider PayPal reale (sandbox o live in base alla config)."""
+    """Provider PayPal reale usando API REST v2 (sandbox o live in base alla config)."""
     
     def __init__(self):
-        import paypalrestsdk
-        self.paypal = paypalrestsdk
-        self.paypal.configure({
-            "mode": settings.PAYPAL_MODE,
-            "client_id": settings.PAYPAL_CLIENT_ID,
-            "client_secret": settings.PAYPAL_CLIENT_SECRET
-        })
+        import requests
+        self.requests = requests
+        self.mode = settings.PAYPAL_MODE
+        self.client_id = settings.PAYPAL_CLIENT_ID
+        self.client_secret = settings.PAYPAL_CLIENT_SECRET
+        
+        # Base URL in base alla modalità
+        if self.mode == 'live':
+            self.base_url = 'https://api-m.paypal.com'
+        else:
+            self.base_url = 'https://api-m.sandbox.paypal.com'
+        
+        self._access_token = None
+    
+    def _get_access_token(self):
+        """Ottiene un access token OAuth2 da PayPal."""
+        if self._access_token:
+            return self._access_token
+        
+        auth_url = f'{self.base_url}/v1/oauth2/token'
+        response = self.requests.post(
+            auth_url,
+            auth=(self.client_id, self.client_secret),
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            data={'grant_type': 'client_credentials'}
+        )
+        
+        if response.status_code != 200:
+            logger.error(f"PayPal auth failed: {response.text}")
+            raise Exception(f"PayPal authentication failed: {response.status_code}")
+        
+        self._access_token = response.json()['access_token']
+        return self._access_token
+    
+    def _headers(self):
+        """Headers per le richieste API."""
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self._get_access_token()}'
+        }
     
     def create_payment(self, request, appointment, data) -> PaymentResult:
         price = appointment.total_price_cents / 100
         
-        payment = self.paypal.Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"
-            },
-            "redirect_urls": {
+        order_data = {
+            "intent": "CAPTURE",
+            "purchase_units": [{
+                "reference_id": str(appointment.id),
+                "description": f"Consulenza legale - Appuntamento {data['date']}",
+                "amount": {
+                    "currency_code": "EUR",
+                    "value": f"{price:.2f}"
+                }
+            }],
+            "application_context": {
                 "return_url": request.build_absolute_uri(
                     f'/prenota/paypal/execute/?appointment_id={appointment.id}'
                 ),
-                "cancel_url": request.build_absolute_uri('/prenota/cancel/')
-            },
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "Consulenza legale",
-                        "description": f"Appuntamento {data['date']} alle {data['time']}",
-                        "quantity": "1",
-                        "price": f"{price:.2f}",
-                        "currency": "EUR"
-                    }]
-                },
-                "amount": {
-                    "total": f"{price:.2f}",
-                    "currency": "EUR"
-                },
-                "description": f"Consulenza legale - Appuntamento {data['date']}"
-            }]
-        })
-        
-        if payment.create():
-            appointment.paypal_payment_id = payment.id
-            appointment.save()
-            
-            for link in payment.links:
-                if link.rel == "approval_url":
-                    return PaymentResult(success=True, redirect_url=link.href, 
-                                       payment_id=payment.id)
-            
-            return PaymentResult(success=False, error='URL di approvazione PayPal non trovato')
-        else:
-            return PaymentResult(success=False, error=str(payment.error))
-    
-    def execute_payment(self, request, appointment) -> PaymentResult:
-        payment_id = request.GET.get('paymentId')
-        payer_id = request.GET.get('PayerID')
-        
-        if not all([payment_id, payer_id]):
-            return PaymentResult(success=False, error="Parametri mancanti")
+                "cancel_url": request.build_absolute_uri('/prenota/cancel/'),
+                "brand_name": "Studio Legale",
+                "user_action": "PAY_NOW"
+            }
+        }
         
         try:
-            payment = self.paypal.Payment.find(payment_id)
+            response = self.requests.post(
+                f'{self.base_url}/v2/checkout/orders',
+                headers=self._headers(),
+                json=order_data
+            )
             
-            if payment.execute({"payer_id": payer_id}):
+            if response.status_code not in [200, 201]:
+                logger.error(f"PayPal create order failed: {response.text}")
+                return PaymentResult(success=False, error=f"PayPal error: {response.status_code}")
+            
+            order = response.json()
+            appointment.paypal_payment_id = order['id']
+            appointment.save()
+            
+            # Trova l'URL di approvazione
+            for link in order.get('links', []):
+                if link['rel'] == 'approve':
+                    return PaymentResult(success=True, redirect_url=link['href'], 
+                                       payment_id=order['id'])
+            
+            return PaymentResult(success=False, error='URL di approvazione PayPal non trovato')
+            
+        except Exception as e:
+            logger.error(f"PayPal create payment failed: {e}")
+            return PaymentResult(success=False, error=str(e))
+    
+    def execute_payment(self, request, appointment) -> PaymentResult:
+        # PayPal v2 usa 'token' invece di 'paymentId'
+        order_id = request.GET.get('token') or appointment.paypal_payment_id
+        
+        if not order_id:
+            return PaymentResult(success=False, error="Order ID mancante")
+        
+        try:
+            # Capture il pagamento
+            response = self.requests.post(
+                f'{self.base_url}/v2/checkout/orders/{order_id}/capture',
+                headers=self._headers()
+            )
+            
+            if response.status_code not in [200, 201]:
+                logger.error(f"PayPal capture failed: {response.text}")
+                return PaymentResult(success=False, error=f"PayPal capture error: {response.status_code}")
+            
+            capture_data = response.json()
+            
+            if capture_data.get('status') == 'COMPLETED':
                 appointment.status = 'confirmed'
                 appointment.amount_paid = appointment.total_price_cents / 100
                 appointment.save()
-                return PaymentResult(success=True, payment_id=payment_id)
+                return PaymentResult(success=True, payment_id=order_id)
             else:
-                return PaymentResult(success=False, error=str(payment.error))
+                return PaymentResult(success=False, error=f"Payment status: {capture_data.get('status')}")
+                
         except Exception as e:
             logger.error(f"PayPal execute failed: {e}")
             return PaymentResult(success=False, error=str(e))

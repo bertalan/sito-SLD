@@ -20,6 +20,7 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
 - **Rimossi campi duplicati da SiteSettings**: `payment_mode`, `stripe_public_key`, `paypal_client_id`
 - **Tutte le chiavi pagamento ora solo in `.env`**: nessuna ridondanza tra database e file config
 - **Aggiornato `.env.example`** con tutte le variabili necessarie
+- **Migrato PayPal da SDK deprecata a API REST v2**: rimosso `paypalrestsdk`, usa `requests` direttamente
 
 ### ⚠️ Breaking Changes
 - Dopo `migrate`, le configurazioni pagamento vanno inserite in `.env`:
@@ -31,6 +32,7 @@ e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/)
   PAYPAL_CLIENT_ID=xxx
   PAYPAL_CLIENT_SECRET=xxx
   ```
+- **PayPal**: rimossa dipendenza `paypalrestsdk` (deprecata), ora usa API REST v2
 
 ### 🧪 Test
 - **Riorganizzazione struttura test**: unificata in `tests/unit/` e `tests/e2e/`

@@ -13,7 +13,7 @@ python-dotenv==1.0.1
 
 # Payment gateways
 stripe==14.1.0
-paypalrestsdk==1.13.3
+# PayPal: usa requests + API REST v2 (SDK deprecata rimossa)
 
 # Forms & uploads
 django-widget-tweaks==1.5.0
