@@ -2,7 +2,7 @@
 wagtail==6.4.1
 
 # Django
-Django==5.2.1
+Django==5.2.9  # Security update: CVE-2025-13372, CVE-2025-64460
 
 # Database
 psycopg2-binary==2.9.10
