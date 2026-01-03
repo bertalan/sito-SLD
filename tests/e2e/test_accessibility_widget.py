@@ -466,8 +466,8 @@ class TestResetFunctionality:
             page.close()
             context.close()
     
-    def test_emergency_reset_double_click(self, page: Page):
-        """Il doppio click sul pulsante emergenza deve resettare tutto."""
+    def test_emergency_reset_single_click(self, page: Page):
+        """Il singolo click sul pulsante emergenza (con conferma) deve resettare tutto."""
         page.goto(BASE_URL)
         reset_a11y_preferences(page)
         page.reload()
@@ -482,8 +482,11 @@ class TestResetFunctionality:
         # Chiudi il pannello
         close_a11y_panel(page)
         
-        # Doppio click sul reset emergenza via JavaScript
-        js_dblclick_id(page, "a11y-emergency-reset")
+        # Gestisci il dialog di conferma accettandolo
+        page.on("dialog", lambda dialog: dialog.accept())
+        
+        # Click sul reset emergenza
+        js_click_id(page, "a11y-emergency-reset")
         
         # Attendi il reload
         page.wait_for_url(BASE_URL + "**")

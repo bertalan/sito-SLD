@@ -4,13 +4,13 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 {% endcomment %}
 
 <!-- Container pulsanti accessibilità (allineati verticalmente) -->
-<div class="a11y-widget fixed bottom-24 right-6 z-[9996] flex flex-col items-center gap-2">
-    <!-- Pulsante Reset Emergenza (doppio click = reset) -->
+<div class="a11y-widget fixed bottom-[116px] right-6 z-[9996] flex flex-col items-center gap-2">
+    <!-- Pulsante Reset Emergenza (singolo click = reset) -->
     <button id="a11y-emergency-reset" 
             class="w-10 h-10 bg-red-600 text-white shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 flex items-center justify-center"
-            aria-label="Doppio click per resettare tutte le impostazioni accessibilità"
-            title="Reset Accessibilità (doppio click)"
-            ondblclick="localStorage.removeItem('a11y_preferences'); location.reload();">
+            aria-label="Reset tutte le impostazioni accessibilità"
+            title="Reset Accessibilità"
+            onclick="if(confirm('Vuoi resettare tutte le impostazioni di accessibilità?')) { localStorage.removeItem('a11y_preferences'); location.reload(); }">
         <span class="text-xs font-bold">R</span>
     </button>
     
@@ -31,7 +31,7 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
 
 <!-- Pannello Accessibilità -->
 <div id="a11y-panel" 
-     class="a11y-widget fixed bottom-24 right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
+     class="a11y-widget fixed bottom-[116px] right-20 z-[9995] w-80 bg-white border-2 border-brand-black shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-x-4"
      role="dialog"
      aria-labelledby="a11y-panel-title"
      aria-modal="true"
