@@ -31,7 +31,7 @@ Pillow==11.1.0
 
 # Google Calendar
 icalendar==6.1.0
-requests==2.32.3
+requests==2.32.4  # Security update: CVE-2024-47081 (.netrc credential leak)
 
 # Testing
 pytest==8.3.4
