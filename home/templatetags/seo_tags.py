@@ -88,7 +88,7 @@ def get_logo_url(context):
         if site:
             settings = SiteSettings.for_site(site)
             if settings.pk and settings.logo:
-                logo_url = settings.logo.url
+                logo_url = settings.logo.file.url
                 # Rendi URL assoluto
                 if logo_url.startswith('/'):
                     return f"{request.scheme}://{request.get_host()}{logo_url}"

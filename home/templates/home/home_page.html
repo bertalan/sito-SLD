@@ -33,7 +33,7 @@
             <!-- Logo - colonna 4 -->
             <div class="hidden lg:flex lg:col-span-4 items-start justify-start relative">
                 {% if settings.sld_project.SiteSettings.logo %}
-                    <img src="{{ settings.sld_project.SiteSettings.logo.url }}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
+                    <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
                 {% else %}
                     <img src="{% static 'images/StudioLegale.svg' %}" alt="{{ settings.sld_project.SiteSettings.studio_name }}" class="w-96 h-auto -mt-[80px] ml-[10px] lg:scale-[1.15] xl:scale-[1.26] origin-top-right opacity-[0.12]">
                 {% endif %}

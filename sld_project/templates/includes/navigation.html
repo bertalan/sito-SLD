@@ -5,7 +5,7 @@
         <!-- Logo -->
         <a href="/" class="flex items-end space-x-3 z-[9998]">
             {% if settings.sld_project.SiteSettings.logo %}
-                <img src="{{ settings.sld_project.SiteSettings.logo.url }}" 
+                <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
                      class="h-12 w-auto">
             {% else %}
@@ -35,7 +35,7 @@
         <!-- Mobile Menu Overlay -->
         <div id="mobile-menu" class="fixed inset-0 bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden">
             {% if settings.sld_project.SiteSettings.logo %}
-                <img src="{{ settings.sld_project.SiteSettings.logo.url }}" 
+                <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
                      class="h-16 w-auto mb-4">
             {% else %}
