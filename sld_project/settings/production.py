@@ -39,13 +39,20 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 # Note: CSP is implemented via custom middleware below, not django-csp
 # This allows fine-grained control without additional dependencies
 
+# Recupera dominio Matomo dalle impostazioni se configurato
+_matomo_url = os.environ.get('MATOMO_URL', '')
+_matomo_domain = ''
+if _matomo_url:
+    from urllib.parse import urlparse
+    _matomo_domain = urlparse(_matomo_url).netloc
+
 CSP_POLICY = {
     "default-src": "'self'",
-    "script-src": "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://js.stripe.com https://www.paypal.com https://www.google.com https://www.gstatic.com",
-    "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
+    "script-src": f"'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://js.stripe.com https://www.paypal.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com{' https://' + _matomo_domain if _matomo_domain else ''}",
+    "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://unpkg.com",
     "font-src": "'self' https://fonts.gstatic.com",
-    "img-src": "'self' data: https: blob:",
-    "connect-src": "'self' https://api.stripe.com https://www.paypal.com",
+    "img-src": f"'self' data: https: blob:{' https://' + _matomo_domain if _matomo_domain else ''}",
+    "connect-src": f"'self' https://api.stripe.com https://www.paypal.com https://www.google-analytics.com https://www.googletagmanager.com{' https://' + _matomo_domain if _matomo_domain else ''}",
     "frame-src": "https://js.stripe.com https://www.paypal.com https://www.google.com",
     "object-src": "'none'",
     "base-uri": "'self'",
