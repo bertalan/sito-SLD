@@ -20,8 +20,8 @@ Configura da: Admin → Impostazioni → Impostazioni Studio
 studio_name, lawyer_name, logo, favicon
 ```
 
-> **logo**: documento SVG/PNG caricato in Wagtail Documents
-> **favicon**: documento ICO/PNG/SVG per l'icona del browser
+> **logo**: immagine SVG/PNG caricata in Wagtail **Images** (non Documents)
+> **favicon**: immagine ICO/PNG/SVG per l'icona del browser
 
 ### 📞 Contatti
 ```python
@@ -45,12 +45,59 @@ website, facebook_url, x_url, linkedin_url
 jitsi_room_prefix
 ```
 
-### 💳 Pagamenti
+### 💳 Pagamenti (v1.2.0+)
+
+> ⚠️ **Breaking Change v1.2.0**: Le chiavi pagamento sono state **rimosse da SiteSettings** e vanno configurate **solo in `.env`**.
+
+**In SiteSettings** (Admin → Impostazioni → Impostazioni Studio):
 ```python
-payment_mode        # demo/sandbox/live
-stripe_public_key, stripe_secret_key, stripe_webhook_secret
-paypal_client_id, paypal_client_secret
-booking_slot_duration, booking_price_cents
+booking_slot_duration  # Durata slot in minuti (default: 30)
+booking_price_cents    # Prezzo in centesimi (es: 6000 = €60)
+```
+
+**In `.env`**:
+```bash
+# Modalità globale
+PAYMENT_MODE=sandbox
+
+# Stripe (sandbox | live | off)
+STRIPE_MODE=sandbox
+STRIPE_PUBLIC_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# PayPal (sandbox | live | off)
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=xxx
+PAYPAL_CLIENT_SECRET=xxx
+```
+
+**Modalità flessibile**:
+- Se `STRIPE_MODE=off`: pulsante Stripe nascosto
+- Se `PAYPAL_MODE=off`: pulsante PayPal nascosto
+- Se **entrambi** `off`: pagamento differito via email (pulsante "Richiedi appuntamento")
+
+**PaymentConfig** (`booking/payment_config.py`):
+```python
+from booking.payment_config import PaymentConfig
+
+config = PaymentConfig()
+config.stripe_enabled     # True se STRIPE_MODE != 'off'
+config.paypal_enabled     # True se PAYPAL_MODE != 'off'
+config.payment_deferred   # True se entrambi disabilitati
+config.stripe_mode        # 'sandbox', 'live', 'off'
+config.paypal_mode        # 'sandbox', 'live', 'off'
+```
+
+**Context processor** (già configurato in settings):
+```django
+{# Nei template #}
+{% if payment_config.stripe_enabled %}
+  <button>Paga con Stripe</button>
+{% endif %}
+{% if payment_config.payment_deferred %}
+  <button>Richiedi appuntamento</button>
+{% endif %}
 ```
 
 ### 📧 Email SMTP
@@ -134,8 +181,7 @@ def b64encode(value):
 | Home | `home.HomePage` | `home` |
 | Servizi | `services.ServicesIndexPage` | `aree-attivita` |
 | Contatti | `contact.ContactPage` | `contatti` |
-| Domiciliazioni | `domiciliazioni.DomiciliazioniPage` | `domiciliazioni` |
-
+| Domiciliazioni | `domiciliazioni.DomiciliazioniPage` | `domiciliazioni` || Articoli | `articles.ArticleIndexPage` | `articoli` |
 ## Domiciliazioni - Tribunali
 
 `domiciliazioni/models.py` - TRIBUNALE_CHOICES:
@@ -159,11 +205,26 @@ Crea:
 - HomePage con testi hero
 - 8 ServiceAreas (aree di attività)
 - ServicesIndexPage, ContactPage, DomiciliazioniPage
+- **ArticleIndexPage** con 8 articoli demo
+- **3 Categorie articoli** (Guide Legali, Novità Normative, Sentenze e Commenti)
 - AvailabilityRules (Lun-Ven 9-13, 15-18)
 - **2 Appuntamenti demo** (date relative: domani e dopodomani lavorativi)
 - **2 Domiciliazioni demo** (date relative: +3 e +5 giorni lavorativi)
 
-> ⚠️ Le date demo sono sempre nel futuro prossimo, calcolate rispetto alla data di installazione.
+### 📰 Articoli Demo
+
+| Titolo | Categoria | Aree Collegate |
+|--------|-----------|----------------|
+| Guida in stato di ebbrezza | Guide Legali | Diritto Penale |
+| Separazione consensuale | Guide Legali | Famiglia e Successioni |
+| Ritardo consegna auto | Novità Normative | Consumatori, Civile |
+| Licenziamento per giusta causa | Sentenze | Diritto Lavoro |
+| Ricorso al TAR | Guide Legali | Amministrativo |
+| Decreto ingiuntivo non pagato | Guide Legali | Recupero Crediti, Civile |
+| Mediazione obbligatoria | Guide Legali | Mediazione |
+| Eredità con debiti | Novità Normative | Famiglia e Successioni |
+
+> Gli articoli hanno contenuti HTML completi (~500-800 parole) e date di pubblicazione scaglionate.
 
 ## Festività Italiane
 
@@ -216,6 +277,28 @@ docker compose exec web python manage.py makemigrations <app>
 ## Icone
 
 Lucide Icons via CDN. Nomi usati: `scale`, `users`, `file-contract`, `briefcase`, `landmark`, `shield-alt`, `coins`, `handshake`
+
+## Funzionalità Admin (v1.2.0+)
+
+### 📧 Reinvio Email Appuntamenti
+Da Wagtail Admin → Snippets → Appuntamenti:
+1. Seleziona uno o più appuntamenti
+2. Dal menu azioni, scegli **"📧 Reinvia email"**
+3. Conferma nella pagina di riepilogo
+
+### 🔄 Allineamento Google Calendar
+Verifica sincronizzazione tra appuntamenti e Google Calendar:
+- Admin → Prenotazioni → **Allineamento Calendario**
+- Mostra appuntamenti orfani (non più in Calendar)
+- Cancellazione sicura con conferma
+
+### 📊 Badge Stato Regole Disponibilità
+Le regole mostrano badge colorati:
+- 🟢 **Verde**: regola attiva
+- ⚪ **Grigio**: regola disabilitata
+
+### ⏱️ Slot Count Modificabile
+Campo `slot_count` ora editabile per gestire durata appuntamento (multipli di 30 min).
 
 ## Comandi Utili
 
@@ -292,8 +375,8 @@ Le pagine 403 e 500 includono un link mailto con informazioni diagnostiche autom
 1. **Mai hardcodare** dati studio nei template - usare SiteSettings
 2. **mobile_phone** è opzionale, mostrare solo se compilato
 3. **Email** sempre con `|b64encode` per anti-spam
-4. I test devono passare: 93 test attesi
+4. I test devono passare: **~115 test unit** + **180 test E2E**
 5. Admin: `/admin/` (Wagtail) e `/django-admin/` (Django)
-6. **Solo DEBUG, SECRET_KEY, DATABASE_URL** vanno in `.env` - tutto il resto in SiteSettings
+6. **In `.env`**: DEBUG, SECRET_KEY, DATABASE_URL + **tutte le chiavi pagamento** (STRIPE_*, PAYPAL_*)
 7. Ogni campo SiteSettings ha `help_text` con istruzioni (es: dove trovare chiavi Stripe)
 8. **Produzione**: Assicurarsi che `DJANGO_SETTINGS_MODULE=sld_project.settings.production` sia configurato nel servizio Gunicorn

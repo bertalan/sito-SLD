@@ -30,7 +30,7 @@ docker compose exec web python manage.py setup_demo_data
 # Sito: http://localhost:8000
 # Admin: http://localhost:8000/admin/
 # user: admin - password: admin
-# CAMBIA LA PASSWORD
+# CAMBIA LA PASSWORD!!!
 ```
 
 Il comando `setup_demo_data` crea:
@@ -39,6 +39,8 @@ Il comando `setup_demo_data` crea:
 - ✅ **8 Aree di attività** (Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
 - ✅ **Pagina Contatti** con form
 - ✅ **Pagina Domiciliazioni** per colleghi avvocati
+- ✅ **Pagina Articoli** con indice e 8 articoli demo (guide legali, novità normative, sentenze)
+- ✅ **3 Categorie articoli** (Guide Legali, Novità Normative, Sentenze e Commenti)
 - ✅ **Regole disponibilità** (Lun-Ven 9-13, 15-18)
 - ✅ **2 Appuntamenti demo** (date relative: sempre nel futuro prossimo)
 - ✅ **2 Domiciliazioni demo** (date relative: sempre attuali)
@@ -69,7 +71,9 @@ docker compose exec web python manage.py setup_holidays --list
 - Blocco date specifiche (festività, ferie)
 - Scelta modalità: **in presenza** o **videochiamata**
 - Pagamento anticipato obbligatorio (€60)
-- Integrazione **Stripe** (carte di credito) e **PayPal**
+- Integrazione **Stripe** (carte di credito) e **PayPal** (API REST v2)
+- **Modalità pagamento flessibile**: ogni provider può essere `sandbox`, `live` o `off`
+- **Pagamento differito**: se entrambi i provider sono `off`, il cliente può "Richiedere appuntamento" via email
 - Upload allegati (PDF, DOC, immagini - max 20MB)
 
 ### 📹 Videochiamate Jitsi
@@ -82,6 +86,7 @@ docker compose exec web python manage.py setup_holidays --list
 - Email notifica studio con dettagli appuntamento
 - Supporto HTML + plain text
 - Link Google Maps alla sede
+- **Reinvio email da Wagtail**: bulk action "📧 Reinvia email" per reinviare conferme
 
 ### 📋 Domiciliazioni Legali
 - Form completo con dati studio, parte, controparte, causa
@@ -158,6 +163,10 @@ docker compose exec web python manage.py setup_holidays --list
 - Menu admin raggruppati per sezione
 - Gestione disponibilità e date bloccate
 - Esportazione appuntamenti
+- **Badge stato regole**: colori verde/grigio per regole attive/disabilitate
+- **Allineamento calendario**: verifica sincronizzazione Google Calendar
+- **Cancellazione appuntamenti orfani**: rimozione sicura con conferma
+- **Slot count modificabile**: gestione durata appuntamento in admin
 
 ## Stack Tecnologico
 
@@ -169,7 +178,7 @@ docker compose exec web python manage.py setup_holidays --list
 | Frontend | Tailwind CSS (CDN) |
 | Icone | Lucide |
 | Mappe | Leaflet.js + OpenStreetMap |
-| Pagamenti | Stripe, PayPal |
+| Pagamenti | Stripe, PayPal (API REST v2) |
 | Videochiamate | Jitsi Meet |
 | Container | Docker + Docker Compose |
 | Server WSGI | Gunicorn |
@@ -203,7 +212,7 @@ docker compose exec web python -m pytest sld_project/security_tests/ -v
 Il progetto segue il metodo TDD (Test Driven Development):
 
 - **Pytest + pytest-django**: tutti i moduli hanno test automatici
-- **180+ test E2E** + **86 test unit** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
+- **180+ test E2E** + **~115 test unit** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
 - **Struttura test unificata**:
   ```
   tests/
@@ -243,6 +252,7 @@ cd tests/e2e && pytest -v -n 4
 - ✅ Consenso privacy nei form
 - ✅ Validazione email e PEC
 - ✅ Validazione coordinate geografiche lat/lng
+- ✅ **29 test PaymentConfig e ResendEmailBulkAction**
 - ✅ **28 test sicurezza** (headers, rate limit, file validation, secrets)
 
 ## Configurazione
@@ -259,15 +269,16 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 DATABASE_URL=postgres://user:pass@host:5432/dbname
 POSTGRES_PASSWORD=your-db-password
 
-# Pagamenti (demo/sandbox/live)
+# Pagamenti
 PAYMENT_MODE=sandbox
 
-# Stripe
+# Stripe (sandbox | live | off)
+STRIPE_MODE=sandbox
 STRIPE_PUBLIC_KEY=pk_test_xxx
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 
-# PayPal
+# PayPal (sandbox | live | off)
 PAYPAL_MODE=sandbox
 PAYPAL_CLIENT_ID=xxx
 PAYPAL_CLIENT_SECRET=xxx
