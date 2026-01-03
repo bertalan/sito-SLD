@@ -163,6 +163,15 @@ class Appointment(ClusterableModel):
             FieldPanel('status'),
             FieldPanel('payment_method'),
             FieldPanel('amount_paid'),
+            HelpPanel(content="""
+                <div style="background: #f0f4f8; border-left: 4px solid #007d7e; padding: 12px 16px; margin-top: 12px; border-radius: 4px;">
+                    <strong style="color: #007d7e;">💡 Azioni disponibili nel menu "Salva":</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; line-height: 1.8;">
+                        <li><strong>📧 Invia Link Pagamento</strong> — Appare quando lo stato è <em>"In attesa di pagamento"</em>. Invia un'email al cliente con il link per pagare online.</li>
+                        <li><strong>💰 Rimborsa Pagamento</strong> — Appare quando lo stato è <em>"Annullato"</em> e c'è un importo pagato non ancora rimborsato.</li>
+                    </ul>
+                </div>
+            """),
         ], heading="Stato e Pagamento"),
         InlinePanel('attachments', label="📎 Documenti allegati", heading="Documenti allegati"),
     ]
