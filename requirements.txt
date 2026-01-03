@@ -36,3 +36,4 @@ requests==2.32.4  # Security update: CVE-2024-47081 (.netrc credential leak)
 # Testing
 pytest==8.3.4
 pytest-django==4.9.0
+pytest-playwright==0.6.2  # E2E testing for cookie banner & accessibility
