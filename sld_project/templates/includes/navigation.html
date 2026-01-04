@@ -40,32 +40,35 @@
 
 <!-- Mobile Menu Overlay - FUORI dalla nav per evitare problemi di stacking context su iOS -->
 <div id="mobile-menu" 
-     class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
-     style="background-color: #ffffff;"
+     class="opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+     style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 9999; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;"
      role="dialog"
      aria-label="Menu di navigazione"
      aria-modal="true">
     <!-- Pulsante chiusura mobile menu -->
     <button id="mobile-close" 
-            class="absolute top-6 right-6 focus:outline-none focus:ring-2 focus:ring-brand-accent p-2"
-            style="color: #0a0a0a;"
+            style="position: absolute; top: 24px; right: 24px; padding: 8px; color: #0a0a0a; background: none; border: none; cursor: pointer;"
             aria-label="Chiudi menu di navigazione">
-        <i data-lucide="x" class="w-8 h-8" aria-hidden="true"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
-    {% if settings.sld_project.SiteSettings.logo %}
-        <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
-             alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
-             class="h-16 w-auto mb-4">
-    {% else %}
-        <img src="{% static 'images/StudioLegale.svg' %}" 
-             alt="Studio Legale" 
-             class="h-16 w-auto mb-4">
-    {% endif %}
-    <a href="/#about" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Lo Studio</a>
-    <a href="/aree-attivita/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Aree di Attività</a>
-    <a href="/domiciliazioni/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Domiciliazioni</a>
-    <a href="/contatti/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Contatti</a>
-    <a href="/prenota/" class="text-3xl font-bold text-brand-accent tracking-tighter hover:opacity-80 transition-colors">Prenota</a>
+    
+    <!-- Container per i link del menu -->
+    <nav style="display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 20px;">
+        {% if settings.sld_project.SiteSettings.logo %}
+            <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
+                 alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
+                 style="height: 64px; width: auto; margin-bottom: 16px;">
+        {% else %}
+            <img src="{% static 'images/StudioLegale.svg' %}" 
+                 alt="Studio Legale" 
+                 style="height: 64px; width: auto; margin-bottom: 16px;">
+        {% endif %}
+        <a href="/#about" style="font-size: 1.875rem; font-weight: 700; color: #0a0a0a; text-decoration: none; letter-spacing: -0.025em;">Lo Studio</a>
+        <a href="/aree-attivita/" style="font-size: 1.875rem; font-weight: 700; color: #0a0a0a; text-decoration: none; letter-spacing: -0.025em;">Aree di Attività</a>
+        <a href="/domiciliazioni/" style="font-size: 1.875rem; font-weight: 700; color: #0a0a0a; text-decoration: none; letter-spacing: -0.025em;">Domiciliazioni</a>
+        <a href="/contatti/" style="font-size: 1.875rem; font-weight: 700; color: #0a0a0a; text-decoration: none; letter-spacing: -0.025em;">Contatti</a>
+        <a href="/prenota/" style="font-size: 1.875rem; font-weight: 700; color: #e91e63; text-decoration: none; letter-spacing: -0.025em;">Prenota</a>
+    </nav>
 </div>
 
 <script>
