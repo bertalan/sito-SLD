@@ -4,13 +4,15 @@
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
-Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di attività.
+Sito web professionale per Studio Legale, realizzato con Wagtail/Django, Docker (o senza) e frontend brutalista. Progettato per soddisfare esigenze di prenotazione, domiciliazioni, contatti, pagamenti online e presentazione delle aree di attività.
 
 📚 **Documentazione**: [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) | [UPGRADE.md](UPGRADE.md) | [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
 ## ⚡ Quick Start - Prima Installazione
+
+### 🐳 Con Docker (consigliato per sviluppo)
 
 ```bash
 # 1. Clona e configura
@@ -29,11 +31,43 @@ docker compose exec web python manage.py setup_demo_data
 # 4. Accedi
 # Sito: http://localhost:8000
 # Admin: http://localhost:8000/admin/
-# user: admin - password: admin
-# CAMBIA LA PASSWORD!!!
 ```
 
-Il comando `setup_demo_data` crea:
+### 🐍 Senza Docker (consigliato per produzione)
+
+```bash
+# 1. Clona e configura
+git clone https://github.com/bertalan/sito-SLD.git
+cd sito-SLD
+cp .env.example .env
+
+# 2. Crea virtualenv e installa dipendenze
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# oppure: venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+
+# 3. Configura database PostgreSQL
+# Crea database e utente, poi modifica .env con le credenziali
+
+# 4. Migrazioni e dati demo
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py setup_demo_data
+
+# 5. Avvia server di sviluppo
+python manage.py runserver
+
+# 6. Accedi
+# Sito: http://localhost:8000
+# Admin: http://localhost:8000/admin/
+```
+
+> 💡 **Per deploy in produzione** senza Docker, usa lo script [`scripts/1_install.sh`](scripts/1_install.sh) che automatizza l'installazione su server con Nginx + Gunicorn.
+
+---
+
+### 📦 Cosa crea `setup_demo_data`
 - ✅ **SiteSettings** con dati studio configurabili
 - ✅ **HomePage** con testi hero
 - ✅ **8 Aree di attività** (Penale, Famiglia, Civile, Lavoro, Amministrativo, Consumatori, Recupero Crediti, Mediazione)
@@ -48,11 +82,13 @@ Il comando `setup_demo_data` crea:
 ### 📅 Festività Italiane (opzionale)
 
 ```bash
-# Genera festività per i prossimi 2 anni
-docker compose exec web python manage.py setup_holidays
-
-# Per 5 anni
+# Con Docker:
+docker compose exec web python manage.py setup_holidays  # default per 2 anni
 docker compose exec web python manage.py setup_holidays --years 5
+
+# Senza Docker:
+python manage.py setup_holidays # default per 2 anni
+python manage.py setup_holidays --years 5
 
 # Lista festività disponibili
 docker compose exec web python manage.py setup_holidays --list
@@ -190,7 +226,12 @@ docker compose exec web python manage.py setup_holidays --list
 Il progetto viene regolarmente scansionato con `pip-audit`:
 
 ```bash
+# Con Docker:
 docker compose exec web pip-audit
+
+# Senza Docker (con venv attivo):
+pip-audit
+
 # Expected: "No known vulnerabilities found"
 ```
 
@@ -203,7 +244,12 @@ docker compose exec web pip-audit
 
 ### Test di sicurezza
 ```bash
+# Con Docker:
 docker compose exec web python -m pytest sld_project/security_tests/ -v
+
+# Senza Docker (con venv attivo):
+python -m pytest sld_project/security_tests/ -v
+
 # 28 test di sicurezza
 ```
 
@@ -229,8 +275,11 @@ Il progetto segue il metodo TDD (Test Driven Development):
 
 ### Esecuzione test:
 ```sh
-# Test unitari
+# Test unitari - Con Docker:
 docker compose exec web python -m pytest tests/unit/ -v
+
+# Test unitari - Senza Docker (con venv attivo):
+python -m pytest tests/unit/ -v
 
 # Test E2E (localmente, con Playwright installato)
 cd tests/e2e && pytest -v -n 4
@@ -336,18 +385,56 @@ sito-SLD/
 
 ## Deploy Produzione
 
+### 🚀 Script di Deploy e Verifica
+
+La cartella `scripts/` contiene strumenti per il deploy e il monitoraggio:
+
+| Script | Uso | Dove eseguirlo |
+|--------|-----|----------------|
+| [`1_install.sh`](scripts/1_install.sh) | Primo setup su server | Sul server (qualsiasi cartella) |
+| [`2_verifiche.sh`](scripts/2_verifiche.sh) | Verifica salute sito | Ovunque (anche in locale) |
+
+```bash
+# 1. Primo deploy (sul server, come root, da qualsiasi cartella)
+#    Lo script installa in APP_DIR configurato, non nella directory corrente
+sudo bash scripts/1_install.sh
+
+# 2. Verifica produzione (da qualsiasi macchina con accesso internet)
+#    Verifica il DOMAIN configurato via HTTP
+bash scripts/2_verifiche.sh
+```
+
+> 📖 Vedi [scripts/README.md](scripts/README.md) per documentazione dettagliata.
+
+### Deploy manuale con Docker
+
+```sh
+# Collect static
+docker compose exec web python manage.py collectstatic --noinput
+
+# Run with gunicorn (dentro container)
+docker compose exec web gunicorn sld_project.wsgi:application -c gunicorn.conf.py
+```
+
+### Deploy manuale senza Docker
+
 Il progetto include:
 - `gunicorn.conf.py` configurato per produzione
 - `whitenoise` per static files
 - Supporto proxy Nginx (X-Forwarded headers)
 
 ```sh
+# Con virtualenv attivo
+source venv/bin/activate
+
 # Collect static
-docker compose exec web python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput
 
 # Run with gunicorn
 gunicorn sld_project.wsgi:application -c gunicorn.conf.py
 ```
+
+> 💡 **Consigliato**: Usa [`scripts/1_install.sh`](scripts/1_install.sh) per automatizzare il setup completo con Nginx + Gunicorn come servizio systemd.
 
 ### Licenze
 
