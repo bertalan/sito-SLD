@@ -41,6 +41,10 @@ class BookingView(TemplateView):
         today = date.today()
         available_dates = []
         
+        # Pre-sync Google Calendar una sola volta per evitare 60 chiamate separate
+        from .google_calendar import sync_google_calendar_events
+        sync_google_calendar_events()
+        
         for i in range(1, 61):  # 60 giorni di disponibilità
             check_date = today + timedelta(days=i)
             if Appointment.get_available_slots(check_date):
@@ -60,6 +64,19 @@ def get_available_slots(request, date):
         })
     except ValueError:
         return JsonResponse({'error': 'Data non valida'}, status=400)
+
+
+def prefetch_calendar(request):
+    """
+    Endpoint per pre-caricare il calendario Google in background.
+    Chiamato via fetch dal frontend per mantenere la cache calda.
+    """
+    from .google_calendar import sync_google_calendar_events
+    synced = sync_google_calendar_events()
+    return JsonResponse({
+        'synced': synced,
+        'cached': not synced
+    })
 
 
 class CreateCheckoutSession(RateLimitMixin, View):

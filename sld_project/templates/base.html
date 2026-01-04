@@ -277,6 +277,10 @@
                     // Assicurati che l'URL non termini con /
                     if (u.endsWith('/')) u = u.slice(0, -1);
                     
+                    // Rispetta Do Not Track del browser
+                    _paq.push(['setDoNotTrack', true]);
+                    
+                    // Configura tracker
                     _paq.push(['setTrackerUrl', u + '/matomo.php']);
                     _paq.push(['setSiteId', '{{ matomo_site_id }}']);
                     
@@ -294,6 +298,7 @@
             
             if (hasAnalyticsConsent()) { initMatomo(); }
         </script>
+        <noscript><p><img referrerpolicy="no-referrer-when-downgrade" src="{{ matomo_url }}/matomo.php?idsite={{ matomo_site_id }}&amp;rec=1" style="border:0;" alt="" /></p></noscript>
         {% endif %}
 
         {% block extra_css %}{% endblock %}

@@ -256,6 +256,9 @@ function updatePriceDisplay() {
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
     
+    // Prefetch calendario Google in background per mantenere cache calda
+    fetch('/prenota/prefetch/').catch(() => {});
+    
     // Inizializza i prezzi nei bottoni durata
     updatePriceDisplay();
     

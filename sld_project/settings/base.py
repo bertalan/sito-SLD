@@ -268,7 +268,7 @@ STUDIO_MAPS_URL = os.environ.get('STUDIO_MAPS_URL', 'https://maps.apple.com/?dad
 
 # Google Calendar settings
 GOOGLE_CALENDAR_ICAL_URL = os.environ.get('GOOGLE_CALENDAR_ICAL_URL', '')
-GOOGLE_CALENDAR_CACHE_TTL = int(os.environ.get('GOOGLE_CALENDAR_CACHE_TTL', 600))  # 10 minuti
+GOOGLE_CALENDAR_CACHE_TTL = int(os.environ.get('GOOGLE_CALENDAR_CACHE_TTL', 120))  # 2 minuti
 
 # Analytics - Configura UNO dei due (o entrambi)
 # Google Analytics 4

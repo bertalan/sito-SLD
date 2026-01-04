@@ -307,6 +307,43 @@ class MatomoTest(TestCase):
             self.assertIn('_paq', content)
             self.assertIn('matomo.test.com', content)
 
+    def test_matomo_tracker_order_correct(self):
+        """
+        Verifica che l'ordine delle operazioni Matomo sia corretto:
+        setDoNotTrack e config PRIMA di trackPageView.
+        """
+        from django.test import override_settings
+        
+        with override_settings(MATOMO_URL='https://piwik.gpsbooking.com', MATOMO_SITE_ID='7'):
+            response = self.client.get('/')
+            content = response.content.decode('utf-8')
+            
+            # setDoNotTrack deve essere presente
+            self.assertIn('setDoNotTrack', content)
+            
+            # Trova le posizioni relative
+            set_tracker_pos = content.find("setTrackerUrl")
+            set_site_id_pos = content.find("setSiteId")
+            track_pageview_pos = content.find("trackPageView")
+            
+            # setTrackerUrl e setSiteId devono venire PRIMA di trackPageView
+            self.assertLess(set_tracker_pos, track_pageview_pos, 
+                "setTrackerUrl deve essere prima di trackPageView")
+            self.assertLess(set_site_id_pos, track_pageview_pos,
+                "setSiteId deve essere prima di trackPageView")
+    
+    def test_matomo_noscript_fallback_present(self):
+        """Verifica che il fallback noscript per Matomo sia presente."""
+        from django.test import override_settings
+        
+        with override_settings(MATOMO_URL='https://piwik.gpsbooking.com', MATOMO_SITE_ID='7'):
+            response = self.client.get('/')
+            content = response.content.decode('utf-8')
+            
+            # Deve esserci il fallback noscript con img tracker
+            self.assertIn('<noscript>', content)
+            self.assertIn('matomo.php?idsite=7', content)
+
 
 class PrivacyConsentFormTest(TestCase):
     """Test per verificare il checkbox consenso privacy nei form."""

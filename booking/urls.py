@@ -6,6 +6,7 @@ app_name = 'booking'
 urlpatterns = [
     path('', views.BookingView.as_view(), name='booking'),
     path('slots/<str:date>/', views.get_available_slots, name='api_slots'),
+    path('prefetch/', views.prefetch_calendar, name='prefetch'),
     path('checkout/', views.CreateCheckoutSession.as_view(), name='checkout'),
     path('success/', views.BookingSuccessView.as_view(), name='success'),
     path('cancel/', views.BookingCancelView.as_view(), name='cancel'),
