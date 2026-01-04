@@ -95,7 +95,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Mobile toggle
-    mobileToggle.addEventListener('click', function() {
+    mobileToggle.addEventListener('click', function(e) {
+        e.preventDefault();
         isOpen = !isOpen;
         updateMobileMenuA11y(isOpen);
     });
