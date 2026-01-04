@@ -39,28 +39,58 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 # Note: CSP is implemented via custom middleware below, not django-csp
 # This allows fine-grained control without additional dependencies
 
-# Recupera dominio Matomo dalle impostazioni se configurato
-_matomo_url = os.environ.get('MATOMO_URL', '')
-_matomo_domain = ''
-if _matomo_url:
-    from urllib.parse import urlparse
-    _matomo_domain = urlparse(_matomo_url).netloc
-
-CSP_POLICY = {
+# Base CSP Policy (senza Matomo - verrà aggiunto dinamicamente)
+CSP_POLICY_BASE = {
     "default-src": "'self'",
-    "script-src": f"'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://js.stripe.com https://www.paypal.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com{' https://' + _matomo_domain if _matomo_domain else ''}",
+    "script-src": "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://js.stripe.com https://www.paypal.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com",
     "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://unpkg.com",
     "font-src": "'self' https://fonts.gstatic.com",
-    "img-src": f"'self' data: https: blob:{' https://' + _matomo_domain if _matomo_domain else ''}",
-    "connect-src": f"'self' https://api.stripe.com https://www.paypal.com https://www.google-analytics.com https://www.googletagmanager.com{' https://' + _matomo_domain if _matomo_domain else ''}",
+    "img-src": "'self' data: https: blob:",
+    "connect-src": "'self' https://api.stripe.com https://www.paypal.com https://www.google-analytics.com https://www.googletagmanager.com",
     "frame-src": "https://js.stripe.com https://www.paypal.com https://www.google.com",
     "object-src": "'none'",
     "base-uri": "'self'",
     "form-action": "'self' https://www.paypal.com",
 }
 
-# Build CSP header string
-CSP_HEADER = "; ".join(f"{key} {value}" for key, value in CSP_POLICY.items())
+
+def _get_matomo_domain():
+    """Recupera il dominio Matomo da SiteSettings (database) o .env."""
+    # Prima prova da .env (più veloce, evita query DB)
+    matomo_url = os.environ.get('MATOMO_URL', '')
+    
+    # Se non c'è in .env, prova dal database
+    if not matomo_url:
+        try:
+            from sld_project.models import SiteSettings
+            site_settings = SiteSettings.get_current()
+            if site_settings and site_settings.pk:
+                matomo_url = site_settings.matomo_url or ''
+        except Exception:
+            pass
+    
+    if matomo_url:
+        from urllib.parse import urlparse
+        return urlparse(matomo_url).netloc
+    return ''
+
+
+def _build_csp_header(matomo_domain=''):
+    """Costruisce l'header CSP con il dominio Matomo se configurato."""
+    policy = CSP_POLICY_BASE.copy()
+    
+    if matomo_domain:
+        matomo_src = f' https://{matomo_domain}'
+        policy["script-src"] += matomo_src
+        policy["img-src"] += matomo_src
+        policy["connect-src"] += matomo_src
+    
+    return "; ".join(f"{key} {value}" for key, value in policy.items())
+
+
+# Cache per CSP header (evita query DB ad ogni richiesta)
+_csp_cache = {'header': None, 'domain': None}
+
 
 # Custom middleware to add CSP header
 class ContentSecurityPolicyMiddleware:
@@ -71,7 +101,12 @@ class ContentSecurityPolicyMiddleware:
         response = self.get_response(request)
         # Don't add CSP to admin pages (can break functionality)
         if not request.path.startswith('/admin/') and not request.path.startswith('/cms/'):
-            response['Content-Security-Policy'] = CSP_HEADER
+            # Usa cache per evitare query DB ripetute
+            if _csp_cache['header'] is None:
+                matomo_domain = _get_matomo_domain()
+                _csp_cache['domain'] = matomo_domain
+                _csp_cache['header'] = _build_csp_header(matomo_domain)
+            response['Content-Security-Policy'] = _csp_cache['header']
         # Additional security headers
         response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
         return response
