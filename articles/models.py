@@ -5,7 +5,7 @@ Segue i pattern Wagtail: Page models, Snippets, ParentalManyToManyField.
 from django.db import models
 from django.http import HttpResponse
 from django.utils.html import strip_tags
-from django.utils.feedgenerator import Rss201rev2Feed
+from django.utils.feedgenerator import Rss201rev2Feed, Enclosure
 from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
@@ -86,24 +86,76 @@ class ArticleIndexPage(RoutablePageMixin, Page):
     
     @route(r'^feed/$', name='feed')
     def article_feed(self, request):
-        """RSS Feed degli articoli."""
+        """RSS Feed degli articoli con metadati completi."""
+        from sld_project.models import SiteSettings
+        
         site = self.get_site()
         site_name = site.site_name if site else "Studio Legale"
+        
+        # Ottieni SiteSettings per fallback autore
+        try:
+            settings = SiteSettings.get_current()
+            default_author = settings.lawyer_name or site_name
+            default_email = settings.email or ""
+            studio_name = settings.studio_name or site_name
+        except Exception:
+            default_author = site_name
+            default_email = ""
+            studio_name = site_name
+        
+        # URL base per link
+        protocol = 'https' if request.is_secure() else 'http'
+        base_url = f"{protocol}://{request.get_host()}"
+        feed_url = f"{base_url}{self.url}feed/"
         
         feed = Rss201rev2Feed(
             title=f"{site_name} - {self.title}",
             link=self.full_url,
             description=f"Ultimi aggiornamenti da {self.title}",
             language="it",
+            author_name=default_author,
+            author_email=default_email,
+            author_link=base_url,
+            feed_url=feed_url,
+            feed_copyright=f"© 2026 {studio_name}",
         )
         
-        for article in ArticlePage.objects.live().child_of(self).order_by('-first_published_at')[:20]:
+        # Tutti gli articoli pubblicati (senza limite)
+        for article in ArticlePage.objects.live().child_of(self).order_by('-first_published_at'):
+            # Author: owner se ha nome, altrimenti fallback a SiteSettings
+            author_name = ""
+            if article.owner:
+                author_name = article.owner.get_full_name()
+            if not author_name:
+                author_name = default_author
+            
+            # Categoria
+            categories = []
+            if article.category:
+                categories = [article.category.name]
+            
+            # Immagine copertina come enclosure
+            enclosures = []
+            if article.cover_image:
+                try:
+                    img_url = f"{base_url}{article.cover_image.file.url}"
+                    enclosures = [Enclosure(img_url, str(article.cover_image.file.size), 'image/jpeg')]
+                except Exception:
+                    pass
+            
             feed.add_item(
                 title=article.title,
                 link=article.full_url,
                 description=article.subtitle or article.search_description or "",
                 pubdate=article.first_published_at,
-                author_name=article.owner.get_full_name() if article.owner else "",
+                updateddate=article.last_published_at,
+                author_name=author_name,
+                author_email=default_email,
+                author_link=base_url,
+                unique_id=article.full_url,
+                unique_id_is_permalink=True,
+                categories=categories,
+                enclosures=enclosures,
             )
         
         response = HttpResponse(content_type='application/rss+xml; charset=utf-8')
