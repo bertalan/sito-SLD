@@ -1,4 +1,4 @@
-# Test E2E per Cookie Banner e Accessibilità
+# Test E2E per Cookie Banner, Accessibilità e Navigazione Mobile
 
 ## Setup
 
@@ -38,6 +38,11 @@ pytest test_accessibility_widget.py -v
 pytest test_complete_interactions.py -v
 ```
 
+### Solo test menu mobile (hamburger)
+```bash
+pytest test_mobile_navigation.py -v
+```
+
 ### Test su viewport specifico
 ```bash
 # Solo mobile
@@ -48,6 +53,9 @@ pytest -v -k "desktop"
 
 # Solo tablet
 pytest -v -k "tablet"
+
+# Solo iPhone 15 Pro
+pytest -v -k "iphone_15_pro"
 ```
 
 ### Test con browser visibile (debugging)
@@ -91,7 +99,16 @@ pytest -v --slowmo 500
 - **TestTabletSpecific**: Layout portrait/landscape
 - **TestScriptInterference**: Senza Lucide, senza Tailwind, errori JS
 
+### test_mobile_navigation.py
+- **TestMobileMenuBasic**: Apertura/chiusura menu hamburger, navigazione link
+- **TestMobileMenuAccessibility**: Attributi ARIA, gestione focus tastiera
+- **TestMobileMenuZIndex**: Overlay fullscreen, z-index corretto sopra nav
+- **TestMobileMenuNoJSErrors**: Assenza errori JavaScript durante interazioni
+- **TestDesktopMenuHidden**: Verifica hamburger nascosto su desktop
+
 ## Viewport Testati
+
+### Viewport generali (cookie, accessibilità, interazioni)
 
 | Nome | Larghezza | Altezza | Dispositivo |
 |------|-----------|---------|-------------|
@@ -101,6 +118,16 @@ pytest -v --slowmo 500
 | tablet_landscape | 1024px | 768px | iPad landscape |
 | desktop_small | 1280px | 800px | Laptop |
 | desktop_large | 1920px | 1080px | Full HD |
+
+### Viewport menu mobile (test_mobile_navigation.py)
+
+| Nome | Larghezza | Altezza | Dispositivo |
+|------|-----------|---------|-------------|
+| iphone_se | 375px | 667px | iPhone SE |
+| iphone_15_pro | 393px | 852px | iPhone 15 Pro |
+| iphone_15_pro_max | 430px | 932px | iPhone 15 Pro Max |
+| pixel_7 | 412px | 915px | Google Pixel 7 |
+| galaxy_s21 | 360px | 800px | Samsung Galaxy S21 |
 
 ## Configurazione
 
