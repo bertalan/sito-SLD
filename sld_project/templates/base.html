@@ -263,14 +263,23 @@
             function initMatomo() {
                 if (hasAnalyticsConsent() && !window.matomoLoaded) {
                     window.matomoLoaded = true;
-                    _paq.push(['trackPageView']);
-                    _paq.push(['enableLinkTracking']);
-                    _paq.push(['setTrackerUrl', '{{ matomo_url }}/matomo.php']);
+                    
+                    // Configura tracker PRIMA del tracking
+                    var u = '{{ matomo_url }}';
+                    // Assicurati che l'URL non termini con /
+                    if (u.endsWith('/')) u = u.slice(0, -1);
+                    
+                    _paq.push(['setTrackerUrl', u + '/matomo.php']);
                     _paq.push(['setSiteId', '{{ matomo_site_id }}']);
                     
+                    // Tracking DOPO la configurazione
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    
+                    // Carica lo script Matomo
                     var script = document.createElement('script');
                     script.async = true;
-                    script.src = '{{ matomo_url }}/matomo.js';
+                    script.src = u + '/matomo.js';
                     document.head.appendChild(script);
                 }
             }
