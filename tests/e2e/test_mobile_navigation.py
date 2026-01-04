@@ -85,6 +85,65 @@ class TestMobileMenuBasic:
             context.close()
     
     @pytest.mark.parametrize("device_name,viewport", MOBILE_VIEWPORTS.items())
+    def test_menu_links_visible_with_contrast(self, browser, device_name, viewport):
+        """
+        Verifica che i link del menu siano effettivamente visibili (contrasto colori).
+        Bug rilevato: menu bianco su sfondo bianco = link invisibili.
+        """
+        context = browser.new_context(viewport=viewport)
+        page = context.new_page()
+        
+        try:
+            page.goto(BASE_URL)
+            page.wait_for_load_state("networkidle")
+            
+            # Apri menu
+            page.locator("#mobile-toggle").click()
+            page.wait_for_timeout(400)
+            
+            mobile_menu = page.locator("#mobile-menu")
+            expect(mobile_menu).to_have_css("opacity", "1")
+            
+            # Verifica che i link siano visibili e abbiano colore diverso dallo sfondo
+            links = page.locator("#mobile-menu a")
+            link_count = links.count()
+            assert link_count >= 5, f"Trovati solo {link_count} link, attesi almeno 5"
+            
+            # Ottieni colore sfondo del menu
+            menu_bg = page.evaluate("""
+                () => {
+                    const menu = document.getElementById('mobile-menu');
+                    const style = getComputedStyle(menu);
+                    return style.backgroundColor;
+                }
+            """)
+            
+            # Verifica che ogni link abbia un colore diverso dallo sfondo
+            for i in range(link_count):
+                link = links.nth(i)
+                expect(link).to_be_visible()
+                
+                link_color = link.evaluate("""
+                    el => getComputedStyle(el).color
+                """)
+                
+                # Il colore del link NON deve essere uguale allo sfondo
+                assert link_color != menu_bg, (
+                    f"Link {i} ha stesso colore dello sfondo! "
+                    f"Link: {link_color}, Sfondo: {menu_bg}"
+                )
+                
+                # Verifica che il colore non sia bianco/quasi bianco
+                # RGB bianco: rgb(255, 255, 255) o rgba(255, 255, 255, 1)
+                assert "255, 255, 255" not in link_color or "rgba(255, 255, 255, 0)" in link_color, (
+                    f"Link {i} è bianco su sfondo bianco! Color: {link_color}"
+                )
+            
+        finally:
+            page.close()
+            context.close()
+    
+    @pytest.mark.parametrize("device_name,viewport", MOBILE_VIEWPORTS.items())
     def test_hamburger_menu_closes_with_x_button(self, browser, device_name, viewport):
         """Verifica che il pulsante X chiuda il menu."""
         context = browser.new_context(viewport=viewport)

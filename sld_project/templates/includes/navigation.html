@@ -35,36 +35,38 @@
                 aria-controls="mobile-menu">
             <i data-lucide="menu" class="w-6 h-6" aria-hidden="true"></i>
         </button>
-
-        <!-- Mobile Menu Overlay -->
-        <div id="mobile-menu" 
-             class="fixed inset-0 z-[9999] bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
-             role="dialog"
-             aria-label="Menu di navigazione"
-             aria-modal="true">
-            <!-- Pulsante chiusura mobile menu -->
-            <button id="mobile-close" 
-                    class="absolute top-6 right-6 text-brand-black focus:outline-none focus:ring-2 focus:ring-brand-accent p-2"
-                    aria-label="Chiudi menu di navigazione">
-                <i data-lucide="x" class="w-8 h-8" aria-hidden="true"></i>
-            </button>
-            {% if settings.sld_project.SiteSettings.logo %}
-                <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
-                     alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
-                     class="h-16 w-auto mb-4">
-            {% else %}
-                <img src="{% static 'images/StudioLegale.svg' %}" 
-                     alt="Studio Legale" 
-                     class="h-16 w-auto mb-4">
-            {% endif %}
-            <a href="/#about" class="text-3xl font-bold text-brand-black tracking-tighter hover:text-brand-accent transition-colors">Lo Studio</a>
-            <a href="/aree-attivita/" class="text-3xl font-bold text-brand-black tracking-tighter hover:text-brand-accent transition-colors">Aree di Attività</a>
-            <a href="/domiciliazioni/" class="text-3xl font-bold text-brand-black tracking-tighter hover:text-brand-accent transition-colors">Domiciliazioni</a>
-            <a href="/contatti/" class="text-3xl font-bold text-brand-black tracking-tighter hover:text-brand-accent transition-colors">Contatti</a>
-            <a href="/prenota/" class="text-3xl font-bold text-brand-accent tracking-tighter hover:text-brand-black transition-colors">Prenota</a>
-        </div>
     </div>
 </nav>
+
+<!-- Mobile Menu Overlay - FUORI dalla nav per evitare problemi di stacking context su iOS -->
+<div id="mobile-menu" 
+     class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+     style="background-color: #ffffff;"
+     role="dialog"
+     aria-label="Menu di navigazione"
+     aria-modal="true">
+    <!-- Pulsante chiusura mobile menu -->
+    <button id="mobile-close" 
+            class="absolute top-6 right-6 focus:outline-none focus:ring-2 focus:ring-brand-accent p-2"
+            style="color: #0a0a0a;"
+            aria-label="Chiudi menu di navigazione">
+        <i data-lucide="x" class="w-8 h-8" aria-hidden="true"></i>
+    </button>
+    {% if settings.sld_project.SiteSettings.logo %}
+        <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
+             alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
+             class="h-16 w-auto mb-4">
+    {% else %}
+        <img src="{% static 'images/StudioLegale.svg' %}" 
+             alt="Studio Legale" 
+             class="h-16 w-auto mb-4">
+    {% endif %}
+    <a href="/#about" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Lo Studio</a>
+    <a href="/aree-attivita/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Aree di Attività</a>
+    <a href="/domiciliazioni/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Domiciliazioni</a>
+    <a href="/contatti/" class="text-3xl font-bold tracking-tighter hover:text-brand-accent transition-colors" style="color: #0a0a0a;">Contatti</a>
+    <a href="/prenota/" class="text-3xl font-bold text-brand-accent tracking-tighter hover:opacity-80 transition-colors">Prenota</a>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
