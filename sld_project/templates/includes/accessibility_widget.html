@@ -440,10 +440,13 @@ Fornisce controlli per ipovedenti e utenti con disabilità visive.
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
+                // Utente ha già salvato preferenze - usa quelle
                 prefs = { ...DEFAULT_PREFS, ...JSON.parse(saved) };
+                return; // Non sovrascrivere con preferenze di sistema
             }
         } catch (e) {}
         
+        // Solo per nuovi utenti (senza preferenze salvate):
         // Rispetta prefers-reduced-motion del sistema
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             prefs.reduceMotion = true;
