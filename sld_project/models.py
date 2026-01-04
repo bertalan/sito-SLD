@@ -103,6 +103,13 @@ class SiteSettings(BaseSiteSetting):
         default="Lazio",
         help_text="Provincia o regione per SEO (es: Puglia, Lazio, Lombardia)"
     )
+    cap = models.CharField(
+        "CAP",
+        max_length=10,
+        default="",
+        blank=True,
+        help_text="Codice di Avviamento Postale (es: 73100)"
+    )
     maps_url = models.URLField(
         "URL Mappa", 
         default="",
@@ -355,6 +362,7 @@ class SiteSettings(BaseSiteSetting):
             FieldPanel('address'),
             FieldPanel('city'),
             FieldPanel('province'),
+            FieldPanel('cap'),
             FieldPanel('maps_url'),
             FieldPanel('maps_lat'),
             FieldPanel('maps_lng'),

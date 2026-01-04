@@ -158,7 +158,7 @@
 {# Schema.org JSON-LD - LegalService separato + Article #}
 {% if settings.sld_project.SiteSettings.logo %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"LegalService","name":"{{ settings.sld_project.SiteSettings.studio_name }}","url":"{{ request.scheme }}://{{ request.get_host }}/","logo":"{{ request.scheme }}://{{ request.get_host }}{{ settings.sld_project.SiteSettings.logo.file.url }}","telephone":"{{ settings.sld_project.SiteSettings.phone }}","email":"{{ settings.sld_project.SiteSettings.email }}","address":{"@type":"PostalAddress","streetAddress":"{{ settings.sld_project.SiteSettings.address }}","addressLocality":"{{ settings.sld_project.SiteSettings.city }}","addressCountry":"IT"},"priceRange":"€€"}
+{"@context":"https://schema.org","@type":"LegalService","name":"{{ settings.sld_project.SiteSettings.studio_name }}","url":"{{ request.scheme }}://{{ request.get_host }}/","logo":"{{ request.scheme }}://{{ request.get_host }}{{ settings.sld_project.SiteSettings.logo.file.url }}","telephone":"{{ settings.sld_project.SiteSettings.phone }}","email":"{{ settings.sld_project.SiteSettings.email }}","address":{"@type":"PostalAddress","streetAddress":"{{ settings.sld_project.SiteSettings.address }}","addressLocality":"{{ settings.sld_project.SiteSettings.city }}","addressRegion":"{{ settings.sld_project.SiteSettings.province }}","postalCode":"{{ settings.sld_project.SiteSettings.cap }}","addressCountry":"IT"},"priceRange":"€€"}
 </script>
 {% endif %}
 {% if page.cover_image %}{% image page.cover_image fill-1200x630 as jsonld_img %}{% elif settings.sld_project.SiteSettings.default_social_image %}{% image settings.sld_project.SiteSettings.default_social_image fill-1200x630 as jsonld_img %}{% endif %}

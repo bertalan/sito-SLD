@@ -206,6 +206,7 @@ def _get_studio_settings():
                     'address': studio_settings.address,
                     'city': studio_settings.city,
                     'province': studio_settings.province,
+                    'cap': studio_settings.cap,
                     'maps_lat': float(studio_settings.maps_lat),
                     'maps_lng': float(studio_settings.maps_lng),
                     'facebook_url': studio_settings.facebook_url,
@@ -226,6 +227,7 @@ def _get_studio_settings():
         'address': getattr(django_settings, 'STUDIO_ADDRESS', 'Via Roma, 1 - 00100 Roma'),
         'city': getattr(django_settings, 'STUDIO_CITY', 'Roma'),
         'province': getattr(django_settings, 'STUDIO_PROVINCE', 'Lazio'),
+        'cap': getattr(django_settings, 'STUDIO_CAP', '00100'),
         'maps_lat': 41.902782,
         'maps_lng': 12.496366,
         'facebook_url': '',
@@ -276,6 +278,14 @@ def schema_org_jsonld(context):
                 "email": studio['email'],
                 "telephone": studio['phone'],
                 "priceRange": "€€",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": studio['address'],
+                    "addressLocality": studio['city'],
+                    "addressRegion": studio['province'],
+                    "postalCode": studio['cap'],
+                    "addressCountry": "IT"
+                },
                 "areaServed": [
                     {
                         "@type": "City",
@@ -303,6 +313,8 @@ def schema_org_jsonld(context):
                             "@type": "PostalAddress",
                             "streetAddress": studio['address'],
                             "addressLocality": studio['city'],
+                            "addressRegion": studio['province'],
+                            "postalCode": studio['cap'],
                             "addressCountry": "IT"
                         },
                         "geo": {
