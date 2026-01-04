@@ -5,6 +5,42 @@ Tutte le modifiche significative a questo progetto sono documentate in questo fi
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.3.0] - 2026-01-04
+
+### ✨ Nuove Funzionalità
+- **Script di installazione server** (`scripts/1_install.sh`):
+  - Installazione automatizzata completa: PostgreSQL, Nginx, Gunicorn, Django/Wagtail
+  - Configurazione systemd per servizio gunicorn
+  - Setup SSL con Let's Encrypt
+  - Variabili configurabili in cima allo script (DOMAIN, APP_DIR, DB_*, REPO_URL)
+  - Position-independent: installa in APP_DIR, non nella directory corrente
+
+- **Script di verifica produzione** (`scripts/2_verifiche.sh`):
+  - 10 categorie di controlli HTTP: DNS, SSL, Security Headers, Static Files, SEO, Schema.org, robots/sitemap, Pages, Performance, Domain Comparison
+  - Report colorato con percentuale successo per categoria
+  - Position-independent: eseguibile da qualsiasi macchina con accesso internet
+
+- **Documentazione scripts** (`scripts/README.md`):
+  - Guida completa per entrambi gli script
+  - Requisiti, configurazione, esempi d'uso
+  - Workflow consigliati
+
+### 📚 Documentazione
+- **README.md aggiornato**:
+  - Nuova sezione "Deploy e Verifica" con link agli script
+  - Istruzioni parallele Docker/Senza Docker per:
+    - Quick Start
+    - pip-audit (sicurezza dipendenze)
+    - Test di sicurezza
+    - Test unitari
+    - Deploy manuale
+
+### 🔧 Fix
+- **Schema.org postalCode**: aggiunto campo CAP in SiteSettings per LocalBusiness
+- **Dominio sitemap/robots.txt**: usa dominio configurato invece di request.host
+
+---
+
 ## [1.2.0] - 2026-01-03
 
 ### ✨ Nuove Funzionalità
