@@ -25,6 +25,17 @@ def robots_txt(request):
     host = request.get_host()
     sitemap_url = f"{protocol}://{host}/sitemap.xml"
     
+    # RSS Feed URL dinamico
+    feed_line = ""
+    try:
+        from articles.models import ArticleIndexPage
+        article_index = ArticleIndexPage.objects.live().first()
+        if article_index:
+            feed_url = f"{protocol}://{host}{article_index.url}feed/"
+            feed_line = f"\n# RSS Feed\n# {feed_url}"
+    except Exception:
+        pass
+    
     lines = [
         "User-agent: *",
         "Allow: /",
@@ -33,6 +44,7 @@ def robots_txt(request):
         "Disallow: /prenota/checkout/",
         "",
         f"Sitemap: {sitemap_url}",
+        feed_line,
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
 

@@ -3,10 +3,13 @@ Sistema articoli/blog collegato alle aree di attività.
 Segue i pattern Wagtail: Page models, Snippets, ParentalManyToManyField.
 """
 from django.db import models
+from django.http import HttpResponse
 from django.utils.html import strip_tags
+from django.utils.feedgenerator import Rss201rev2Feed
 from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.snippets.models import register_snippet
 from wagtail.search import index
 from modelcluster.fields import ParentalManyToManyField
@@ -51,8 +54,8 @@ class ArticleCategory(models.Model):
 # PAGINA INDICE ARTICOLI
 # ═══════════════════════════════════════════════════════════════════════════
 
-class ArticleIndexPage(Page):
-    """Pagina indice degli articoli (/articoli/)."""
+class ArticleIndexPage(RoutablePageMixin, Page):
+    """Pagina indice degli articoli con RSS feed."""
     
     intro = RichTextField("Introduzione", blank=True)
     
@@ -80,6 +83,32 @@ class ArticleIndexPage(Page):
         context['categories'] = ArticleCategory.objects.all()
         context['current_category'] = category_slug
         return context
+    
+    @route(r'^feed/$', name='feed')
+    def article_feed(self, request):
+        """RSS Feed degli articoli."""
+        site = self.get_site()
+        site_name = site.site_name if site else "Studio Legale"
+        
+        feed = Rss201rev2Feed(
+            title=f"{site_name} - {self.title}",
+            link=self.full_url,
+            description=f"Ultimi aggiornamenti da {self.title}",
+            language="it",
+        )
+        
+        for article in ArticlePage.objects.live().child_of(self).order_by('-first_published_at')[:20]:
+            feed.add_item(
+                title=article.title,
+                link=article.full_url,
+                description=article.subtitle or article.search_description or "",
+                pubdate=article.first_published_at,
+                author_name=article.owner.get_full_name() if article.owner else "",
+            )
+        
+        response = HttpResponse(content_type='application/rss+xml; charset=utf-8')
+        feed.write(response, 'utf-8')
+        return response
 
 
 # ═══════════════════════════════════════════════════════════════════════════

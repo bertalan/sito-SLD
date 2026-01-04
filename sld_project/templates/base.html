@@ -74,6 +74,14 @@
         {# Additional SEO meta tags #}
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="{{ request.build_absolute_uri }}" />
+        
+        {# RSS Feed autodiscovery #}
+        {% get_rss_feed_url as rss_url %}
+        {% if rss_url %}
+        <link rel="alternate" type="application/rss+xml" 
+              title="RSS Feed - {{ settings.sld_project.SiteSettings.studio_name }}" 
+              href="{{ rss_url }}" />
+        {% endif %}
 
         {# Force all links in the live preview panel to be opened in a new tab #}
         {% if request.in_preview_panel %}

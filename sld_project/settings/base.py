@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # Wagtail
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.routable_page",  # Per RSS feed
     "wagtail.contrib.sitemaps",
     "wagtail.contrib.settings",  # Site-wide settings
     "django.contrib.sitemaps",

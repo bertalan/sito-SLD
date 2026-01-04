@@ -19,7 +19,7 @@ register = template.Library()
 DEFAULT_BRAND_COLORS = {
     'brand-black': '#0a0a0a',
     'brand-dark': '#1a1a1a',
-    'brand-gray': '#6b7280',
+    'brand-gray': "#525252",
     'brand-silver': '#f5f5f5',
     'brand-white': '#ffffff',
     'brand-accent': '#e91e63',
@@ -98,6 +98,24 @@ def b64encode(value):
     """Codifica una stringa in base64 per offuscare email dallo spam."""
     if not value:
         return ''
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# RSS FEED
+# ═══════════════════════════════════════════════════════════════════════════
+
+@register.simple_tag
+def get_rss_feed_url():
+    """
+    Ritorna l'URL del feed RSS se ArticleIndexPage esiste.
+    Uso nel template: {% get_rss_feed_url as rss_url %}
+    """
+    try:
+        from articles.models import ArticleIndexPage
+        page = ArticleIndexPage.objects.live().first()
+        return f"{page.url}feed/" if page else ""
+    except Exception:
+        return ""
     return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
 
 
