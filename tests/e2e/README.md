@@ -99,6 +99,18 @@ pytest -v --slowmo 500
 - **TestTabletSpecific**: Layout portrait/landscape
 - **TestScriptInterference**: Senza Lucide, senza Tailwind, errori JS
 
+### test_matomo_tracking.py
+- **TestMatomoTracking**: Test tracking Matomo con visitatore reale
+  - `test_matomo_script_loads_with_consent`: Verifica caricamento script dopo consenso
+  - `test_matomo_paq_commands_queued`: Verifica comandi _paq eseguiti
+  - `test_matomo_tracker_url_configured`: Verifica configurazione tracker URL
+  - `test_matomo_noscript_fallback_present`: Verifica fallback noscript
+  - `test_visitor_journey_tracking`: Simula percorso multi-pagina
+  - `test_console_logs_for_matomo_errors`: Verifica assenza errori JS
+  - `test_init_matomo_function_callable`: Verifica funzione initMatomo
+- **TestMatomoWithRealConfig**: Test con server Matomo reale
+  - `test_matomo_server_reachable`: Verifica connessione a piwik.gpsbooking.com
+
 ### test_mobile_navigation.py
 - **TestMobileMenuBasic**: Apertura/chiusura menu hamburger, navigazione link
 - **TestMobileMenuAccessibility**: Attributi ARIA, gestione focus tastiera

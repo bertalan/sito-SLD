@@ -5,6 +5,52 @@ Tutte le modifiche significative a questo progetto sono documentate in questo fi
 Il formato è basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/),
 e questo progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.4.0] - 2026-01-04
+
+### ✨ Nuove Funzionalità
+- **Matomo Analytics - Integrazione completa**:
+  - Ordine operazioni corretto: `setDoNotTrack` prima di `trackPageView`
+  - Fallback `<noscript>` con tracking pixel per browser senza JavaScript
+  - **CSP dinamico**: Content-Security-Policy legge dominio Matomo da database (SiteSettings) con cache
+  - Nessuna dipendenza da variabili `.env` per Matomo (tutto configurabile da admin Wagtail)
+
+- **Test E2E Matomo** (`tests/e2e/test_matomo_tracking.py`):
+  - 8 test Playwright che simulano visitatori reali
+  - Verifica caricamento `matomo.js` dopo consenso cookie
+  - Intercettazione richieste/risposte a `matomo.php`
+  - Test percorso visitatore multi-pagina
+  - Verifica assenza errori JavaScript Matomo
+  - Test connessione reale al server Matomo
+
+- **Ottimizzazione Google Calendar**:
+  - Cache TTL ridotta da 10 a 2 minuti per aggiornamenti più reattivi
+  - Pre-sync calendario all'apertura pagina prenotazione (evita 60 chiamate separate)
+  - Nuovo endpoint `/prenota/prefetch/` per mantenere cache calda in background
+  - Prefetch automatico via `fetch()` al caricamento pagina
+
+### 🔧 Fix
+- **SEO Title pagine Django**: aggiunto `{% block title %}` a:
+  - `/prenota/` → "Prenota una Consulenza"
+  - `/privacy/` → "Privacy Policy"  
+  - `/termini/` → "Condizioni Generali di Contratto"
+
+### 🧪 Test
+- **5 nuovi test TDD Matomo** (`sld_project/tests.py`):
+  - `test_matomo_tracker_order_correct`: verifica ordine operazioni
+  - `test_matomo_noscript_fallback_present`: verifica fallback noscript
+- **8 test E2E Matomo** con Playwright:
+  - Simulazione accettazione cookie
+  - Verifica stato `window.matomoLoaded`
+  - Intercettazione chiamate HTTP a Matomo
+  - Test server Matomo raggiungibile
+
+### ⚠️ Note Deploy
+- La CSP ora legge il dominio Matomo da SiteSettings (database) automaticamente
+- Non serve più `MATOMO_URL` in `.env` se configurato in admin Wagtail
+- Il middleware CSP usa cache per evitare query DB ad ogni richiesta
+
+---
+
 ## [1.3.0] - 2026-01-04
 
 ### ✨ Nuove Funzionalità

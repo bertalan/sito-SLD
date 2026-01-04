@@ -1,6 +1,6 @@
 # Studio Legale – SLD
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](CHANGELOG.md)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Security](https://img.shields.io/badge/security-pip--audit-green.svg)](requirements.txt)
 
@@ -174,6 +174,9 @@ docker compose exec web python manage.py setup_holidays --list
 - Possibilità di usare uno, entrambi o nessuno
 - Caricamento condizionale basato sul consenso cookie
 - Funzione `trackEvent()` unificata per entrambe le piattaforme
+- **CSP dinamico**: Content-Security-Policy legge dominio Matomo da database
+- **Fallback noscript**: tracking pixel per browser senza JavaScript
+- **Test E2E Matomo**: 8 test Playwright per verificare tracking reale
 
 ### 🔒 Protezione Anti-Scraping Email
 - Email codificate in **Base64** nell'HTML sorgente
@@ -258,7 +261,7 @@ python -m pytest sld_project/security_tests/ -v
 Il progetto segue il metodo TDD (Test Driven Development):
 
 - **Pytest + pytest-django**: tutti i moduli hanno test automatici
-- **180+ test E2E** + **~115 test unit** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza
+- **188+ test E2E** + **~120 test unit** su modelli, viste, pagine, pagamenti, email, iCal, SEO, GDPR, sicurezza, Matomo
 - **Struttura test unificata**:
   ```
   tests/
