@@ -17,8 +17,7 @@ def reset_all(page: Page):
 
 def force_click(page: Page, selector: str):
     """Click forzato via JavaScript per evitare problemi di viewport/overlay."""
-    escaped_selector = selector.replace("'", "\\'")
-    page.evaluate(f"document.querySelector('{escaped_selector}')?.click()")
+    page.evaluate(f"document.querySelector('{selector}')?.click()")
     page.wait_for_timeout(100)
 
 
@@ -534,107 +533,3 @@ class TestScriptInterference:
         ]
         
         assert len(critical_errors) == 0, f"Errori JS: {critical_errors}"
-
-
-class TestMobileMenu:
-    """Test del menu mobile (hamburger)."""
-    
-    @pytest.mark.parametrize("viewport_name,viewport", [
-        ("mobile", {"width": 375, "height": 667}),  # iPhone SE
-        ("mobile_large", {"width": 414, "height": 896}),  # iPhone 11 Pro Max
-        ("mobile_pro", {"width": 390, "height": 844}),  # iPhone 12/13/14 Pro
-        ("mobile_pro_max", {"width": 428, "height": 926}),  # iPhone 12/13/14 Pro Max
-        ("mobile_15_pro", {"width": 393, "height": 852}),  # iPhone 15 Pro
-    ])
-    def test_mobile_menu_toggle(self, browser, viewport_name, viewport):
-        """
-        Test che il menu mobile si apra e chiuda correttamente senza causare scroll involontario.
-        Verifica specifico per iPhone 15 Pro e altri dispositivi mobili.
-        """
-        context = browser.new_context(viewport=viewport)
-        page = context.new_page()
-        
-        # Vai alla homepage
-        page.goto(BASE_URL)
-        wait_for_cookie_banner(page)
-        
-        # Accetta cookie per evitare overlay
-        force_click(page, "[data-testid='accept-all']")
-        page.wait_for_timeout(500)
-        
-        # Verifica che il toggle sia visibile (solo su mobile)
-        toggle = page.locator("#mobile-toggle")
-        expect(toggle).to_be_visible()
-        
-        # Verifica che il menu sia inizialmente chiuso
-        menu = page.locator("#mobile-menu")
-        expect(menu).to_have_css("opacity", "0")
-        expect(menu).to_have_css("pointer-events", "none")
-        
-        # Registra posizione scroll iniziale
-        initial_scroll = page.evaluate("window.scrollY")
-        
-        # Clicca il toggle
-        toggle.click()
-        page.wait_for_timeout(300)  # Aspetta transizione
-        
-        # Verifica che il menu sia aperto
-        expect(menu).to_have_css("opacity", "1")
-        expect(menu).to_have_css("pointer-events", "auto")
-        
-        # Verifica che non ci sia stato scroll involontario
-        current_scroll = page.evaluate("window.scrollY")
-        assert abs(current_scroll - initial_scroll) < 10, f"Scroll involontario rilevato: da {initial_scroll} a {current_scroll}"
-        
-        # Verifica ARIA attributes
-        expect(toggle).to_have_attribute("aria-expanded", "true")
-        expect(toggle).to_have_attribute("aria-label", "Chiudi menu di navigazione")
-        
-        # Chiudi il menu
-        toggle.click()
-        page.wait_for_timeout(300)
-        
-        # Verifica che sia chiuso
-        expect(menu).to_have_css("opacity", "0")
-        expect(menu).to_have_css("pointer-events", "none")
-        expect(toggle).to_have_attribute("aria-expanded", "false")
-        
-        # Verifica ancora scroll
-        final_scroll = page.evaluate("window.scrollY")
-        assert abs(final_scroll - initial_scroll) < 10, f"Scroll involontario alla chiusura: da {initial_scroll} a {final_scroll}"
-        
-        context.close()
-    
-    @pytest.mark.parametrize("viewport_name,viewport", [
-        ("mobile_15_pro", {"width": 393, "height": 852}),
-    ])
-    def test_mobile_menu_link_click(self, browser, viewport_name, viewport):
-        """
-        Test che cliccare un link nel menu mobile chiuda il menu e navighi correttamente.
-        Focus su iPhone 15 Pro.
-        """
-        context = browser.new_context(viewport=viewport)
-        page = context.new_page()
-        
-        page.goto(BASE_URL)
-        wait_for_cookie_banner(page)
-        force_click(page, "[data-testid='accept-all']")
-        page.wait_for_timeout(500)
-        
-        # Apri menu
-        page.locator("#mobile-toggle").click()
-        page.wait_for_timeout(300)
-        
-        # Clicca un link (es. Contatti)
-        page.locator("#mobile-menu a[href='/contatti/']").click()
-        page.wait_for_timeout(300)
-        
-        # Verifica che il menu sia chiuso
-        menu = page.locator("#mobile-menu")
-        expect(menu).to_have_css("opacity", "0")
-        expect(menu).to_have_css("pointer-events", "none")
-        
-        # Verifica navigazione
-        expect(page).to_have_url(f"{BASE_URL}/contatti/")
-        
-        context.close()

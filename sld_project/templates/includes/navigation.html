@@ -38,10 +38,16 @@
 
         <!-- Mobile Menu Overlay -->
         <div id="mobile-menu" 
-             class="fixed inset-0 bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+             class="fixed inset-0 z-[9999] bg-brand-white flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
              role="dialog"
              aria-label="Menu di navigazione"
              aria-modal="true">
+            <!-- Pulsante chiusura mobile menu -->
+            <button id="mobile-close" 
+                    class="absolute top-6 right-6 text-brand-black focus:outline-none focus:ring-2 focus:ring-brand-accent p-2"
+                    aria-label="Chiudi menu di navigazione">
+                <i data-lucide="x" class="w-8 h-8" aria-hidden="true"></i>
+            </button>
             {% if settings.sld_project.SiteSettings.logo %}
                 <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
@@ -65,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const nav = document.getElementById('nav');
     const mobileToggle = document.getElementById('mobile-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
+    const mobileClose = document.getElementById('mobile-close');
     let isOpen = false;
     
     // Scroll effect
@@ -85,21 +92,38 @@ document.addEventListener('DOMContentLoaded', function() {
         if (open) {
             mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
             mobileMenu.classList.add('opacity-100', 'pointer-events-auto');
-            // Focus sul primo link del menu per accessibilità
-            const firstLink = mobileMenu.querySelector('a');
-            if (firstLink) firstLink.focus();
+            // Blocca lo scroll del body quando il menu è aperto
+            document.body.style.overflow = 'hidden';
+            // Reinizializza Lucide per l'icona X
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            // Focus sul pulsante di chiusura (non su un link per evitare scroll)
+            if (mobileClose) mobileClose.focus();
         } else {
             mobileMenu.classList.add('opacity-0', 'pointer-events-none');
             mobileMenu.classList.remove('opacity-100', 'pointer-events-auto');
+            // Ripristina lo scroll del body
+            document.body.style.overflow = '';
         }
     }
     
-    // Mobile toggle
+    // Mobile toggle - apri menu
     mobileToggle.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         isOpen = !isOpen;
         updateMobileMenuA11y(isOpen);
     });
+    
+    // Mobile close - chiudi menu
+    if (mobileClose) {
+        mobileClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isOpen = false;
+            updateMobileMenuA11y(false);
+            mobileToggle.focus();
+        });
+    }
     
     // Chiudi con tasto Escape
     document.addEventListener('keydown', function(e) {
