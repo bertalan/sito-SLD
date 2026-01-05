@@ -172,7 +172,17 @@ class CreateCheckoutSession(RateLimitMixin, View):
                 time=target_time,
                 slot_count=slot_count,
                 status='pending',
-                payment_method=payment_method
+                payment_method=payment_method,
+                # Dati fatturazione (opzionali)
+                invoice_name=data.get('invoice_name', '').strip() or None,
+                invoice_address=data.get('invoice_address', '').strip() or None,
+                invoice_zip=data.get('invoice_zip', '').strip() or None,
+                invoice_city=data.get('invoice_city', '').strip() or None,
+                invoice_province=data.get('invoice_province', '').strip().upper() or None,
+                invoice_country=data.get('invoice_country', '').strip() or 'Italia',
+                invoice_vat=data.get('invoice_vat', '').strip().upper() or None,
+                invoice_sdi=data.get('invoice_sdi', '').strip().upper() or None,
+                invoice_pec=data.get('invoice_pec', '').strip().lower() or None,
             )
             
             # Genera il codice videochiamata se necessario (forza save per avere pk)

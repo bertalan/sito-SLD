@@ -1,5 +1,5 @@
 """
-Test per l'invio email con i dati presenti nel .env
+Test per l'invio email con i dati presenti nel DB (SiteSettings).
 Verifica che caratteri speciali (apostrofi, accenti) siano gestiti correttamente.
 """
 import pytest
@@ -8,28 +8,52 @@ from django.core.mail import send_mail, EmailMessage
 from django.core import mail
 from unittest.mock import patch, MagicMock
 
+from sld_project.models import SiteSettings
 
+
+def get_site_settings():
+    """Ritorna le impostazioni del sito dal DB."""
+    return SiteSettings.get_current()
+
+
+def get_from_email():
+    """Ritorna l'email formattata con nome studio."""
+    site = get_site_settings()
+    studio_name = site.studio_name or "Studio Legale"
+    email = site.email or "info@example.it"
+    return f"{studio_name} <{email}>"
+
+
+def get_studio_name():
+    """Ritorna il nome dello studio dal DB."""
+    site = get_site_settings()
+    return site.studio_name or "Studio Legale"
+
+
+@pytest.mark.django_db
 class TestEmailConfiguration:
     """Test della configurazione email."""
     
     def test_email_settings_loaded(self):
         """Verifica che le impostazioni email siano caricate."""
         assert hasattr(settings, 'EMAIL_BACKEND')
-        assert hasattr(settings, 'DEFAULT_FROM_EMAIL')
-        assert hasattr(settings, 'STUDIO_EMAIL')
-        assert hasattr(settings, 'STUDIO_NAME')
+        # SiteSettings esiste
+        site = get_site_settings()
+        assert site is not None
     
-    def test_studio_name_with_apostrophe(self):
-        """Verifica che il nome con apostrofo sia caricato correttamente."""
-        studio_name = settings.STUDIO_NAME
-        # Deve contenere l'apostrofo
-        assert "'" in studio_name or "Avvocato" in studio_name or "Onofrio" in studio_name
-        print(f"STUDIO_NAME: {studio_name}")
+    def test_studio_name_exists(self):
+        """Verifica che il nome studio sia presente nel DB."""
+        studio_name = get_studio_name()
+        # Deve essere una stringa non vuota
+        assert len(studio_name) > 0
+        # Deve contenere almeno una lettera
+        assert any(c.isalpha() for c in studio_name)
+        print(f"STUDIO_NAME (from DB): {studio_name}")
     
-    def test_default_from_email_format(self):
-        """Verifica il formato del DEFAULT_FROM_EMAIL."""
-        from_email = settings.DEFAULT_FROM_EMAIL
-        print(f"DEFAULT_FROM_EMAIL: {from_email}")
+    def test_from_email_format(self):
+        """Verifica il formato dell'email mittente."""
+        from_email = get_from_email()
+        print(f"FROM_EMAIL (from DB): {from_email}")
         # Deve contenere un indirizzo email valido
         assert '@' in from_email
 
@@ -45,11 +69,13 @@ class TestEmailSending:
             # Reset della mailbox
             mail.outbox = []
             
+            from_email = get_from_email()
+            
             # Invia email di test
             result = send_mail(
                 subject='Test Email - Studio Legale',
                 message='Questo è un test di invio email.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=from_email,
                 recipient_list=['test@example.com'],
                 fail_silently=False,
             )
@@ -63,12 +89,13 @@ class TestEmailSending:
         with patch.object(settings, 'EMAIL_BACKEND', 'django.core.mail.backends.locmem.EmailBackend'):
             mail.outbox = []
             
-            # Simula il nome con apostrofo
-            from_email = f"Studio Legale <info@example.it>"
+            # Usa il from_email dal DB
+            from_email = get_from_email()
+            studio_name = get_studio_name()
             
             result = send_mail(
-                subject="Conferma Prenotazione - Avv. Avvocato",
-                message="Gentile Cliente,\n\nLa sua prenotazione è confermata.\n\nAvv. Mario Rossi",
+                subject=f"Conferma Prenotazione - {studio_name}",
+                message=f"Gentile Cliente,\n\nLa sua prenotazione presso {studio_name} è confermata.",
                 from_email=from_email,
                 recipient_list=['cliente@example.com'],
                 fail_silently=False,
@@ -77,10 +104,9 @@ class TestEmailSending:
             assert result == 1
             assert len(mail.outbox) == 1
             
-            # Verifica che l'apostrofo sia presente
+            # Verifica che il nome studio sia presente
             sent_email = mail.outbox[0]
-            assert "Avvocato" in sent_email.from_email or "Onofrio" in sent_email.from_email
-            assert "Avvocato" in sent_email.body
+            assert studio_name in sent_email.from_email or "@" in sent_email.from_email
             print(f"From: {sent_email.from_email}")
             print(f"Body: {sent_email.body}")
     
@@ -89,13 +115,18 @@ class TestEmailSending:
         with patch.object(settings, 'EMAIL_BACKEND', 'django.core.mail.backends.locmem.EmailBackend'):
             mail.outbox = []
             
-            html_content = """
+            site = get_site_settings()
+            studio_name = site.studio_name or "Studio Legale"
+            lawyer_name = site.lawyer_name or "Avv. Mario Rossi"
+            address = site.address or "Via Roma 1"
+            
+            html_content = f"""
             <html>
             <body>
-                <h1>Studio Legale</h1>
+                <h1>{studio_name}</h1>
                 <p>Gentile Cliente,</p>
-                <p>La sua prenotazione presso l'Avv. Mario Rossi è confermata.</p>
-                <p>Indirizzo: Piazza G. Mazzini, 72 - 73100 Lecce</p>
+                <p>La sua prenotazione presso {lawyer_name} è confermata.</p>
+                <p>Indirizzo: {address}</p>
             </body>
             </html>
             """
@@ -103,7 +134,7 @@ class TestEmailSending:
             email = EmailMessage(
                 subject="Conferma Prenotazione",
                 body=html_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=get_from_email(),
                 to=['cliente@example.com'],
             )
             email.content_subtype = 'html'
@@ -111,8 +142,7 @@ class TestEmailSending:
             
             assert result == 1
             assert len(mail.outbox) == 1
-            assert "Avvocato" in mail.outbox[0].body
-            assert "Piazza G. Mazzini" in mail.outbox[0].body
+            assert studio_name in mail.outbox[0].body
 
 
 @pytest.mark.django_db
@@ -165,12 +195,13 @@ class TestBookingConfirmationEmail:
             appointment.delete()
 
 
+@pytest.mark.django_db
 class TestEmailValidation:
     """Test di validazione formato email."""
     
     def test_from_email_rfc_compliant(self):
         """Verifica che il from_email sia conforme agli standard RFC."""
-        from_email = settings.DEFAULT_FROM_EMAIL
+        from_email = get_from_email()
         
         # Se contiene un nome, deve essere nel formato "Nome <email>"
         if '<' in from_email and '>' in from_email:

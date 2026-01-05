@@ -146,6 +146,17 @@ class Appointment(ClusterableModel):
     # Token per link pagamento
     payment_token = models.CharField("Token pagamento", max_length=64, blank=True)
     
+    # Dati fatturazione (opzionali)
+    invoice_name = models.CharField("Intestatario", max_length=200, blank=True, null=True)
+    invoice_address = models.CharField("Indirizzo", max_length=300, blank=True, null=True)
+    invoice_zip = models.CharField("CAP", max_length=10, blank=True, null=True)
+    invoice_city = models.CharField("Città", max_length=100, blank=True, null=True)
+    invoice_province = models.CharField("Provincia", max_length=2, blank=True, null=True)
+    invoice_country = models.CharField("Nazione", max_length=100, default="Italia")
+    invoice_vat = models.CharField("P.IVA / Codice Fiscale", max_length=20, blank=True, null=True)
+    invoice_sdi = models.CharField("Codice SDI", max_length=7, blank=True, null=True)
+    invoice_pec = models.EmailField("PEC", blank=True, null=True)
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -182,6 +193,17 @@ class Appointment(ClusterableModel):
                 </div>
             """),
         ], heading="Stato e Pagamento"),
+        MultiFieldPanel([
+            FieldPanel('invoice_name'),
+            FieldPanel('invoice_address'),
+            FieldPanel('invoice_zip'),
+            FieldPanel('invoice_city'),
+            FieldPanel('invoice_province'),
+            FieldPanel('invoice_country'),
+            FieldPanel('invoice_vat'),
+            FieldPanel('invoice_sdi'),
+            FieldPanel('invoice_pec'),
+        ], heading="Dati Fatturazione", classname="collapsible collapsed"),
         InlinePanel('attachments', label="📎 Documenti allegati", heading="Documenti allegati"),
     ]
     
@@ -193,6 +215,11 @@ class Appointment(ClusterableModel):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.date} {self.time}"
+    
+    @property
+    def has_invoice_data(self):
+        """Restituisce True se sono presenti dati di fatturazione."""
+        return bool(self.invoice_name)
     
     def save(self, *args, **kwargs):
         # Genera codice videochiamata se è una consulenza video e non esiste già

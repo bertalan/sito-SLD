@@ -197,6 +197,22 @@ Mobile: {context['studio_phone']}
 Web: {context['studio_website']}
 """
     
+    # Aggiungi dati fatturazione se presenti
+    if appointment.has_invoice_data:
+        invoice_section = f"""
+---
+DATI DI FATTURAZIONE FORNITI:
+Intestatario: {appointment.invoice_name or '-'}
+Indirizzo: {appointment.invoice_address or '-'}
+CAP: {appointment.invoice_zip or '-'}, Città: {appointment.invoice_city or '-'}, Prov: {appointment.invoice_province or '-'}
+Nazione: {appointment.invoice_country or 'Italia'}
+P.IVA/CF: {appointment.invoice_vat or '-'}
+SDI: {appointment.invoice_sdi or '-'}
+PEC: {appointment.invoice_pec or '-'}
+"""
+        # Inserisci prima della firma
+        text_content = text_content.replace("Cordiali saluti,", f"{invoice_section}\nCordiali saluti,")
+    
     email = EmailMultiAlternatives(
         subject=subject,
         body=text_content,
@@ -252,6 +268,21 @@ LINK VIDEOCHIAMATA:
         text_content += f"""
 NOTE DEL CLIENTE:
 {appointment.notes}
+"""
+    
+    # Aggiungi dati fatturazione se presenti
+    if appointment.has_invoice_data:
+        text_content += f"""
+═══════════════════════════════════════════════════════════
+DATI DI FATTURAZIONE
+═══════════════════════════════════════════════════════════
+Intestatario: {appointment.invoice_name or '-'}
+Indirizzo: {appointment.invoice_address or '-'}
+CAP: {appointment.invoice_zip or '-'}, Città: {appointment.invoice_city or '-'}, Prov: {appointment.invoice_province or '-'}
+Nazione: {appointment.invoice_country or 'Italia'}
+P.IVA/CF: {appointment.invoice_vat or '-'}
+SDI: {appointment.invoice_sdi or '-'}
+PEC: {appointment.invoice_pec or '-'}
 """
     
     text_content += """

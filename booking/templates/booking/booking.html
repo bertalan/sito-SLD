@@ -94,6 +94,79 @@
                             class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
                     </div>
                     
+                    <!-- Sezione Dati Fattura (collapsabile) -->
+                    <div class="border border-brand-gray/20">
+                        <button type="button" onclick="toggleInvoiceSection()" 
+                                class="w-full flex items-center justify-between p-4 bg-brand-silver hover:bg-brand-gray/10 transition-colors">
+                            <span class="flex items-center gap-2">
+                                <i data-lucide="receipt" class="w-5 h-5 text-brand-accent"></i>
+                                <span class="text-sm font-bold uppercase tracking-wider text-brand-black">Dati per la fattura</span>
+                                <span class="text-xs text-brand-gray">(opzionale)</span>
+                            </span>
+                            <i data-lucide="chevron-down" id="invoice-chevron" class="w-5 h-5 text-brand-gray transition-transform duration-300"></i>
+                        </button>
+                        
+                        <div id="invoice-section" class="hidden border-t border-brand-gray/20 p-4 space-y-4 bg-white">
+                            <p class="text-xs text-brand-gray mb-4">Compila i cammpi se desideri ricevere la fattura, altrimenti non la riceverai.</p>
+                            
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Intestatario</label>
+                                <input type="text" name="invoice_name" 
+                                       class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent"
+                                       placeholder="Nome o Ragione Sociale">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Indirizzo</label>
+                                <input type="text" name="invoice_address"
+                                       class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent"
+                                       placeholder="Via, numero civico">
+                            </div>
+                            <div class="grid grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">CAP</label>
+                                    <input type="text" name="invoice_zip" maxlength="10"
+                                           class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Città</label>
+                                    <input type="text" name="invoice_city"
+                                           class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Prov</label>
+                                    <input type="text" name="invoice_province" maxlength="2"
+                                           class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent uppercase"
+                                           placeholder="XX">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Nazione</label>
+                                <input type="text" name="invoice_country" value="Italia"
+                                       class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">P.IVA / Codice Fiscale</label>
+                                <input type="text" name="invoice_vat"
+                                       class="invoice-field w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent uppercase"
+                                       placeholder="IT01234567890 o RSSMRA80A01H501U">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">Codice SDI</label>
+                                    <input type="text" name="invoice_sdi" maxlength="7"
+                                           class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent uppercase"
+                                           placeholder="0000000">
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-gray mb-2">PEC</label>
+                                    <input type="email" name="invoice_pec"
+                                           class="w-full border border-brand-gray/30 px-4 py-3 focus:outline-none focus:border-brand-accent"
+                                           placeholder="pec@example.it">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Riepilogo appuntamento selezionato -->
                     <div id="selection-summary" class="bg-brand-silver p-4 hidden">
                         <p class="text-sm text-brand-gray">Appuntamento selezionato:</p>
@@ -291,6 +364,15 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFileSelect({ files: e.dataTransfer.files });
     });
 });
+
+// Toggle sezione dati fatturazione
+function toggleInvoiceSection() {
+    const section = document.getElementById('invoice-section');
+    const chevron = document.getElementById('invoice-chevron');
+    
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
 
 function handleFileSelect(input) {
     const files = Array.from(input.files || []);
