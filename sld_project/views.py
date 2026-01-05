@@ -163,7 +163,8 @@ def legacy_redirect_view(request, path=''):
     
     # Redirect alla ricerca con keyword o alla pagina articoli
     if keyword and len(keyword) >= 2:
-        search_url = f"/search/?{urlencode({'query': keyword})}"
+        # Usa legacy=1 per forzare ricerca OR (più permissiva con molte parole)
+        search_url = f"/search/?{urlencode({'query': keyword, 'legacy': '1'})}"
         return redirect(search_url, permanent=False)  # 302 per non cacheare
     else:
         # Fallback: pagina articoli

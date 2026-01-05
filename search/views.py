@@ -14,10 +14,14 @@ from wagtail.models import Page
 def search(request):
     search_query = request.GET.get("query", None)
     page = request.GET.get("page", 1)
+    is_legacy = request.GET.get("legacy", "0") == "1"
 
     # Search
+    # Se arriva da redirect legacy (/it/*), usa OR per essere più permissivo
+    # altrimenti usa AND (default) per risultati più precisi
     if search_query:
-        search_results = Page.objects.live().search(search_query)
+        operator = "or" if is_legacy else "and"
+        search_results = Page.objects.live().search(search_query, operator=operator)
 
         # To log this query for use with the "Promoted search results" module:
 
