@@ -59,9 +59,11 @@ urlpatterns = [
     path("privacy/", privacy_view, name="privacy"),
     path("sitemap.xml", sitemap, name="sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),
-    # Legacy redirect: intercetta vecchie URL /it/* ed estrae keyword per ricerca
-    path("it/", legacy_redirect_view, name="legacy_redirect_root"),
-    path("it/<path:path>", legacy_redirect_view, name="legacy_redirect"),
+    # Legacy redirect: intercetta vecchie URL /it/* e /en/* ed estrae keyword per ricerca
+    path("it/", legacy_redirect_view, name="legacy_redirect_root_it"),
+    path("it/<path:path>", legacy_redirect_view, name="legacy_redirect_it"),
+    path("en/", legacy_redirect_view, name="legacy_redirect_root_en"),
+    path("en/<path:path>", legacy_redirect_view, name="legacy_redirect_en"),
 ]
 
 

@@ -192,7 +192,7 @@ def _extract_keywords_from_slug(slug):
     # Split in parole
     words = text.lower().split()
     
-    # Stopwords italiane comuni
+    # Stopwords italiane comuni + categorie Joomla generiche
     stopwords = {
         'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una',
         'di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra',
@@ -207,8 +207,11 @@ def _extract_keywords_from_slug(slug):
         'più', 'meno', 'molto', 'poco', 'tutto', 'tutti',
         'altro', 'altri', 'altra', 'altre', 'stesso', 'stessa',
         'ogni', 'qualche', 'alcuni', 'alcune',
-        'html', 'htm', 'php', 'asp', 'it', 'news', 'tag',
+        'html', 'htm', 'php', 'asp', 'it', 'en', 'news', 'tag',
         'parte', 'articolo', 'pagina', 'sezione',
+        # Categorie Joomla generiche
+        'senza', 'categoria', 'uncategorised', 'uncategorized',
+        'pareri', 'legali', 'consulenza',
     }
     
     # Filtra stopwords e parole troppo corte
