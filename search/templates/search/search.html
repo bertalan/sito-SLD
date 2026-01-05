@@ -1,38 +1,172 @@
 {% extends "base.html" %}
-{% load static wagtailcore_tags %}
+{% load static wagtailcore_tags wagtailimages_tags wagtailsettings_tags %}
+{% get_settings %}
 
 {% block body_class %}template-searchresults{% endblock %}
 
-{% block title %}Search{% endblock %}
+{% block title %}{% if search_query %}Ricerca: {{ search_query }}{% else %}Ricerca{% endif %}{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="{% if search_query %}Risultati della ricerca per '{{ search_query }}' su {{ settings.sld_project.SiteSettings.studio_name }}{% else %}Cerca contenuti su {{ settings.sld_project.SiteSettings.studio_name }}{% endif %}">
+{% endblock %}
 
 {% block content %}
-<h1>Search</h1>
+{# Header #}
+<section class="pt-32 pb-12 bg-brand-white border-b border-brand-gray/20">
+    <div class="max-w-6xl mx-auto px-6">
+        <h1 class="text-5xl md:text-6xl font-bold tracking-tighter text-brand-black mb-6">
+            Ricerca<span class="text-brand-accent">,</span>
+        </h1>
+        
+        {# Search Form #}
+        <form action="{% url 'search' %}" method="get" class="max-w-2xl">
+            <div class="flex gap-4">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-gray"></i>
+                    <input type="text" 
+                           name="query" 
+                           placeholder="Cerca articoli, servizi, informazioni..."
+                           {% if search_query %}value="{{ search_query }}"{% endif %}
+                           class="w-full pl-12 pr-4 py-4 border border-brand-gray/30 focus:border-brand-accent focus:outline-none text-brand-black placeholder:text-brand-gray/60 transition-colors">
+                </div>
+                <button type="submit" 
+                        class="px-8 py-4 bg-brand-accent text-white font-semibold uppercase tracking-wider hover:bg-brand-black transition-colors">
+                    Cerca
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 
-<form action="{% url 'search' %}" method="get">
-    <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
-    <input type="submit" value="Search" class="button">
-</form>
-
-{% if search_results %}
-<ul>
-    {% for result in search_results %}
-    <li>
-        <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
-        {% if result.search_description %}
-        {{ result.search_description }}
+{# Results Section #}
+<section class="py-16 bg-brand-white">
+    <div class="max-w-6xl mx-auto px-6">
+        
+        {% if search_query %}
+        {# Results count #}
+        <div class="mb-8 pb-4 border-b border-brand-gray/20">
+            <p class="text-brand-gray">
+                {% if search_results %}
+                <span class="text-brand-black font-semibold">{{ search_results.paginator.count }}</span> 
+                risultat{% if search_results.paginator.count == 1 %}o{% else %}i{% endif %} 
+                per "<span class="text-brand-accent font-semibold">{{ search_query }}</span>"
+                {% else %}
+                Nessun risultato per "<span class="text-brand-accent font-semibold">{{ search_query }}</span>"
+                {% endif %}
+            </p>
+        </div>
         {% endif %}
-    </li>
-    {% endfor %}
-</ul>
-
-{% if search_results.has_previous %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
-{% endif %}
-
-{% if search_results.has_next %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
-{% endif %}
-{% elif search_query %}
-No results found
-{% endif %}
+        
+        {% if search_results %}
+        {# Results Grid #}
+        <div class="grid gap-6">
+            {% for result in search_results %}
+            <article class="group border border-brand-gray/20 bg-white hover:border-brand-accent transition-colors">
+                <a href="{% pageurl result %}" class="block p-6 md:flex md:gap-6">
+                    {# Thumbnail se disponibile #}
+                    {% if result.specific.cover_image %}
+                    <div class="md:w-48 md:flex-shrink-0 mb-4 md:mb-0">
+                        <div class="aspect-video md:aspect-square overflow-hidden">
+                            {% image result.specific.cover_image fill-200x200 as thumb %}
+                            <img src="{{ thumb.url }}" alt="{{ result.title }}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex-1">
+                        {# Content Type Badge #}
+                        <span class="inline-block text-xs uppercase tracking-widest text-brand-accent font-semibold mb-2">
+                            {% if result.specific_class.get_verbose_name %}
+                            {{ result.specific_class.get_verbose_name }}
+                            {% else %}
+                            Pagina
+                            {% endif %}
+                        </span>
+                        
+                        <h2 class="text-xl md:text-2xl font-bold text-brand-black mb-3 group-hover:text-brand-accent transition-colors">
+                            {{ result.title }}
+                        </h2>
+                        
+                        {% if result.search_description %}
+                        <p class="text-brand-gray line-clamp-2 mb-4">
+                            {{ result.search_description }}
+                        </p>
+                        {% elif result.specific.subtitle %}
+                        <p class="text-brand-gray line-clamp-2 mb-4">
+                            {{ result.specific.subtitle }}
+                        </p>
+                        {% endif %}
+                        
+                        <div class="flex items-center text-sm text-brand-gray">
+                            <span class="group-hover:text-brand-accent transition-colors flex items-center gap-1">
+                                Leggi di più
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+        
+        {# Pagination #}
+        {% if search_results.has_other_pages %}
+        <nav class="mt-12 flex justify-center items-center gap-4">
+            {% if search_results.has_previous %}
+            <a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}" 
+               class="px-6 py-3 border border-brand-gray/30 text-brand-black font-semibold uppercase tracking-wider hover:border-brand-accent hover:text-brand-accent transition-colors flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Precedente
+            </a>
+            {% endif %}
+            
+            <span class="text-brand-gray text-sm">
+                Pagina {{ search_results.number }} di {{ search_results.paginator.num_pages }}
+            </span>
+            
+            {% if search_results.has_next %}
+            <a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}" 
+               class="px-6 py-3 border border-brand-gray/30 text-brand-black font-semibold uppercase tracking-wider hover:border-brand-accent hover:text-brand-accent transition-colors flex items-center gap-2">
+                Successiva
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+            {% endif %}
+        </nav>
+        {% endif %}
+        
+        {% elif search_query %}
+        {# No Results State #}
+        <div class="text-center py-16">
+            <i data-lucide="search-x" class="w-16 h-16 mx-auto text-brand-gray/30 mb-4"></i>
+            <h2 class="text-2xl font-bold text-brand-black mb-4">Nessun risultato trovato</h2>
+            <p class="text-brand-gray mb-8 max-w-md mx-auto">
+                Non abbiamo trovato contenuti corrispondenti a "<span class="font-semibold">{{ search_query }}</span>". 
+                Prova con termini diversi o esplora le nostre sezioni.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="/aree-di-attivita/" 
+                   class="px-6 py-3 bg-brand-accent text-white font-semibold uppercase tracking-wider hover:bg-brand-black transition-colors">
+                    Aree di Attività
+                </a>
+                <a href="/articoli-e-approfondimenti/" 
+                   class="px-6 py-3 border border-brand-gray/30 text-brand-black font-semibold uppercase tracking-wider hover:border-brand-accent hover:text-brand-accent transition-colors">
+                    Articoli
+                </a>
+            </div>
+        </div>
+        
+        {% else %}
+        {# Empty State - No Query #}
+        <div class="text-center py-16">
+            <i data-lucide="search" class="w-16 h-16 mx-auto text-brand-gray/30 mb-4"></i>
+            <h2 class="text-2xl font-bold text-brand-black mb-4">Inizia la tua ricerca</h2>
+            <p class="text-brand-gray max-w-md mx-auto">
+                Cerca articoli, informazioni sui nostri servizi e approfondimenti legali.
+            </p>
+        </div>
+        {% endif %}
+        
+    </div>
+</section>
 {% endblock %}

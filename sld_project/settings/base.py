@@ -196,6 +196,7 @@ WAGTAIL_SITE_NAME = "Studio Legale"
 WAGTAILSEARCH_BACKENDS = {
     "default": {
         "BACKEND": "wagtail.search.backends.database",
+        "SEARCH_CONFIG": "italian",  # Abilita stemming italiano (eredità → ered, eredi → ered)
     }
 }
 

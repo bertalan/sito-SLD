@@ -8,10 +8,27 @@
             {{ page.title }}<span class="text-brand-accent">,</span>
         </h1>
         {% if page.intro %}
-        <div class="text-xl text-brand-gray max-w-2xl">
+        <div class="text-xl text-brand-gray max-w-2xl mb-8">
             {{ page.intro|richtext }}
         </div>
         {% endif %}
+        
+        {# Search Box #}
+        <form action="{% url 'search' %}" method="get" class="max-w-xl">
+            <div class="flex">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-gray"></i>
+                    <input type="text" 
+                           name="query" 
+                           placeholder="Cerca negli articoli..."
+                           class="w-full pl-12 pr-4 py-3 border border-brand-gray/30 border-r-0 focus:border-brand-accent focus:outline-none text-brand-black placeholder:text-brand-gray/60 transition-colors">
+                </div>
+                <button type="submit" 
+                        class="px-6 py-3 bg-brand-accent text-white font-semibold uppercase tracking-wider hover:bg-brand-black transition-colors text-sm">
+                    Cerca
+                </button>
+            </div>
+        </form>
     </div>
 </section>
 
