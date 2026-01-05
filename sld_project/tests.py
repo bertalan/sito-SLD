@@ -386,3 +386,92 @@ class PrivacyConsentFormTest(TestCase):
         self.assertIn('required', content)
         self.assertIn('/privacy/', content)
         self.assertIn('GDPR', content)
+
+
+class LegacyRedirectTest(TestCase):
+    """Test per i redirect intelligenti dalle vecchie URL /it/*."""
+    
+    def setUp(self):
+        self.client = Client()
+    
+    def test_news_url_extracts_keywords(self):
+        """Verifica che le URL /it/News/... estraggano keyword dal titolo."""
+        response = self.client.get('/it/News/non-e-piu-necessaria-l-elezione-di-domicilio-da-parte-dell-avvocato.html')
+        
+        # Deve essere un redirect 302 (non permanente per non cacheare)
+        self.assertEqual(response.status_code, 302)
+        
+        # Deve puntare alla ricerca con keyword
+        redirect_url = response.url
+        self.assertIn('/search/', redirect_url)
+        self.assertIn('query=', redirect_url)
+        # Deve contenere parole significative
+        self.assertIn('elezione', redirect_url.lower())
+    
+    def test_search_url_with_searchword(self):
+        """Verifica che le URL con ?searchword= estraggano dalla query string."""
+        response = self.client.get('/it/Ricerca.html?searchword=famiglia//')
+        
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.url
+        self.assertIn('/search/', redirect_url)
+        self.assertIn('famiglia', redirect_url.lower())
+    
+    def test_tag_url_extracts_tag_name(self):
+        """Verifica che le URL /it/tag/... estraggano il nome del tag."""
+        response = self.client.get('/it/tag/multa.html')
+        
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.url
+        self.assertIn('/search/', redirect_url)
+        self.assertIn('multa', redirect_url.lower())
+    
+    def test_fallback_to_articles(self):
+        """Verifica che URL senza keyword vadano alla pagina articoli."""
+        response = self.client.get('/it/')
+        
+        # Deve essere un redirect 301 (permanente) alla pagina articoli
+        self.assertEqual(response.status_code, 301)
+        self.assertIn('articoli', response.url.lower())
+    
+    def test_short_keywords_fallback(self):
+        """Verifica che keyword troppo corte vadano alla pagina articoli."""
+        response = self.client.get('/it/tag/a.html')
+        
+        # "a" è troppo corta, deve fare fallback
+        self.assertEqual(response.status_code, 301)
+        self.assertIn('articoli', response.url.lower())
+    
+    def test_url_with_special_characters(self):
+        """Verifica che caratteri speciali siano gestiti correttamente."""
+        response = self.client.get('/it/News/sentenza-n-123-2025.html')
+        
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.url
+        self.assertIn('/search/', redirect_url)
+        self.assertIn('sentenza', redirect_url.lower())
+    
+    def test_searchphrase_parameter(self):
+        """Verifica che anche searchphrase funzioni come searchword."""
+        response = self.client.get('/it/Ricerca.html?searchphrase=divorzio')
+        
+        self.assertEqual(response.status_code, 302)
+        redirect_url = response.url
+        self.assertIn('/search/', redirect_url)
+        self.assertIn('divorzio', redirect_url.lower())
+    
+    def test_stopwords_filtered(self):
+        """Verifica che le stopwords italiane siano filtrate."""
+        from sld_project.views import _extract_keywords_from_slug
+        
+        # "il", "della", "e" sono stopwords
+        result = _extract_keywords_from_slug('il-diritto-della-famiglia-e-minori')
+        
+        # Deve contenere solo parole significative
+        self.assertIn('diritto', result)
+        self.assertIn('famiglia', result)
+        self.assertIn('minori', result)
+        # Non deve contenere stopwords
+        self.assertNotIn(' il ', f' {result} ')
+        self.assertNotIn(' e ', f' {result} ')
+        self.assertNotIn('della', result)

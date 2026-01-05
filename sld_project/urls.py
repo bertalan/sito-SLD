@@ -10,7 +10,7 @@ from wagtail.contrib.sitemaps.views import sitemap
 
 from search import views as search_views
 from django.views.generic import TemplateView
-from .views import privacy_view, terms_view, custom_404_view, custom_403_view, custom_500_view
+from .views import privacy_view, terms_view, custom_404_view, custom_403_view, custom_500_view, legacy_redirect_view
 
 # Custom error handlers
 handler403 = custom_403_view
@@ -59,6 +59,9 @@ urlpatterns = [
     path("privacy/", privacy_view, name="privacy"),
     path("sitemap.xml", sitemap, name="sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),
+    # Legacy redirect: intercetta vecchie URL /it/* ed estrae keyword per ricerca
+    path("it/", legacy_redirect_view, name="legacy_redirect_root"),
+    path("it/<path:path>", legacy_redirect_view, name="legacy_redirect"),
 ]
 
 

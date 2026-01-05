@@ -100,3 +100,159 @@ def custom_500_view(request):
     Nota: non riceve exception, viene chiamata direttamente da Django.
     """
     return render(request, "500.html", status=500)
+
+
+def legacy_redirect_view(request, path=''):
+    """
+    Gestisce i redirect dalle vecchie URL /it/* estraendo keyword per la ricerca.
+    
+    Pattern supportati:
+    - /it/News/titolo-articolo.html → estrae keyword dal titolo
+    - /it/Ricerca.html?searchword=xxx → estrae dalla query string
+    - /it/tag/nome-tag.html → estrae il nome del tag
+    - /it/Aree-di-attivita/nome-area.html → redirect all'area corrispondente
+    """
+    from django.shortcuts import redirect
+    from urllib.parse import unquote, urlencode
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    keyword = None
+    
+    # 1. Prova a estrarre dalla query string (es: ?searchword=famiglia)
+    searchword = request.GET.get('searchword', '') or request.GET.get('searchphrase', '')
+    if searchword:
+        # Pulisci: rimuovi // finali e caratteri strani
+        keyword = searchword.strip('/').strip()
+    
+    # 2. Se non c'è query string, estrai dal path
+    if not keyword and path:
+        # Rimuovi estensione .html
+        clean_path = path.replace('.html', '').replace('.htm', '')
+        
+        # Pattern: /it/tag/nome-tag → estrai "nome-tag"
+        if clean_path.startswith('tag/'):
+            keyword = clean_path[4:].replace('-', ' ').replace('_', ' ')
+        
+        # Pattern: /it/News/titolo-articolo → estrai parole dal titolo
+        elif clean_path.startswith('News/'):
+            title_part = clean_path[5:]
+            # Converti trattini/underscore in spazi, rimuovi parole comuni
+            keyword = _extract_keywords_from_slug(title_part)
+        
+        # Pattern: /it/Aree-di-attivita/nome → redirect diretto
+        elif 'Aree-di-attivita' in clean_path or 'aree-attivita' in clean_path.lower():
+            # Estrai nome area e cerca corrispondenza
+            area_name = clean_path.split('/')[-1].replace('-', ' ')
+            area_redirect = _find_service_area(area_name)
+            if area_redirect:
+                logger.info(f"Legacy redirect: /it/{path} → {area_redirect} (area match)")
+                return redirect(area_redirect, permanent=True)
+        
+        # Pattern: /it/Ricerca.html → vai alla ricerca vuota
+        elif 'Ricerca' in clean_path or 'ricerca' in clean_path:
+            pass  # keyword resta None, andrà alla ricerca
+        
+        # Fallback: estrai parole significative dal path
+        else:
+            keyword = _extract_keywords_from_slug(clean_path)
+    
+    # Log per analytics
+    referer = request.META.get('HTTP_REFERER', '')
+    logger.info(f"Legacy redirect: /it/{path} → keyword='{keyword}' (referer: {referer[:100]})")
+    
+    # Redirect alla ricerca con keyword o alla pagina articoli
+    if keyword and len(keyword) >= 2:
+        search_url = f"/search/?{urlencode({'query': keyword})}"
+        return redirect(search_url, permanent=False)  # 302 per non cacheare
+    else:
+        # Fallback: pagina articoli
+        return redirect('/articoli-e-approfondimenti/', permanent=True)
+
+
+def _extract_keywords_from_slug(slug):
+    """
+    Estrae keyword significative da uno slug URL.
+    Rimuove parole comuni italiane e articoli.
+    """
+    import re
+    
+    # Decodifica URL encoding
+    from urllib.parse import unquote
+    slug = unquote(slug)
+    
+    # Sostituisci separatori con spazi
+    text = re.sub(r'[-_/]', ' ', slug)
+    
+    # Rimuovi numeri isolati e caratteri speciali
+    text = re.sub(r'\b\d+\b', '', text)
+    text = re.sub(r'[^\w\s]', ' ', text)
+    
+    # Split in parole
+    words = text.lower().split()
+    
+    # Stopwords italiane comuni
+    stopwords = {
+        'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una',
+        'di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra',
+        'e', 'o', 'ma', 'che', 'non', 'è', 'sono', 'essere',
+        'del', 'della', 'dello', 'dei', 'delle', 'degli',
+        'al', 'alla', 'allo', 'ai', 'alle', 'agli',
+        'dal', 'dalla', 'dallo', 'dai', 'dalle', 'dagli',
+        'nel', 'nella', 'nello', 'nei', 'nelle', 'negli',
+        'sul', 'sulla', 'sullo', 'sui', 'sulle', 'sugli',
+        'come', 'quando', 'dove', 'perché', 'cosa', 'chi',
+        'questo', 'questa', 'questi', 'queste', 'quello', 'quella',
+        'più', 'meno', 'molto', 'poco', 'tutto', 'tutti',
+        'altro', 'altri', 'altra', 'altre', 'stesso', 'stessa',
+        'ogni', 'qualche', 'alcuni', 'alcune',
+        'html', 'htm', 'php', 'asp', 'it', 'news', 'tag',
+        'parte', 'articolo', 'pagina', 'sezione',
+    }
+    
+    # Filtra stopwords e parole troppo corte
+    keywords = [w for w in words if w not in stopwords and len(w) >= 3]
+    
+    # Prendi le prime 4 parole significative
+    return ' '.join(keywords[:4]) if keywords else None
+
+
+def _find_service_area(area_name):
+    """
+    Cerca un'area di attività che corrisponda al nome.
+    Restituisce l'URL se trovata, None altrimenti.
+    """
+    try:
+        from services.models import ServiceArea
+        
+        # Normalizza il nome
+        area_name_lower = area_name.lower()
+        
+        # Mappatura nomi vecchi → nuovi
+        area_mapping = {
+            'penale': 'diritto-penale',
+            'civile': 'diritto-civile',
+            'famiglia': 'diritto-di-famiglia',
+            'lavoro': 'diritto-del-lavoro',
+            'amministrativo': 'diritto-amministrativo',
+            'consumatori': 'tutela-consumatori',
+            'recupero crediti': 'recupero-crediti',
+            'mediazione': 'mediazione-civile',
+        }
+        
+        # Cerca match diretto o mappato
+        for old_name, new_slug in area_mapping.items():
+            if old_name in area_name_lower:
+                area = ServiceArea.objects.filter(slug=new_slug).first()
+                if area:
+                    return area.url
+        
+        # Cerca per slug simile
+        area = ServiceArea.objects.filter(slug__icontains=area_name_lower.replace(' ', '-')).first()
+        if area:
+            return area.url
+            
+    except Exception:
+        pass
+    
+    return None
