@@ -229,10 +229,13 @@ class ArticlePage(Page):
         FieldPanel('reading_time', read_only=True),
     ]
     
-    # Indicizzazione ricerca
+    # Indicizzazione ricerca con boost per ranking
+    # title (ereditato da Page) ha boost default, qui aggiungiamo i nostri campi
+    # Boost: titolo > sottotitolo > categoria > body
     search_fields = Page.search_fields + [
-        index.SearchField('subtitle'),
-        index.SearchField('body'),
+        index.SearchField('subtitle', boost=5),
+        index.SearchField('body', boost=1),
+        index.FilterField('category'),
     ]
     
     parent_page_types = ['articles.ArticleIndexPage']

@@ -3,6 +3,7 @@ from wagtail.models import Page
 from wagtail.fields import RichTextField
 from wagtail.admin.panels import FieldPanel
 from wagtail.snippets.models import register_snippet
+from wagtail.search import index
 
 
 @register_snippet
@@ -70,6 +71,12 @@ class ServicePage(Page):
         FieldPanel('service_area'),
         FieldPanel('subtitle'),
         FieldPanel('body'),
+    ]
+    
+    # Indicizzazione ricerca con boost
+    search_fields = Page.search_fields + [
+        index.SearchField('subtitle', boost=5),
+        index.SearchField('body', boost=1),
     ]
     
     parent_page_types = ['services.ServicesIndexPage']
