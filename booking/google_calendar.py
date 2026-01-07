@@ -92,7 +92,8 @@ def sync_google_calendar_events(force=False):
     """
     from .models import GoogleCalendarEvent
     
-    cache_ttl = getattr(settings, 'GOOGLE_CALENDAR_CACHE_TTL', 600)
+    # TTL cache: 15 minuti (900 secondi)
+    cache_ttl = getattr(settings, 'GOOGLE_CALENDAR_CACHE_TTL', 900)
     
     # Check cache
     cache_key = 'google_calendar_last_sync'

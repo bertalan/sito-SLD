@@ -41,9 +41,8 @@ class BookingView(TemplateView):
         today = date.today()
         available_dates = []
         
-        # Pre-sync Google Calendar una sola volta per evitare 60 chiamate separate
-        from .google_calendar import sync_google_calendar_events
-        sync_google_calendar_events()
+        # NOTA: Google Calendar sync ora avviene in background via middleware
+        # Non più necessario il sync sincrono qui che rallentava il caricamento
         
         for i in range(1, 61):  # 60 giorni di disponibilità
             check_date = today + timedelta(days=i)
@@ -68,14 +67,20 @@ def get_available_slots(request, date):
 
 def prefetch_calendar(request):
     """
-    Endpoint per pre-caricare il calendario Google in background.
-    Chiamato via fetch dal frontend per mantenere la cache calda.
+    Endpoint per verificare lo stato della sincronizzazione Google Calendar.
+    Il middleware ora gestisce il sync in background, questo endpoint
+    serve principalmente per debug o refresh manuale.
     """
-    from .google_calendar import sync_google_calendar_events
-    synced = sync_google_calendar_events()
+    from django.core.cache import cache
+    
+    # Verifica se è stata fatta una sincronizzazione recente
+    last_sync = cache.get('google_calendar_last_sync')
+    sync_in_progress = cache.get('google_calendar_sync_in_progress')
+    
     return JsonResponse({
-        'synced': synced,
-        'cached': not synced
+        'last_sync': last_sync.isoformat() if last_sync else None,
+        'sync_active': bool(sync_in_progress),
+        'message': 'Sync gestito da middleware in background'
     })
 
 

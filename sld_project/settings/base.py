@@ -79,6 +79,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    # Google Calendar sync in background (non blocca le richieste)
+    "booking.middleware.GoogleCalendarSyncMiddleware",
 ]
 
 ROOT_URLCONF = "sld_project.urls"
