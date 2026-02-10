@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-01-07T23:46:21.701674",
+  "dry_run": true,
+  "stats": {
+    "tables_scanned": 6,
+    "records_checked": 36,
+    "records_modified": 0,
+    "patterns_found": {}
+  },
+  "changes": []
+}

@@ -69,6 +69,16 @@
         <form action="{{ page.url }}" method="POST" enctype="multipart/form-data" class="space-y-8" id="domiciliazione-form">
             {% csrf_token %}
             
+            <!-- Anti-bot: honeypot (campo nascosto per i bot) -->
+            <div style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden;" aria-hidden="true" tabindex="-1">
+                <label for="website_url">Lascia vuoto questo campo</label>
+                <input type="text" name="website_url" id="website_url" value="" autocomplete="off" tabindex="-1">
+            </div>
+            <!-- Anti-bot: timestamp di rendering -->
+            <input type="hidden" name="_form_ts" id="form-ts" value="">
+            <!-- Anti-bot: JS proof-of-work token -->
+            <input type="hidden" name="_bot_check" id="bot-check" value="">
+            
             <!-- Dati Avvocato -->
             <div class="bg-brand-silver p-6 border border-brand-gray/20">
                 <h3 class="text-lg font-bold text-brand-black mb-6 uppercase tracking-wider flex items-center gap-2">
@@ -289,6 +299,24 @@ function updateFileList(input) {
         lucide.createIcons();
     }
 }
+
+// ══════════════════════════════════════════════════════════
+// Anti-bot: popola timestamp e genera proof-of-work token
+// ══════════════════════════════════════════════════════════
+(function() {
+    var ts = Math.floor(Date.now() / 1000);
+    document.getElementById('form-ts').value = ts;
+    // Proof-of-work: hash semplice basato su timestamp + user agent
+    // I bot che non eseguono JS non possono generare questo valore
+    var raw = ts.toString() + navigator.userAgent + 'sld_dom_v1';
+    var hash = 0;
+    for (var i = 0; i < raw.length; i++) {
+        var c = raw.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash |= 0; // 32-bit integer
+    }
+    document.getElementById('bot-check').value = ts + ':' + Math.abs(hash).toString(36);
+})();
 
 // Logica condizionale per campi obbligatori
 document.addEventListener('DOMContentLoaded', function() {

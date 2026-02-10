@@ -7,11 +7,19 @@
             {% if settings.sld_project.SiteSettings.logo %}
                 <img src="{{ settings.sld_project.SiteSettings.logo.file.url }}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
-                     class="h-12 w-auto">
+                     class="h-12 w-auto"
+                     width="48"
+                     height="48"
+                     loading="eager"
+                     fetchpriority="high">
             {% else %}
                 <img src="{% static 'images/StudioLegale.svg' %}" 
                      alt="{{ settings.sld_project.SiteSettings.studio_name|default:'Studio Legale' }}" 
-                     class="h-12 w-auto">
+                     class="h-12 w-auto"
+                     width="48"
+                     height="48"
+                     loading="eager"
+                     fetchpriority="high">
             {% endif %}
             <span class="text-xl font-bold tracking-tighter text-brand-black hidden sm:inline -mb-[5px]">
                 {{ settings.sld_project.SiteSettings.studio_name|default:"Studio Legale" }}

@@ -98,6 +98,7 @@ def b64encode(value):
     """Codifica una stringa in base64 per offuscare email dallo spam."""
     if not value:
         return ''
+    return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -116,7 +117,6 @@ def get_rss_feed_url():
         return f"{page.url}feed/" if page else ""
     except Exception:
         return ""
-    return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
 
 
 @register.filter

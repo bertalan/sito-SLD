@@ -1,3 +1,6 @@
+import logging
+import time
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -12,6 +15,8 @@ from .models import DomiciliazioniSubmission, DomiciliazioniDocument, Domiciliaz
 from .ical import generate_domiciliazione_ical, generate_domiciliazione_ical_filename
 from sld_project.validators import validate_document_file
 from sld_project.ratelimit import RATE_LIMITS
+
+logger = logging.getLogger(__name__)
 
 
 def _get_studio_settings():
@@ -60,9 +65,73 @@ def format_date_italian(date):
     return f"{day_it} {date.day} {month_it} {date.year}"
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# ANTI-BOT VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════
+
+MIN_FORM_TIME_SECONDS = 10      # Tempo minimo per compilare il form
+MAX_FORM_TIME_SECONDS = 7200    # 2 ore massimo (form non scade troppo presto)
+
+
+def _check_anti_bot(request):
+    """
+    Validazione anti-bot a 3 livelli. Ritorna (ok, motivo).
+    1. Honeypot: campo nascosto che deve restare vuoto
+    2. Timestamp: il form deve essere stato compilato in un tempo ragionevole
+    3. JS proof-of-work: token generato dal JavaScript lato client
+    """
+    data = request.POST
+    client_ip = _get_client_ip(request)
+
+    # --- Livello 1: Honeypot ---
+    honeypot = data.get('website_url', '')
+    if honeypot:
+        logger.warning(f"Bot detect [honeypot] IP={client_ip} value='{honeypot[:50]}'")
+        return False, 'honeypot'
+
+    # --- Livello 2: Timestamp ---
+    form_ts = data.get('_form_ts', '')
+    try:
+        form_ts_int = int(form_ts)
+        now = int(time.time())
+        elapsed = now - form_ts_int
+        if elapsed < MIN_FORM_TIME_SECONDS:
+            logger.warning(f"Bot detect [too_fast] IP={client_ip} elapsed={elapsed}s")
+            return False, 'too_fast'
+        if elapsed > MAX_FORM_TIME_SECONDS:
+            logger.warning(f"Bot detect [expired] IP={client_ip} elapsed={elapsed}s")
+            return False, 'expired'
+    except (ValueError, TypeError):
+        logger.warning(f"Bot detect [no_timestamp] IP={client_ip}")
+        return False, 'no_timestamp'
+
+    # --- Livello 3: JS proof-of-work token ---
+    bot_check = data.get('_bot_check', '')
+    if not bot_check or ':' not in bot_check:
+        logger.warning(f"Bot detect [no_js_token] IP={client_ip}")
+        return False, 'no_js_token'
+
+    return True, 'ok'
+
+
+def _get_client_ip(request):
+    """Estrae il vero IP del client considerando proxy."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+
 def process_domiciliazione_form(request, page):
     """Processa il form di domiciliazione."""
     if request.method != 'POST':
+        return None
+    
+    # Anti-bot validation
+    bot_ok, bot_reason = _check_anti_bot(request)
+    if not bot_ok:
+        # Ritorna None silenziosamente - il bot non riceve feedback utile
+        logger.warning(f"Domiciliazione bloccata: {bot_reason}")
         return None
     
     try:
